@@ -33,6 +33,7 @@ const PERMISOS = [
   { recurso: 'plantilla', accion: 'ver' },
   { recurso: 'plantilla', accion: 'listar' },
   { recurso: 'auditoria', accion: 'ver' },
+  { recurso: 'admin', accion: 'stats' },
   { recurso: 'usuario', accion: 'listar' },
   { recurso: 'usuario', accion: 'ver' },
   { recurso: 'usuario', accion: 'crear' },
