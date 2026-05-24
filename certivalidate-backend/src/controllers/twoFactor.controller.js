@@ -6,6 +6,7 @@ const prisma = require('../utils/prisma')
 const { sendSuccess, sendError } = require('../utils/response.utils')
 const { getEnv } = require('../utils/env')
 const logger = require('../utils/logger')
+const { encrypt, decrypt } = require('../utils/crypto')
 const { buildAccessToken, buildRefreshToken, buildPartialToken, persistRefreshToken } = require('../services/token.service')
 const { crearSesion } = require('../services/sesion.service')
 const { registrarIntento } = require('../services/intentoLogin.service')
@@ -20,6 +21,25 @@ const verifyTotp = (token, secret) => {
   return result?.valid === true
 }
 
+const getTotpSecret = (usuario) => {
+  if (!usuario?.totp_secret) return null
+
+  try {
+    return decrypt(usuario.totp_secret)
+  } catch {
+    return usuario.totp_secret
+  }
+}
+
+const migratePlainTotpSecret = async (usuario, plainSecret) => {
+  if (!usuario?.totp_secret || usuario.totp_secret.includes(':')) return
+
+  await prisma.usuario.update({
+    where: { id: usuario.id },
+    data: { totp_secret: encrypt(plainSecret) },
+  })
+}
+
 const setup2FA = async (req, res) => {
   try {
     const usuarioId = req.usuario.id
@@ -31,9 +51,17 @@ const setup2FA = async (req, res) => {
     const uri = generateURI({ issuer: ISSUER, label: usuario.email, secret })
     const qrDataUrl = await QRCode.toDataURL(uri)
 
-    await prisma.usuario.update({ where: { id: usuarioId }, data: { totp_secret: secret } })
+    await prisma.usuario.update({
+      where: { id: usuarioId },
+      data: { totp_secret: encrypt(secret) },
+    })
 
-    return sendSuccess(res, { qrDataUrl, secret }, '2FA configurado. Escanea el QR y verifica con tu app autenticadora.', 200)
+    return sendSuccess(
+      res,
+      { qrDataUrl },
+      '2FA configurado. Escanea el QR y verifica con tu app autenticadora.',
+      200,
+    )
   } catch (error) {
     logger.error({ err: error }, 'Error en setup2FA')
     return sendError(res, 'Error al configurar 2FA', 500)
@@ -50,9 +78,16 @@ const enable2FA = async (req, res) => {
     if (!usuario || !usuario.totp_secret) return sendError(res, 'Primero configura el 2FA', 400)
     if (usuario.totp_enabled) return sendError(res, '2FA ya está habilitado', 400)
 
-    if (!verifyTotp(code, usuario.totp_secret)) return sendError(res, 'Código TOTP inválido', 400)
+    const secret = getTotpSecret(usuario)
 
-    await prisma.usuario.update({ where: { id: usuarioId }, data: { totp_enabled: true } })
+    if (!verifyTotp(code, secret)) return sendError(res, 'Código TOTP inválido', 400)
+
+    await migratePlainTotpSecret(usuario, secret)
+
+    await prisma.usuario.update({
+      where: { id: usuarioId },
+      data: { totp_enabled: true },
+    })
 
     return sendSuccess(res, null, '2FA activado correctamente', 200)
   } catch (error) {
@@ -74,7 +109,9 @@ const disable2FA = async (req, res) => {
     const passwordValida = await bcrypt.compare(password, usuario.password_hash)
     if (!passwordValida) return sendError(res, 'Contraseña incorrecta', 401)
 
-    if (!verifyTotp(code, usuario.totp_secret)) return sendError(res, 'Código TOTP inválido', 400)
+    const secret = getTotpSecret(usuario)
+
+    if (!verifyTotp(code, secret)) return sendError(res, 'Código TOTP inválido', 400)
 
     await prisma.usuario.update({
       where: { id: usuarioId },
@@ -107,14 +144,22 @@ const verify2FA = async (req, res) => {
     if (!usuario.activo) return sendError(res, 'Usuario desactivado', 403)
     if (!usuario.totp_enabled || !usuario.totp_secret) return sendError(res, '2FA no configurado', 400)
 
-    if (!verifyTotp(code, usuario.totp_secret)) return sendError(res, 'Código TOTP inválido', 401)
+    const secret = getTotpSecret(usuario)
 
-    await prisma.usuario.update({ where: { id: usuario.id }, data: { ultimo_acceso: new Date() } })
+    if (!verifyTotp(code, secret)) return sendError(res, 'Código TOTP inválido', 401)
 
-    const ip        = getClientIp(req)
+    await migratePlainTotpSecret(usuario, secret)
+
+    await prisma.usuario.update({
+      where: { id: usuario.id },
+      data: { ultimo_acceso: new Date() },
+    })
+
+    const ip = getClientIp(req)
     const userAgent = req.headers['user-agent'] || null
-    const token        = buildAccessToken(usuario)
+    const token = buildAccessToken(usuario)
     const refreshToken = buildRefreshToken(usuario)
+
     await persistRefreshToken({ token: refreshToken, usuarioId: usuario.id, ip, userAgent })
     await crearSesion({ token: refreshToken, usuarioId: usuario.id, ip, userAgent })
     await registrarIntento({ email: usuario.email, ip, exitoso: true })
@@ -123,12 +168,18 @@ const verify2FA = async (req, res) => {
     const rolPrincipal = resolverRolPrincipal(accesos)
 
     const { password_hash, token_verificacion, token_verificacion_expira, totp_secret, ...usuarioData } = usuario
-    return sendSuccess(res, {
-      token,
-      refreshToken,
-      usuario: { ...usuarioData, rol: rolPrincipal },
-      accesos,
-    }, 'Login con 2FA exitoso', 200)
+
+    return sendSuccess(
+      res,
+      {
+        token,
+        refreshToken,
+        usuario: { ...usuarioData, rol: rolPrincipal },
+        accesos,
+      },
+      'Login con 2FA exitoso',
+      200,
+    )
   } catch (error) {
     logger.error({ err: error }, 'Error en verify2FA')
     return sendError(res, 'Error al verificar 2FA', 500)
