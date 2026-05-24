@@ -2,6 +2,7 @@ const { Resend } = require('resend')
 const QRCode = require('qrcode')
 const { generarPDFBuffer } = require('./pdf.generator')
 const logger = require('./logger')
+const { escapeHtml } = require('./sanitize')
 
 const getResend = () => {
   const apiKey = process.env.RESEND_API_KEY
@@ -15,6 +16,9 @@ const resolveRecipient = (email) => process.env.EMAIL_DEV_TO || email
 const enviarEmailVerificacion = async ({ email, nombre, token }) => {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
   const url = `${frontendUrl}/verificar-email?token=${token}`
+
+  const safeNombre = escapeHtml(nombre)
+  const safeUrl = escapeHtml(url)
 
   if (process.env.NODE_ENV !== 'production') {
     logger.info({ email, url }, '[DEV] Enviando email de verificación via Resend')
@@ -33,8 +37,6 @@ const enviarEmailVerificacion = async ({ email, nombre, token }) => {
     <tr>
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
-
-          <!-- Header -->
           <tr>
             <td align="center" style="padding-bottom:28px;">
               <table cellpadding="0" cellspacing="0">
@@ -49,18 +51,16 @@ const enviarEmailVerificacion = async ({ email, nombre, token }) => {
             </td>
           </tr>
 
-          <!-- Card -->
           <tr>
             <td style="background:#1e293b;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:40px 36px;">
-
               <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#f8fafc;text-align:center;">
                 Verifica tu correo electrónico
               </h1>
+
               <p style="margin:0 0 28px;font-size:14px;color:#94a3b8;text-align:center;">
-                Hola <strong style="color:#e2e8f0;">${nombre}</strong>, una cuenta fue creada con este correo.
+                Hola <strong style="color:#e2e8f0;">${safeNombre}</strong>, una cuenta fue creada con este correo.
               </p>
 
-              <!-- Divider -->
               <div style="border-top:1px solid rgba(255,255,255,0.07);margin-bottom:28px;"></div>
 
               <p style="margin:0 0 24px;font-size:14px;color:#cbd5e1;line-height:1.7;text-align:center;">
@@ -68,11 +68,10 @@ const enviarEmailVerificacion = async ({ email, nombre, token }) => {
                 Este enlace expira en <strong style="color:#f8fafc;">24 horas</strong>.
               </p>
 
-              <!-- CTA Button -->
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="padding-bottom:28px;">
-                    <a href="${url}"
+                    <a href="${safeUrl}"
                        style="display:inline-block;background:#00f0ff;color:#030712;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:8px;letter-spacing:0.3px;">
                       Verificar mi correo
                     </a>
@@ -80,12 +79,11 @@ const enviarEmailVerificacion = async ({ email, nombre, token }) => {
                 </tr>
               </table>
 
-              <!-- Divider -->
               <div style="border-top:1px solid rgba(255,255,255,0.07);margin-bottom:20px;"></div>
 
               <p style="margin:0;font-size:12px;color:#64748b;line-height:1.6;text-align:center;">
                 Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:<br/>
-                <a href="${url}" style="color:#00f0ff;word-break:break-all;">${url}</a>
+                <a href="${safeUrl}" style="color:#00f0ff;word-break:break-all;">${safeUrl}</a>
               </p>
 
               <p style="margin:16px 0 0;font-size:12px;color:#475569;text-align:center;">
@@ -94,7 +92,6 @@ const enviarEmailVerificacion = async ({ email, nombre, token }) => {
             </td>
           </tr>
 
-          <!-- Footer -->
           <tr>
             <td align="center" style="padding-top:24px;">
               <p style="margin:0;font-size:11px;color:#334155;">
@@ -102,7 +99,6 @@ const enviarEmailVerificacion = async ({ email, nombre, token }) => {
               </p>
             </td>
           </tr>
-
         </table>
       </td>
     </tr>
@@ -136,6 +132,12 @@ const enviarEmailBienvenida = async ({ email, nombre, password, rol }) => {
 
   const rolLabel = { admin: 'Administrador', editor: 'Editor', lector: 'Lector' }[rol] || rol
 
+  const safeNombre = escapeHtml(nombre)
+  const safeEmail = escapeHtml(email)
+  const safePassword = escapeHtml(password)
+  const safeRolLabel = escapeHtml(rolLabel)
+  const safeLoginUrl = escapeHtml(loginUrl)
+
   const html = `
 <!DOCTYPE html>
 <html lang="es">
@@ -149,8 +151,6 @@ const enviarEmailBienvenida = async ({ email, nombre, password, rol }) => {
     <tr>
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
-
-          <!-- Header -->
           <tr>
             <td align="center" style="padding-bottom:28px;">
               <table cellpadding="0" cellspacing="0">
@@ -165,37 +165,35 @@ const enviarEmailBienvenida = async ({ email, nombre, password, rol }) => {
             </td>
           </tr>
 
-          <!-- Card -->
           <tr>
             <td style="background:#1e293b;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:40px 36px;">
-
               <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#f8fafc;text-align:center;">
                 ¡Bienvenido a CertiValidate!
               </h1>
+
               <p style="margin:0 0 28px;font-size:14px;color:#94a3b8;text-align:center;">
-                Hola <strong style="color:#e2e8f0;">${nombre}</strong>, un administrador creó una cuenta para ti.
+                Hola <strong style="color:#e2e8f0;">${safeNombre}</strong>, un administrador creó una cuenta para ti.
               </p>
 
-              <!-- Divider -->
               <div style="border-top:1px solid rgba(255,255,255,0.07);margin-bottom:24px;"></div>
 
-              <!-- Credentials box -->
               <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(0,240,255,0.05);border:1px solid rgba(0,240,255,0.15);border-radius:10px;margin-bottom:28px;">
                 <tr>
                   <td style="padding:20px 24px;">
                     <p style="margin:0 0 4px;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;">TUS CREDENCIALES</p>
+
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
                       <tr>
                         <td style="padding:6px 0;font-size:13px;color:#94a3b8;width:90px;">Correo</td>
-                        <td style="padding:6px 0;font-size:13px;color:#e2e8f0;font-weight:600;">${email}</td>
+                        <td style="padding:6px 0;font-size:13px;color:#e2e8f0;font-weight:600;">${safeEmail}</td>
                       </tr>
                       <tr>
                         <td style="padding:6px 0;font-size:13px;color:#94a3b8;">Contraseña</td>
-                        <td style="padding:6px 0;font-size:14px;color:#00f0ff;font-weight:700;font-family:monospace;">${password}</td>
+                        <td style="padding:6px 0;font-size:14px;color:#00f0ff;font-weight:700;font-family:monospace;">${safePassword}</td>
                       </tr>
                       <tr>
                         <td style="padding:6px 0;font-size:13px;color:#94a3b8;">Rol</td>
-                        <td style="padding:6px 0;font-size:13px;color:#e2e8f0;">${rolLabel}</td>
+                        <td style="padding:6px 0;font-size:13px;color:#e2e8f0;">${safeRolLabel}</td>
                       </tr>
                     </table>
                   </td>
@@ -206,11 +204,10 @@ const enviarEmailBienvenida = async ({ email, nombre, password, rol }) => {
                 Te recomendamos cambiar tu contraseña después de iniciar sesión por primera vez desde tu perfil.
               </p>
 
-              <!-- CTA Button -->
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="padding-bottom:28px;">
-                    <a href="${loginUrl}"
+                    <a href="${safeLoginUrl}"
                        style="display:inline-block;background:#00f0ff;color:#030712;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:8px;letter-spacing:0.3px;">
                       Iniciar sesión
                     </a>
@@ -218,7 +215,6 @@ const enviarEmailBienvenida = async ({ email, nombre, password, rol }) => {
                 </tr>
               </table>
 
-              <!-- Divider -->
               <div style="border-top:1px solid rgba(255,255,255,0.07);margin-bottom:16px;"></div>
 
               <p style="margin:0;font-size:12px;color:#475569;text-align:center;">
@@ -227,7 +223,6 @@ const enviarEmailBienvenida = async ({ email, nombre, password, rol }) => {
             </td>
           </tr>
 
-          <!-- Footer -->
           <tr>
             <td align="center" style="padding-top:24px;">
               <p style="margin:0;font-size:11px;color:#334155;">
@@ -235,7 +230,6 @@ const enviarEmailBienvenida = async ({ email, nombre, password, rol }) => {
               </p>
             </td>
           </tr>
-
         </table>
       </td>
     </tr>
@@ -267,19 +261,28 @@ const enviarEmailCertificado = async (certificado) => {
   const email = certificado.estudiante?.email
   if (!email) return
 
-  const nombre          = certificado.estudiante?.nombre    || ''
-  const apellido        = certificado.estudiante?.apellido  || ''
-  const codigoUnico     = certificado.codigo_unico          || ''
-  const plantillaNombre = certificado.plantilla?.nombre     || ''
+  const nombre = certificado.estudiante?.nombre || ''
+  const apellido = certificado.estudiante?.apellido || ''
+  const codigoUnico = certificado.codigo_unico || ''
+  const plantillaNombre = certificado.plantilla?.nombre || ''
   const institucionNombre = certificado.institucion?.nombre || ''
-  const fechaEmision    = certificado.fecha_emision
+  const fechaEmision = certificado.fecha_emision
 
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
-  const verifyUrl   = `${frontendUrl}/?codigo=${codigoUnico}`
+  const verifyUrl = `${frontendUrl}/?codigo=${codigoUnico}`
 
   const fechaFormato = fechaEmision
     ? new Date(fechaEmision).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
     : new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+
+  const safeNombre = escapeHtml(nombre)
+  const safeApellido = escapeHtml(apellido)
+  const safeCodigoUnico = escapeHtml(codigoUnico)
+  const safePlantillaNombre = escapeHtml(plantillaNombre)
+  const safeInstitucionNombre = escapeHtml(institucionNombre)
+  const safeFechaFormato = escapeHtml(fechaFormato)
+  const safeFrontendUrl = escapeHtml(frontendUrl)
+  const safeVerifyUrl = escapeHtml(verifyUrl)
 
   const html = `
 <!DOCTYPE html>
@@ -294,8 +297,6 @@ const enviarEmailCertificado = async (certificado) => {
     <tr>
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
-
-          <!-- Header -->
           <tr>
             <td align="center" style="padding-bottom:28px;">
               <table cellpadding="0" cellspacing="0">
@@ -310,52 +311,49 @@ const enviarEmailCertificado = async (certificado) => {
             </td>
           </tr>
 
-          <!-- Card -->
           <tr>
             <td style="background:#1e293b;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:40px 36px;">
-
               <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#f8fafc;text-align:center;">
-                ¡Felicitaciones, ${nombre}!
+                ¡Felicitaciones, ${safeNombre}!
               </h1>
+
               <p style="margin:0 0 28px;font-size:14px;color:#94a3b8;text-align:center;">
                 Has recibido un certificado digital verificable
               </p>
 
-              <!-- Divider -->
               <div style="border-top:1px solid rgba(255,255,255,0.07);margin-bottom:24px;"></div>
 
-              <!-- Certificate details -->
               <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(0,240,255,0.05);border:1px solid rgba(0,240,255,0.15);border-radius:10px;margin-bottom:28px;">
                 <tr>
                   <td style="padding:20px 24px;">
                     <p style="margin:0 0 12px;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;">DETALLES DEL CERTIFICADO</p>
+
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
                         <td style="padding:5px 0;font-size:13px;color:#94a3b8;width:110px;">Estudiante</td>
-                        <td style="padding:5px 0;font-size:13px;color:#e2e8f0;font-weight:600;">${nombre} ${apellido}</td>
+                        <td style="padding:5px 0;font-size:13px;color:#e2e8f0;font-weight:600;">${safeNombre} ${safeApellido}</td>
                       </tr>
                       <tr>
                         <td style="padding:5px 0;font-size:13px;color:#94a3b8;">Programa</td>
-                        <td style="padding:5px 0;font-size:13px;color:#e2e8f0;font-weight:600;">${plantillaNombre}</td>
+                        <td style="padding:5px 0;font-size:13px;color:#e2e8f0;font-weight:600;">${safePlantillaNombre}</td>
                       </tr>
                       <tr>
                         <td style="padding:5px 0;font-size:13px;color:#94a3b8;">Institución</td>
-                        <td style="padding:5px 0;font-size:13px;color:#e2e8f0;">${institucionNombre}</td>
+                        <td style="padding:5px 0;font-size:13px;color:#e2e8f0;">${safeInstitucionNombre}</td>
                       </tr>
                       <tr>
                         <td style="padding:5px 0;font-size:13px;color:#94a3b8;">Fecha</td>
-                        <td style="padding:5px 0;font-size:13px;color:#e2e8f0;">${fechaFormato}</td>
+                        <td style="padding:5px 0;font-size:13px;color:#e2e8f0;">${safeFechaFormato}</td>
                       </tr>
                       <tr>
                         <td style="padding:5px 0;font-size:13px;color:#94a3b8;">Código único</td>
-                        <td style="padding:5px 0;font-size:13px;color:#00f0ff;font-family:monospace;font-weight:700;">${codigoUnico}</td>
+                        <td style="padding:5px 0;font-size:13px;color:#00f0ff;font-family:monospace;font-weight:700;">${safeCodigoUnico}</td>
                       </tr>
                     </table>
                   </td>
                 </tr>
               </table>
 
-              <!-- QR Code -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
                 <tr>
                   <td align="center">
@@ -367,11 +365,10 @@ const enviarEmailCertificado = async (certificado) => {
                 </tr>
               </table>
 
-              <!-- CTA Button -->
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="padding-bottom:28px;">
-                    <a href="${verifyUrl}"
+                    <a href="${safeVerifyUrl}"
                        style="display:inline-block;background:#00f0ff;color:#030712;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:8px;letter-spacing:0.3px;">
                       Verificar certificado
                     </a>
@@ -379,17 +376,15 @@ const enviarEmailCertificado = async (certificado) => {
                 </tr>
               </table>
 
-              <!-- Divider -->
               <div style="border-top:1px solid rgba(255,255,255,0.07);margin-bottom:16px;"></div>
 
               <p style="margin:0;font-size:12px;color:#64748b;text-align:center;line-height:1.6;">
-                También puedes verificarlo ingresando el código <span style="color:#00f0ff;font-family:monospace;">${codigoUnico}</span>
-                en <a href="${frontendUrl}" style="color:#00f0ff;">${frontendUrl}</a>
+                También puedes verificarlo ingresando el código <span style="color:#00f0ff;font-family:monospace;">${safeCodigoUnico}</span>
+                en <a href="${safeFrontendUrl}" style="color:#00f0ff;">${safeFrontendUrl}</a>
               </p>
             </td>
           </tr>
 
-          <!-- Footer -->
           <tr>
             <td align="center" style="padding-top:24px;">
               <p style="margin:0;font-size:11px;color:#334155;">
@@ -397,7 +392,6 @@ const enviarEmailCertificado = async (certificado) => {
               </p>
             </td>
           </tr>
-
         </table>
       </td>
     </tr>
@@ -409,7 +403,11 @@ const enviarEmailCertificado = async (certificado) => {
     const [resend, pdfBuffer, qrBuffer] = await Promise.all([
       Promise.resolve(getResend()),
       generarPDFBuffer(certificado),
-      QRCode.toBuffer(verifyUrl, { width: 160, margin: 2, color: { dark: '#111827', light: '#ffffff' } }),
+      QRCode.toBuffer(verifyUrl, {
+        width: 160,
+        margin: 2,
+        color: { dark: '#111827', light: '#ffffff' },
+      }),
     ])
 
     const filename = `certificado-${codigoUnico}.pdf`
@@ -417,7 +415,7 @@ const enviarEmailCertificado = async (certificado) => {
     const { data, error } = await resend.emails.send({
       from: emailFrom(),
       to: resolveRecipient(email),
-      subject: `Tu certificado de ${plantillaNombre} — CertiValidate`,
+      subject: `Tu certificado de ${safePlantillaNombre} — CertiValidate`,
       html,
       attachments: [
         { filename, content: pdfBuffer },
@@ -436,4 +434,8 @@ const enviarEmailCertificado = async (certificado) => {
   }
 }
 
-module.exports = { enviarEmailVerificacion, enviarEmailBienvenida, enviarEmailCertificado }
+module.exports = {
+  enviarEmailVerificacion,
+  enviarEmailBienvenida,
+  enviarEmailCertificado,
+}
