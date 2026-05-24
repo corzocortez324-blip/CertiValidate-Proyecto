@@ -10,6 +10,7 @@ const { buildAccessToken, buildRefreshToken, buildPartialToken, persistRefreshTo
 const { crearSesion } = require('../services/sesion.service')
 const { registrarIntento } = require('../services/intentoLogin.service')
 const { obtenerAccesosUsuario } = require('../utils/authorization')
+const { resolverRolPrincipal } = require('../utils/roles')
 const { getClientIp } = require('../utils/validators')
 
 const ISSUER = 'CertiValidate'
@@ -119,10 +120,7 @@ const verify2FA = async (req, res) => {
     await registrarIntento({ email: usuario.email, ip, exitoso: true })
 
     const accesos = await obtenerAccesosUsuario(usuario.id)
-    const ROL_PRIORIDAD = { admin: 3, editor: 2, lector: 1 }
-    const rolPrincipal = accesos
-      .map((a) => a.rol)
-      .sort((a, b) => (ROL_PRIORIDAD[b] || 0) - (ROL_PRIORIDAD[a] || 0))[0] || null
+    const rolPrincipal = resolverRolPrincipal(accesos)
 
     const { password_hash, token_verificacion, token_verificacion_expira, totp_secret, ...usuarioData } = usuario
     return sendSuccess(res, {

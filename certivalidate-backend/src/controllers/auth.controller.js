@@ -9,6 +9,7 @@ const { getEnv } = require('../utils/env')
 const logger = require('../utils/logger')
 const { enviarEmailVerificacion } = require('../utils/mailer')
 const { obtenerAccesosUsuario } = require('../utils/authorization')
+const { resolverRolPrincipal } = require('../utils/roles')
 const {
   buildAccessToken,
   buildRefreshToken,
@@ -151,10 +152,7 @@ const login = async (req, res) => {
     await crearSesion({ token: refreshToken, usuarioId: usuario.id, ip, userAgent })
 
     const accesos = await obtenerAccesosUsuario(usuario.id)
-    const ROL_PRIORIDAD = { admin: 3, editor: 2, lector: 1 }
-    const rolPrincipal  = accesos
-      .map((a) => a.rol)
-      .sort((a, b) => (ROL_PRIORIDAD[b] || 0) - (ROL_PRIORIDAD[a] || 0))[0] || null
+    const rolPrincipal = resolverRolPrincipal(accesos)
 
     return sendSuccess(
       res,
@@ -388,10 +386,7 @@ const obtenerPerfil = async (req, res) => {
     }
 
     const accesos = await obtenerAccesosUsuario(usuario.id)
-    const ROL_PRIORIDAD = { admin: 3, editor: 2, lector: 1 }
-    const rolPrincipal = accesos
-      .map((a) => a.rol)
-      .sort((a, b) => (ROL_PRIORIDAD[b] || 0) - (ROL_PRIORIDAD[a] || 0))[0] || null
+    const rolPrincipal = resolverRolPrincipal(accesos)
 
     return sendSuccess(res, { ...formatUsuario(usuario), rol: rolPrincipal }, 'Perfil obtenido correctamente', 200)
   } catch (error) {

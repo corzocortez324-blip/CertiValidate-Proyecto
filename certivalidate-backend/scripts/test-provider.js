@@ -1,6 +1,6 @@
 require('dotenv').config()
 
-const provider = require('./services/academic-provider.service')
+const provider = require('../src/services/academic-provider.service')
 
 async function test() {
   try {

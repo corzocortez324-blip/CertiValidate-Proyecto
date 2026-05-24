@@ -207,16 +207,14 @@ const cleanupTestData = async () => {
     // 11. IntentoLogin (sin FK)
     // Incluir IP de loopback: tests usan emails fijos sin TEST_PREFIX
     // (ej. 'noexiste@certivalidate.test') que acumulan intentos entre runs.
-    await prisma.intentoLogin.deleteMany({
-      where: {
-        OR: [
-          { email: { startsWith: TEST_PREFIX } },
-          { ip_address: '127.0.0.1' },
-          { ip_address: '::ffff:127.0.0.1' },
-          { ip_address: '::1' },
-        ],
-      },
-    })
+await prisma.intentoLogin.deleteMany({
+  where: {
+    OR: [
+      { email: { startsWith: TEST_PREFIX } },
+      { email: { endsWith: '@certivalidate.test' } },
+    ],
+  },
+})
 
     // 12. UsuarioInstitucion → Usuario + Institucion + Rol (antes de Institucion)
     await prisma.usuarioInstitucion.deleteMany({

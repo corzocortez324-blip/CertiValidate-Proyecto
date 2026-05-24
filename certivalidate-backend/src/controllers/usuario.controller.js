@@ -4,6 +4,7 @@ const prisma = require('../utils/prisma')
 const { registrarAuditoria } = require('../utils/auditoria')
 const { getClientIp } = require('../utils/validators')
 const { enviarEmailBienvenida } = require('../utils/mailer')
+const { resolverRolPrincipal } = require('../utils/roles')
 const logger = require('../utils/logger')
 
 async function validarDominioInstitucional(email, institucionId) {
@@ -31,10 +32,7 @@ const resolverRol = async (usuarioId) => {
     where: { usuario_id: usuarioId },
     include: { rol: true },
   })
-  const ROL_PRIORIDAD = { admin: 3, editor: 2, lector: 1 }
-  return accesos
-    .map((a) => a.rol.nombre)
-    .sort((a, b) => (ROL_PRIORIDAD[b] || 0) - (ROL_PRIORIDAD[a] || 0))[0] || null
+  return resolverRolPrincipal(accesos.map((a) => ({ rol: a.rol.nombre })))
 }
 
 const listarUsuarios = async (req, res) => {
@@ -66,11 +64,8 @@ const listarUsuarios = async (req, res) => {
       prisma.usuario.count({ where }),
     ])
 
-    const ROL_PRIORIDAD = { admin: 3, editor: 2, lector: 1 }
     const resultado = usuarios.map((u) => {
-      const rolPrincipal = u.instituciones
-        .map((i) => i.rol.nombre)
-        .sort((a, b) => (ROL_PRIORIDAD[b] || 0) - (ROL_PRIORIDAD[a] || 0))[0] || null
+      const rolPrincipal = resolverRolPrincipal(u.instituciones.map((i) => ({ rol: i.rol.nombre })))
       return formatUsuario(u, rolPrincipal)
     })
 

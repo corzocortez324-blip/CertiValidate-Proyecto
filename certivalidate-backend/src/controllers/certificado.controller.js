@@ -98,28 +98,28 @@ const emitirCertificado = async (req, res) => {
     let proveedorUsado = providerFinal
     let fallbackUsado = false
 
-   try {
-  if (providerFinal === 'external-api') {
-    estudiante = await academicProvider.buscarEstudiante({
-      provider: 'external-api',
-      documento: documento_estudiante,
-      institucionId: institucion_id,
-    })
-  } else {
-    if (documento_estudiante) {
-      estudiante = await academicProvider.buscarEstudiante({
-        provider: 'local-db',
-        documento: documento_estudiante,
-        institucionId: institucion_id,
-      })
-    }
+    try {
+      if (providerFinal === 'external-api') {
+        estudiante = await academicProvider.buscarEstudiante({
+          provider: 'external-api',
+          documento: documento_estudiante,
+          institucionId: institucion_id,
+        })
+      } else {
+        if (documento_estudiante) {
+          estudiante = await academicProvider.buscarEstudiante({
+            provider: 'local-db',
+            documento: documento_estudiante,
+            institucionId: institucion_id,
+          })
+        }
 
-    if (!estudiante && estudiante_id) {
-      estudiante = await prisma.estudiante.findUnique({
-        where: { id: estudiante_id },
-      })
-    }
-  }
+        if (!estudiante && estudiante_id) {
+          estudiante = await prisma.estudiante.findUnique({
+            where: { id: estudiante_id },
+          })
+        }
+      }
     } catch (error) {
       // Si es un provider no implementado (501), propagar directamente
       if (error.statusCode === 501) {

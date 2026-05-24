@@ -23,6 +23,7 @@ const sendError = (
     success: false,
     statusCode,
     message,
+    error: message,
     ...(errors && { errors }),
     timestamp: new Date().toISOString(),
   })

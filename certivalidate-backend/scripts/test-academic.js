@@ -3,7 +3,7 @@ require('dotenv').config()
 console.log('Probando conexión con Academic API...')
 console.log('ACADEMIC_API_URL:', process.env.ACADEMIC_API_URL)
 
-const academicApi = require('./services/academic-api.service')
+const academicApi = require('../src/services/academic-api.service')
 
 async function test() {
   try {
