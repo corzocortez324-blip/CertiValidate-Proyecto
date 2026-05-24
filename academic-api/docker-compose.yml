@@ -1,0 +1,14 @@
+services:
+  academic-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: academic
+      POSTGRES_PASSWORD: academic
+      POSTGRES_DB: academic_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - academic_pgdata:/var/lib/postgresql/data
+
+volumes:
+  academic_pgdata:
