@@ -1,0 +1,276 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Institucion {
+  id            String                 @id @default(uuid())
+  nombre        String
+  dominio       String?
+  logo_url      String?
+  activa        Boolean                @default(true)
+  created_at    DateTime               @default(now())
+  auditorias    Auditoria[]
+  certificados  Certificado[]
+  estudiantes   Estudiante[]
+  integraciones Integracion[]
+  plantillas    PlantillaCertificado[]
+  usuarios      UsuarioInstitucion[]
+}
+
+model Usuario {
+  id                        String               @id @default(uuid())
+  nombre                    String
+  apellido                  String
+  email                     String               @unique
+  password_hash             String
+  activo                    Boolean              @default(true)
+  ultimo_acceso             DateTime?
+  created_at                DateTime             @default(now())
+  updated_at                DateTime?
+  deleted_at                DateTime?
+  email_verificado          Boolean              @default(false)
+  token_verificacion        String?
+  token_verificacion_expira DateTime?
+  totp_secret               String?
+  totp_enabled              Boolean              @default(false)
+  auditorias                Auditoria[]
+  refreshTokens             RefreshToken[]
+  revocaciones              Revocacion[]
+  sesiones                  SesionActiva[]
+  instituciones             UsuarioInstitucion[]
+}
+
+model UsuarioInstitucion {
+  id             String      @id @default(uuid())
+  usuario_id     String
+  institucion_id String
+  rol_id         String
+  created_at     DateTime    @default(now())
+  institucion    Institucion @relation(fields: [institucion_id], references: [id])
+  rol            Rol         @relation(fields: [rol_id], references: [id])
+  usuario        Usuario     @relation(fields: [usuario_id], references: [id])
+
+  @@unique([usuario_id, institucion_id])
+  @@index([usuario_id])
+  @@index([institucion_id])
+}
+
+model Rol {
+  id          String               @id @default(uuid())
+  nombre      String               @unique
+  descripcion String?
+  permisos    RolPermiso[]
+  usuarios    UsuarioInstitucion[]
+}
+
+model Permiso {
+  id      String       @id @default(uuid())
+  recurso String
+  accion  String
+  roles   RolPermiso[]
+
+  @@unique([recurso, accion])
+}
+
+model RolPermiso {
+  rol_id     String
+  permiso_id String
+  permiso    Permiso @relation(fields: [permiso_id], references: [id])
+  rol        Rol     @relation(fields: [rol_id], references: [id])
+
+  @@id([rol_id, permiso_id])
+}
+
+/// Modelo planificado — integraciones con LMS externos (Moodle, Canvas, etc.).
+/// No expuesto en ningún endpoint aún. Mantener en schema para no perder la migración.
+/// api_key se almacena cifrada con AES-256-GCM. Leer con src/utils/crypto.js decrypt() antes de usar.
+model Integracion {
+  id                  String      @id @default(uuid())
+  institucion_id      String
+  tipo                String
+  url_base            String?
+  api_key             String?
+  activa              Boolean     @default(true)
+  ultima_verificacion DateTime?
+  institucion         Institucion @relation(fields: [institucion_id], references: [id])
+}
+
+/// ///////////////////////
+/// ///////////////////////
+model Estudiante {
+  id             String        @id @default(uuid())
+  institucion_id String
+  nombre         String
+  apellido       String
+  documento      String
+  email          String?
+  created_at     DateTime      @default(now())
+  certificados   Certificado[]
+  institucion    Institucion   @relation(fields: [institucion_id], references: [id])
+
+  @@unique([institucion_id, documento])
+  @@index([institucion_id])
+}
+
+model PlantillaCertificado {
+  id             String        @id @default(uuid())
+  institucion_id String
+  nombre         String
+  template_html  String
+  version        Int
+  activa         Boolean       @default(true)
+  created_at     DateTime      @default(now())
+  certificados   Certificado[]
+  institucion    Institucion   @relation(fields: [institucion_id], references: [id])
+
+  @@index([institucion_id])
+}
+
+/// Unicidad de negocio validada a nivel de aplicación en emitirCertificado:
+/// no se permite emitir si ya existe un certificado vigente (estado != revocado) para el mismo
+/// estudiante+plantilla. Un constraint @@unique([estudiante_id, plantilla_id]) a nivel de BD
+/// no aplica porque el mismo estudiante puede recibir el mismo certificado tras revocar el anterior.
+model Certificado {
+  id               String                  @id @default(uuid())
+  estudiante_id    String
+  institucion_id   String
+  plantilla_id     String
+  codigo_unico     String                  @unique
+  estado           String
+  fecha_emision    DateTime
+  fecha_expiracion DateTime?
+  pdf_url          String?
+  hash_sha256      String?
+  created_at       DateTime                @default(now())
+  deleted_at       DateTime?
+  blockchain       BlockchainTransaccion[]
+  estudiante       Estudiante              @relation(fields: [estudiante_id], references: [id])
+  institucion      Institucion             @relation(fields: [institucion_id], references: [id])
+  plantilla        PlantillaCertificado    @relation(fields: [plantilla_id], references: [id])
+  metadata         CertificadoMetadata[]
+  revocaciones     Revocacion[]
+  verificaciones   VerificacionPublica[]
+
+  @@index([institucion_id])
+  @@index([estudiante_id])
+  @@index([estado])
+  @@index([institucion_id, estado])
+}
+
+/// Modelo planificado — campos dinámicos por certificado (ej. calificación, horas).
+/// No expuesto en ningún endpoint aún. Requiere definir el contrato de claves antes de activar.
+model CertificadoMetadata {
+  id             String      @id @default(uuid())
+  certificado_id String
+  clave          String
+  valor          String
+  certificado    Certificado @relation(fields: [certificado_id], references: [id])
+
+  @@index([certificado_id])
+}
+
+model Revocacion {
+  id               String      @id @default(uuid())
+  certificado_id   String
+  revocado_por     String
+  motivo_codigo    String
+  motivo_detalle   String?
+  fecha_revocacion DateTime
+  certificado      Certificado @relation(fields: [certificado_id], references: [id])
+  usuario          Usuario     @relation(fields: [revocado_por], references: [id])
+
+  @@index([certificado_id])
+}
+
+model VerificacionPublica {
+  id             BigInt      @id @default(autoincrement())
+  certificado_id String
+  ip             String?
+  user_agent     String?
+  resultado      String
+  fecha          DateTime    @default(now())
+  metodo         String?     @default("codigo")
+  certificado    Certificado @relation(fields: [certificado_id], references: [id])
+
+  @@index([certificado_id])
+  @@index([fecha])
+}
+
+/// Modelo planificado — anclaje de hashes de certificados en blockchain (Ethereum/Polygon).
+/// No expuesto en ningún endpoint aún. La lógica de firma está pendiente de implementar.
+model BlockchainTransaccion {
+  id             String      @id @default(uuid())
+  certificado_id String
+  hash           String?
+  tx_hash        String?
+  red            String
+  estado         String
+  intentos       Int         @default(0)
+  error_mensaje  String?
+  created_at     DateTime    @default(now())
+  confirmado_en  DateTime?
+  certificado    Certificado @relation(fields: [certificado_id], references: [id])
+}
+
+model RefreshToken {
+  id            String    @id @default(uuid())
+  usuario_id    String
+  token_hash    String    @unique
+  expires_at    DateTime
+  revoked_at    DateTime?
+  created_by_ip String?
+  user_agent    String?
+  created_at    DateTime  @default(now())
+  usuario       Usuario   @relation(fields: [usuario_id], references: [id])
+
+  @@index([usuario_id, revoked_at])
+  @@index([expires_at])
+}
+
+model IntentoLogin {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email      String
+  ip_address String?
+  exitoso    Boolean  @default(false)
+  fecha      DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([email, fecha(sort: Desc)], map: "idx_intento_login_email_fecha")
+  @@index([ip_address, fecha(sort: Desc)], map: "idx_intento_login_ip_fecha")
+}
+
+model SesionActiva {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuario_id String
+  token_hash String   @unique
+  ip         String?
+  user_agent String?
+  expires_at DateTime @db.Timestamptz(6)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  usuario    Usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expires_at], map: "idx_sesion_activa_expires")
+  @@index([usuario_id], map: "idx_sesion_activa_usuario")
+}
+
+model Auditoria {
+  id              BigInt       @id @default(autoincrement())
+  usuario_id      String
+  accion          String
+  entidad         String
+  entidad_id      String
+  valores_antes   String?
+  valores_despues String?
+  ip              String?
+  fecha           DateTime     @default(now())
+  institucion_id  String?
+  institucion     Institucion? @relation(fields: [institucion_id], references: [id])
+  usuario         Usuario      @relation(fields: [usuario_id], references: [id])
+
+  @@index([institucion_id, fecha])
+  @@index([entidad, entidad_id])
+  @@index([usuario_id])
+}

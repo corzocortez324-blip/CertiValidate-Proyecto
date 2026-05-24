@@ -1,0 +1,588 @@
+/* CertificadosPage */
+
+.cert-filters { flex-wrap: nowrap; }
+.cert-filters .search-input { min-width: 0; flex: 1; }
+
+.cert-code-col {
+  font-family: monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+}
+
+.cert-plantilla-col { font-size: 0.85rem; }
+
+.cert-detail-code {
+  font-family: monospace;
+  font-size: 1rem;
+  color: var(--color-primary);
+}
+
+.cert-hash-label {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.cert-preview-container {
+  background: #fff;
+  color: #1a1a1a;
+  padding: 2rem;
+  border-radius: var(--radius-md);
+  min-height: 200px;
+  overflow-x: auto;
+}
+
+.cert-preview-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.75rem;
+}
+
+/* QR section in detail modal */
+.cert-qr-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+}
+
+.cert-qr-wrap {
+  background: #fff;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+}
+
+.cert-qr-hint {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.cert-qr-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+}
+
+/* Fila revocada en tabla */
+tr.row-revoked td {
+  background: rgba(239, 68, 68, 0.06);
+  color: rgba(249, 250, 251, 0.65);
+}
+
+/* Banner de revocado en modal */
+.revoked-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: var(--radius-sm);
+  color: #fca5a5;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Detalle de revocación */
+.revoc-loading {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  padding: 0.5rem 0;
+}
+
+.revoc-detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.revoc-detail-card {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.revoc-detail-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.84rem;
+}
+
+.revoc-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+.revoc-value {
+  color: var(--color-text-main);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.revoc-motivo {
+  font-weight: 600;
+  color: #fca5a5;
+  text-transform: capitalize;
+}
+
+/* Código + botón copiar en misma fila */
+.cert-code-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.2rem;
+}
+
+/* Botón copiar */
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.copy-btn:hover { color: var(--color-text-main); border-color: var(--color-primary); }
+.copy-btn.copied { color: var(--color-success); border-color: var(--color-success); }
+
+/* Enlace al portal */
+.verify-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 0.4rem 0;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.verify-link-btn:hover { opacity: 1; text-decoration: underline; }
+
+/* Toggle info técnica */
+.tech-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.tech-toggle-btn:hover { color: var(--color-text-main); border-color: var(--color-text-muted); }
+
+/* Sección técnica */
+.tech-info-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.tech-info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.tech-info-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+.hash-display {
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: var(--color-text-main);
+  word-break: break-all;
+  opacity: 0.85;
+}
+.text-mono {
+  font-family: monospace;
+  font-size: 0.82rem;
+}
+
+/* Sección blockchain en detalle */
+.cert-blockchain-section {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cert-blockchain-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(16,185,129,0.15);
+  color: #34d399;
+  border: 1px solid rgba(16,185,129,0.3);
+  width: fit-content;
+}
+
+.cert-blockchain-pending {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(245,158,11,0.1);
+  color: #fbbf24;
+  border: 1px solid rgba(245,158,11,0.25);
+  width: fit-content;
+}
+
+.cert-blockchain-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.1rem;
+}
+
+/* Timeline de eventos */
+.cert-timeline-section {
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem 0;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.timeline-line-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.timeline-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.timeline-connector {
+  width: 2px;
+  flex: 1;
+  min-height: 10px;
+  background: var(--color-border);
+  margin-top: 2px;
+}
+
+.timeline-content {
+  flex: 1;
+  padding-bottom: 0.9rem;
+}
+
+.timeline-date {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  margin: 2px 0 0.1rem;
+}
+
+.timeline-label {
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin: 0 0 0.1rem;
+  color: var(--color-text-main);
+}
+
+.timeline-sub {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.timeline-dot--emision {
+  background: rgba(0, 240, 255, 0.12);
+  color: var(--color-primary);
+  border: 1.5px solid rgba(0, 240, 255, 0.25);
+}
+
+.timeline-dot--verificacion {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1.5px solid rgba(16, 185, 129, 0.25);
+}
+
+.timeline-dot--revocacion {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  border: 1.5px solid rgba(239, 68, 68, 0.25);
+}
+
+/* ── Modal de previsualización y confirmación (T-29) ─────────────── */
+.pcm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(3, 7, 18, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.pcm-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1050px;
+  max-height: 92vh;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.pcm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.pcm-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text-main);
+}
+
+.pcm-close {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s;
+}
+.pcm-close:hover { color: var(--color-text-main); }
+
+.pcm-body {
+  flex: 1;
+  overflow: auto;
+  background: rgba(255, 255, 255, 0.02);
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pcm-iframe {
+  width: 100%;
+  flex: 1;
+  min-height: 560px;
+  border: none;
+  background: #fff;
+}
+
+.pcm-no-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  flex: 1;
+}
+
+/* Loading skeleton */
+.pcm-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 2rem;
+  flex: 1;
+}
+
+.pcm-skeleton-bar {
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 75%);
+  background-size: 200% 100%;
+  animation: pcm-shimmer 1.4s infinite;
+}
+
+.pcm-skeleton-rect {
+  height: 220px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 75%);
+  background-size: 200% 100%;
+  animation: pcm-shimmer 1.4s infinite;
+  margin-top: 0.5rem;
+}
+
+@keyframes pcm-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Advertencia */
+.pcm-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(245, 158, 11, 0.08);
+  border-top: 1px solid rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.pcm-warning svg { flex-shrink: 0; margin-top: 0.1rem; }
+
+/* Footer del modal */
+.pcm-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* ── T-75: Revocación detalle mejorado ──────────────────────────── */
+.revoc-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.revoc-header-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  flex: 1;
+}
+
+.revoc-print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.revoc-print-btn:hover { color: var(--color-text-main); border-color: rgba(255,255,255,0.28); }
+
+.revoc-user-row { align-items: flex-start; }
+
+.revoc-user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.revoc-user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.18);
+  border: 1.5px solid rgba(99, 102, 241, 0.4);
+  color: #818cf8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.revoc-user-email {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.1rem;
+}
+
+@media print {
+  .sidebar, .page-toolbar, .page-header button,
+  .modal-overlay > *:not(.detail-col) { display: none !important; }
+  .detail-col { padding: 0; }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+/* Preview modal: más compacto en móvil */
+@media (max-width: 600px) {
+  .pcm-overlay { padding: 0; align-items: flex-end; }
+  .pcm-dialog { max-height: 96vh; border-radius: var(--radius-md) var(--radius-md) 0 0; }
+  .pcm-iframe { min-height: 320px; }
+  .pcm-footer { padding: 0.75rem 1rem; gap: 0.5rem; }
+  .pcm-footer button { flex: 1; }
+}
+
+/* Ocultar columnas secundarias de tabla en móvil */
+@media (max-width: 640px) {
+  .cert-plantilla-col,
+  th:nth-child(4), td:nth-child(4) { display: none; }
+}
+
+/* Timeline en pantallas pequeñas */
+@media (max-width: 400px) {
+  .timeline-content { min-width: 0; overflow: hidden; }
+  .timeline-label { font-size: 0.82rem; }
+  .revoc-label { min-width: 90px; font-size: 0.7rem; }
+}

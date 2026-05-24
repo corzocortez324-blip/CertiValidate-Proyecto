@@ -1,0 +1,194 @@
+.integraciones-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Info banner ──────────────────────────────────────────────── */
+.integ-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: var(--radius-sm);
+  font-size: 0.83rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.integ-info-icon { color: #6366f1; flex-shrink: 0; margin-top: 0.15rem; }
+
+/* ── Loading ──────────────────────────────────────────────────── */
+.integ-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem;
+  color: var(--color-text-muted);
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Cards grid ───────────────────────────────────────────────── */
+.integraciones-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+/* ── Integration card ─────────────────────────────────────────── */
+.integ-card {
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  border-radius: var(--radius-md);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.integ-card--online   { border-color: rgba(16, 185, 129, 0.2); }
+.integ-card--degraded { border-color: rgba(245, 158, 11, 0.2); }
+.integ-card--offline  { border-color: rgba(239, 68, 68, 0.2); }
+.integ-card--unknown  { border-color: rgba(107, 114, 128, 0.2); }
+
+/* Card header */
+.integ-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.integ-card-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.integ-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.integ-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.integ-domain {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.integ-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Uptime chart ─────────────────────────────────────────────── */
+.integ-uptime-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.integ-uptime-chart {
+  display: flex;
+  gap: 2px;
+  height: 28px;
+  align-items: flex-end;
+}
+
+.integ-uptime-bar {
+  flex: 1;
+  height: 100%;
+  border-radius: 2px;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+
+.integ-uptime-bar:hover { opacity: 1; }
+
+.integ-uptime-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.integ-uptime-hint {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.integ-uptime-pct {
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ── Footer ───────────────────────────────────────────────────── */
+.integ-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.integ-last-tested {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.btn-test-conexion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-main);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn-test-conexion:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.btn-test-conexion:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

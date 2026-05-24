@@ -1,0 +1,565 @@
+.usuarios-page { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* Toolbar */
+.usuarios-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.usuarios-count {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+/* Search bar */
+.usuarios-search-wrap {
+  position: relative;
+  max-width: 380px;
+}
+
+.search-ico {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.usuarios-search {
+  width: 100%;
+  padding: 0.65rem 1rem 0.65rem 2.4rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-main);
+  font-size: 0.9rem;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.usuarios-search::placeholder { color: rgba(156, 163, 175, 0.5); }
+.usuarios-search:focus { border-color: var(--color-primary); }
+
+/* Grid */
+.usuarios-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 700px) { .usuarios-grid { grid-template-columns: 1fr; } }
+
+/* Card */
+.usuario-card {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  text-align: center;
+}
+
+.uc-actions {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.uc-action-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0.3rem;
+  display: flex;
+  transition: all 0.15s;
+}
+
+.uc-action-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(0, 240, 255, 0.06);
+}
+
+.uc-action-btn.danger:hover {
+  border-color: var(--color-error);
+  color: var(--color-error);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.uc-avatar-wrap { margin-bottom: 0.25rem; margin-top: 0.5rem; }
+
+.uc-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+
+.uc-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.uc-email {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.uc-role-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+}
+
+.uc-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.uc-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* Empty state */
+.usuarios-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem;
+  color: var(--color-text-muted);
+}
+
+/* New user button */
+.btn-nuevo-usuario {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: var(--color-primary);
+  color: #030712;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  transition: background 0.2s;
+}
+
+.btn-nuevo-usuario:hover { background: var(--color-primary-hover); }
+
+/* Form helpers now in AdminLayout.css (shared) */
+
+
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--color-text-main);
+  padding: 0.65rem 0;
+}
+
+.toggle-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; }
+
+.modal-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.btn-primary, .btn-secondary, .btn-danger {
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: var(--font-sans);
+  transition: all 0.15s;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #030712;
+}
+.btn-primary:hover:not(:disabled) { background: var(--color-primary-hover); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.btn-secondary:hover { background: rgba(255, 255, 255, 0.1); color: var(--color-text-main); }
+
+.btn-danger {
+  background: var(--color-error);
+  color: #fff;
+}
+.btn-danger:hover { background: #dc2626; }
+
+.req { color: var(--color-error); }
+
+
+/* Tabla de usuarios */
+.usuarios-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.usuarios-table-wrap {
+  overflow-x: auto;
+}
+
+.usuarios-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.usuarios-table th {
+  text-align: left;
+  padding: 0.7rem 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.usuarios-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: middle;
+}
+
+.usuarios-table tr:last-child td { border-bottom: none; }
+
+.usuarios-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.ut-name { font-weight: 600; color: var(--color-text-main); }
+.ut-email { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 2px; }
+
+.ut-role-badge {
+  display: inline-block;
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.ut-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.ut-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+.ut-date { font-size: 0.8rem; color: var(--color-text-muted); white-space: nowrap; }
+
+.ut-actions { display: flex; gap: 0.35rem; align-items: center; }
+
+/* Toggle estado en tabla */
+.btn-toggle-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid;
+  background: transparent;
+  font-family: var(--font-sans);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-toggle-estado.activar {
+  color: var(--color-success);
+  border-color: rgba(16,185,129,0.4);
+}
+.btn-toggle-estado.activar:hover { background: rgba(16,185,129,0.1); }
+.btn-toggle-estado.desactivar {
+  color: #f59e0b;
+  border-color: rgba(245,158,11,0.4);
+}
+.btn-toggle-estado.desactivar:hover { background: rgba(245,158,11,0.08); }
+
+/* ── Checkboxes de rol (T-13) ─────────────────────────── */
+.role-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.role-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+  user-select: none;
+}
+
+.role-checkbox-row:hover:not(.role-checkbox-row--disabled) {
+  border-color: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.03);
+}
+
+.role-checkbox-row--checked { box-shadow: 0 0 0 1px inset rgba(255,255,255,0.05); }
+
+.role-checkbox-row--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Ocultar el radio nativo */
+.role-radio-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Indicador visual de checkbox */
+.role-checkbox-indicator {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.role-checkbox-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.role-checkbox-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.role-checkbox-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: color 0.15s;
+}
+
+.role-checkbox-desc {
+  font-size: 0.74rem;
+  color: var(--color-text-muted);
+}
+
+/* Tooltip trigger */
+.role-info-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.role-info-icon {
+  color: var(--color-text-muted);
+  cursor: help;
+  transition: color 0.15s;
+}
+
+.role-info-wrap:hover .role-info-icon { color: var(--color-text-main); }
+
+/* Tooltip */
+.role-tooltip {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 200;
+  background: #1e2235;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+  min-width: 210px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+
+.role-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  right: 6px;
+  width: 10px;
+  height: 10px;
+  background: #1e2235;
+  border-right: 1px solid rgba(255,255,255,0.12);
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  transform: rotate(45deg);
+}
+
+.role-tooltip-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-muted);
+  margin: 0 0 0.45rem;
+}
+
+.role-tooltip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.role-tooltip-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--color-text-main);
+}
+
+.role-tooltip-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+/* ── Modal de confirmación de cambio de rol ───────────── */
+.rol-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  background: rgba(3,7,18,0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.rol-confirm-dialog {
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+  border-radius: var(--radius-md);
+}
+
+.rol-confirm-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.25rem;
+}
+
+.rol-confirm-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.rol-confirm-body {
+  font-size: 0.88rem;
+  color: var(--color-text-main);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.rol-confirm-warning {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.rol-confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  width: 100%;
+  justify-content: center;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+/* Filtros: apilar en móvil */
+@media (max-width: 600px) {
+  .usuarios-filters { flex-direction: column; align-items: stretch; }
+  .usuarios-filters .search-input,
+  .usuarios-filters select { width: 100%; min-width: 0; }
+  .usuarios-search-wrap { max-width: 100%; }
+}
+
+/* Tabla: ocultar columnas secundarias en móvil */
+@media (max-width: 640px) {
+  .usuarios-table th:nth-child(3),
+  .usuarios-table td:nth-child(3),
+  .usuarios-table th:nth-child(4),
+  .usuarios-table td:nth-child(4) { display: none; }
+  .usuarios-table th, .usuarios-table td { padding: 0.6rem 0.75rem; font-size: 0.82rem; }
+}
+
+@media (max-width: 440px) {
+  .btn-toggle-estado span { display: none; }
+  .btn-toggle-estado { padding: 0.25rem 0.4rem; }
+}
