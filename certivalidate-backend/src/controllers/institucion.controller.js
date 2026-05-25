@@ -3,6 +3,20 @@ const prisma = require('../utils/prisma')
 const { getRolByNombre } = require('../utils/roles')
 const logger = require('../utils/logger')
 
+const assertNoForbiddenFields = (req, res, fields) => {
+  const attempted = fields.find((field) => field in req.body)
+
+  if (attempted) {
+    return sendError(
+      res,
+      `No autorizado para modificar el campo ${attempted}`,
+      403,
+    )
+  }
+
+  return null
+}
+
 // Listar instituciones
 const listarInstituciones = async (req, res) => {
   try {
@@ -83,10 +97,22 @@ const obtenerInstitucion = async (req, res) => {
 // Crear institución
 const crearInstitucion = async (req, res) => {
   try {
+    const forbiddenResponse = assertNoForbiddenFields(req, res, [
+      'created_at',
+      'updated_at',
+      'deleted_at',
+    ])
+
+    if (forbiddenResponse) return forbiddenResponse
+
     const { nombre, dominio, logo_url, activa } = req.body
 
     if (!nombre) {
-      return sendError(res, 'El nombre de la institución es obligatorio', 400)
+      return sendError(
+        res,
+        'El nombre de la institución es obligatorio',
+        400,
+      )
     }
 
     const rolAdmin = await getRolByNombre('admin')
@@ -97,7 +123,10 @@ const crearInstitucion = async (req, res) => {
           nombre,
           dominio: dominio || null,
           logo_url: logo_url || null,
-          activa: typeof activa === 'boolean' ? activa : true,
+          activa:
+            typeof activa === 'boolean'
+              ? activa
+              : true,
         },
       })
 
@@ -119,7 +148,11 @@ const crearInstitucion = async (req, res) => {
       201,
     )
   } catch (error) {
-    logger.error({ err: error, requestId: req.requestId }, 'Error en crearInstitucion')
+    logger.error(
+      { err: error, requestId: req.requestId },
+      'Error en crearInstitucion',
+    )
+
     return sendError(res, 'Error al crear institución', 500)
   }
 }
@@ -127,21 +160,38 @@ const crearInstitucion = async (req, res) => {
 // Actualizar institución
 const actualizarInstitucion = async (req, res) => {
   try {
+    const forbiddenResponse = assertNoForbiddenFields(req, res, [
+      'created_at',
+      'updated_at',
+      'deleted_at',
+    ])
+
+    if (forbiddenResponse) return forbiddenResponse
+
     const { id } = req.params
     const { nombre, dominio, logo_url, activa } = req.body
 
     if (!id) {
-      return sendError(res, 'ID de la institución es obligatorio', 400)
+      return sendError(
+        res,
+        'ID de la institución es obligatorio',
+        400,
+      )
     }
 
     const institucionIds = req.institucionIds
 
-    const institucionExistente = await prisma.institucion.findUnique({
-      where: { id },
-    })
+    const institucionExistente =
+      await prisma.institucion.findUnique({
+        where: { id },
+      })
 
     if (!institucionExistente) {
-      return sendError(res, 'Institución no encontrada', 404)
+      return sendError(
+        res,
+        'Institución no encontrada',
+        404,
+      )
     }
 
     if (!institucionIds.includes(id)) {
@@ -152,17 +202,29 @@ const actualizarInstitucion = async (req, res) => {
       )
     }
 
-    const institucionActualizada = await prisma.institucion.update({
-      where: { id },
-      data: {
-        nombre: nombre || institucionExistente.nombre,
-        dominio: dominio !== undefined ? dominio : institucionExistente.dominio,
-        logo_url:
-          logo_url !== undefined ? logo_url : institucionExistente.logo_url,
-        activa:
-          typeof activa === 'boolean' ? activa : institucionExistente.activa,
-      },
-    })
+    const institucionActualizada =
+      await prisma.institucion.update({
+        where: { id },
+        data: {
+          nombre:
+            nombre || institucionExistente.nombre,
+
+          dominio:
+            dominio !== undefined
+              ? dominio
+              : institucionExistente.dominio,
+
+          logo_url:
+            logo_url !== undefined
+              ? logo_url
+              : institucionExistente.logo_url,
+
+          activa:
+            typeof activa === 'boolean'
+              ? activa
+              : institucionExistente.activa,
+        },
+      })
 
     return sendSuccess(
       res,
@@ -171,8 +233,16 @@ const actualizarInstitucion = async (req, res) => {
       200,
     )
   } catch (error) {
-    logger.error({ err: error, requestId: req.requestId }, 'Error en actualizarInstitucion')
-    return sendError(res, 'Error al actualizar institución', 500)
+    logger.error(
+      { err: error, requestId: req.requestId },
+      'Error en actualizarInstitucion',
+    )
+
+    return sendError(
+      res,
+      'Error al actualizar institución',
+      500,
+    )
   }
 }
 
