@@ -71,8 +71,8 @@ const register = async (req, res) => {
 
 if (process.env.NODE_ENV !== 'test') {
   await enviarEmailVerificacion({
-    email: usuario.email,
-    nombre: usuario.nombre,
+    email: nuevoUsuario.email,
+    nombre: nuevoUsuario.nombre,
     token: tokenVerificacion,
   })
 }
@@ -268,10 +268,13 @@ const actualizarPerfil = async (req, res) => {
       return sendError(res, 'Usuario no encontrado', 404)
     }
 
-    if (email && email !== usuarioExistente.email) {
+    const emailCambiado = Boolean(email && email !== usuarioExistente.email)
+
+    if (emailCambiado) {
       const usuarioEmail = await prisma.usuario.findUnique({
         where: { email },
       })
+
       if (usuarioEmail) {
         return sendError(res, 'El email ya está en uso', 409)
       }
@@ -281,7 +284,16 @@ const actualizarPerfil = async (req, res) => {
       nombre: usuarioExistente.nombre,
       apellido: usuarioExistente.apellido,
       email: usuarioExistente.email,
+      email_verificado: usuarioExistente.email_verificado,
     })
+
+    const tokenVerificacion = emailCambiado
+      ? crypto.randomBytes(32).toString('hex')
+      : usuarioExistente.token_verificacion
+
+    const expira = emailCambiado
+      ? new Date(Date.now() + 24 * 60 * 60 * 1000)
+      : usuarioExistente.token_verificacion_expira
 
     const usuarioActualizado = await prisma.usuario.update({
       where: { id: usuarioId },
@@ -289,9 +301,27 @@ const actualizarPerfil = async (req, res) => {
         nombre: nombre || usuarioExistente.nombre,
         apellido: apellido !== undefined ? apellido : usuarioExistente.apellido,
         email: email || usuarioExistente.email,
+        ...(emailCambiado && {
+          email_verificado: false,
+          token_verificacion: tokenVerificacion,
+          token_verificacion_expira: expira,
+        }),
         updated_at: new Date(),
       },
     })
+
+    if (emailCambiado) {
+      await revokeAllUserRefreshTokens(usuarioId)
+      await eliminarTodasSesiones(usuarioId)
+
+      if (process.env.NODE_ENV !== 'test') {
+        await enviarEmailVerificacion({
+          email: usuarioActualizado.email,
+          nombre: usuarioActualizado.nombre,
+          token: tokenVerificacion,
+        })
+      }
+    }
 
     await registrarAuditoria(
       prisma,
@@ -304,11 +334,17 @@ const actualizarPerfil = async (req, res) => {
         nombre: usuarioActualizado.nombre,
         apellido: usuarioActualizado.apellido,
         email: usuarioActualizado.email,
+        email_verificado: usuarioActualizado.email_verificado,
+        sesiones_revocadas: emailCambiado,
       }),
       getClientIp(req),
     )
 
-    return sendSuccess(res, formatUsuario(usuarioActualizado), 'Perfil actualizado correctamente', 200)
+    const mensaje = emailCambiado
+      ? 'Email actualizado. Verifica el nuevo correo. Tus sesiones se han cerrado.'
+      : 'Perfil actualizado correctamente'
+
+    return sendSuccess(res, formatUsuario(usuarioActualizado), mensaje, 200)
   } catch (error) {
     logger.error({ err: error, requestId: req.requestId }, 'Error en actualizarPerfil')
     return sendError(res, 'Error al actualizar perfil', 500)
