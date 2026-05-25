@@ -14,10 +14,16 @@ const prisma = require('./utils/prisma')
 
 const app = express()
 
-app.set('trust proxy', 1)
+const TRUST_PROXY =
+  process.env.TRUST_PROXY === 'true'
+    ? true
+    : process.env.TRUST_PROXY || 1
+
+app.set('trust proxy', TRUST_PROXY)
 
 app.use(requestId)
 app.use(helmet())
+app.disable('x-powered-by')
 app.use(
   pinoHttp({
     logger,
@@ -57,7 +63,13 @@ app.use(
   }),
 )
 
-app.use(express.json({ limit: '1mb' }))
+app.use(
+  express.json({
+    limit: '1mb',
+    strict: true,
+    type: 'application/json',
+  }),
+)
 app.use(express.urlencoded({ extended: true, limit: '1mb' }))
 
 const isTest = process.env.NODE_ENV === 'test'
@@ -65,11 +77,31 @@ const START_TIME = Date.now()
 
 const limiterGeneral = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 300,
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => isTest,
-  message: { success: false, statusCode: 429, message: 'Demasiadas solicitudes, inténtalo de nuevo más tarde' },
+
+  keyGenerator: (req) => {
+    return req.ip
+  },
+
+  handler: (req, res) => {
+    logger.warn(
+      {
+        ip: req.ip,
+        path: req.originalUrl,
+        requestId: req.requestId,
+      },
+      'Rate limit excedido',
+    )
+
+    return sendError(
+      res,
+      'Demasiadas solicitudes, inténtalo más tarde',
+      429,
+    )
+  },
 })
 
 // Endpoints de credenciales sensibles: login, register, 2fa/verify, 2fa/enable, 2fa/disable
@@ -80,8 +112,32 @@ const limiterAuth = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => isTest || !CREDENTIAL_ENDPOINTS.test(req.originalUrl),
-  message: { success: false, statusCode: 429, message: 'Demasiadas solicitudes de autenticación, inténtalo de nuevo más tarde' },
+
+  skip: (req) =>
+    isTest || !CREDENTIAL_ENDPOINTS.test(req.originalUrl),
+
+  keyGenerator: (req) => {
+    const email = req.body?.email || 'anonymous'
+    return `${req.ip}:${email}`
+  },
+
+  handler: (req, res) => {
+    logger.warn(
+      {
+        ip: req.ip,
+        email: req.body?.email,
+        path: req.originalUrl,
+        requestId: req.requestId,
+      },
+      'Rate limit auth excedido',
+    )
+
+    return sendError(
+      res,
+      'Demasiados intentos de autenticación',
+      429,
+    )
+  },
 })
 
 const limiterVerificacion = rateLimit({
