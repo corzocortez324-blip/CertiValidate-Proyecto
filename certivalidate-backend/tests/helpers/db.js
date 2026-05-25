@@ -4,15 +4,18 @@ const TEST_PREFIX = '__test__'
 
 const createTestUser = async (emailSuffix, password = 'TestPass123') => {
   const hash = await bcrypt.hash(password, 10)
-  return prisma.usuario.create({
-    data: {
-      nombre: 'Test',
-      apellido: 'User',
-      email: `${TEST_PREFIX}${emailSuffix}@certivalidate.test`,
-      password_hash: hash,
-      email_verificado: true,
-    },
-  })
+return prisma.usuario.create({
+  data: {
+    nombre: 'Test',
+    apellido: 'User',
+    email: `${TEST_PREFIX}${emailSuffix}@certivalidate.test`,
+    password_hash: hash,
+    activo: true,
+    email_verificado: true,
+    totp_enabled: false,
+    totp_secret: null,
+  },
+})
 }
 
 const createTestInstitucion = async (suffix) => {
@@ -103,20 +106,33 @@ const cleanupTestData = async () => {
   // 2. Revocacion → Certificado + Usuario
   // Borrar fila a fila: si el trigger de inmutabilidad bloquea alguna,
   // se registra su certificado_id como "bloqueado" y se salta su cadena.
-  const blockedCertIds = new Set()
-  if (certIds.length > 0) {
+const blockedCertIds = new Set()
+
+if (certIds.length > 0) {
+  try {
+    await prisma.revocacion.deleteMany({
+      where: { certificado_id: { in: certIds } },
+    })
+  } catch {
+    // fallback solo si algún trigger bloquea
     const revocaciones = await prisma.revocacion.findMany({
       where: { certificado_id: { in: certIds } },
       select: { id: true, certificado_id: true },
     })
-    for (const rev of revocaciones) {
-      try {
-        await prisma.revocacion.delete({ where: { id: rev.id } })
-      } catch {
-        blockedCertIds.add(rev.certificado_id)
-      }
-    }
+
+    await Promise.allSettled(
+      revocaciones.map(async (rev) => {
+        try {
+          await prisma.revocacion.delete({
+            where: { id: rev.id },
+          })
+        } catch {
+          blockedCertIds.add(rev.certificado_id)
+        }
+      }),
+    )
   }
+}
 
   const deletableCertIds = certIds.filter((id) => !blockedCertIds.has(id))
 

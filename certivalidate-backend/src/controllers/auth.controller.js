@@ -69,11 +69,13 @@ const register = async (req, res) => {
       },
     })
 
-    await enviarEmailVerificacion({
-      email: nuevoUsuario.email,
-      nombre: nuevoUsuario.nombre,
-      token: tokenVerificacion,
-    })
+if (process.env.NODE_ENV !== 'test') {
+  await enviarEmailVerificacion({
+    email: usuario.email,
+    nombre: usuario.nombre,
+    token: tokenVerificacion,
+  })
+}
 
     await registrarAuditoria(
       prisma,

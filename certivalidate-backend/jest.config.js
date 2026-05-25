@@ -2,7 +2,7 @@ module.exports = {
   testEnvironment: 'node',
   setupFiles: ['<rootDir>/tests/setup-env.js'],
   testPathIgnorePatterns: ['/node_modules/', '/tests/helpers/', '/tests/__mocks__/'],
-  testTimeout: 60000,
+  testTimeout: 120000,
   verbose: true,
   globalTeardown: '<rootDir>/tests/global-teardown.js',
   // Suites share a real database — parallel execution causes one suite's

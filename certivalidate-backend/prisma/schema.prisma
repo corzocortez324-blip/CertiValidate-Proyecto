@@ -37,6 +37,7 @@ model Usuario {
   token_verificacion_expira DateTime?
   totp_secret               String?
   totp_enabled              Boolean              @default(false)
+  es_platform_admin         Boolean              @default(false)
   auditorias                Auditoria[]
   refreshTokens             RefreshToken[]
   revocaciones              Revocacion[]
