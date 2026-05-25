@@ -268,6 +268,8 @@ model Auditoria {
   ip              String?
   fecha           DateTime     @default(now())
   institucion_id  String?
+  hash_anterior String? @db.Text
+  hash_actual   String? @db.Text
   institucion     Institucion? @relation(fields: [institucion_id], references: [id])
   usuario         Usuario      @relation(fields: [usuario_id], references: [id])
 
