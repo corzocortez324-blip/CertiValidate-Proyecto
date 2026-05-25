@@ -256,6 +256,68 @@ const validateVerificarCertificado = [
     .withMessage('hash debe ser un hex SHA-256 de 64 caracteres'),
 ]
 
+const validateCrearUsuario = [
+  body('nombre')
+    .trim()
+    .notEmpty()
+    .withMessage('El nombre es obligatorio')
+    .isLength({ min: 3 })
+    .withMessage('El nombre debe tener al menos 3 caracteres'),
+  body('apellido')
+    .optional()
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage('El apellido no puede estar vacío'),
+  body('email')
+    .trim()
+    .isEmail()
+    .withMessage('Debe ser un email válido')
+    .normalizeEmail(),
+  body('rol')
+    .optional()
+    .trim()
+    .isIn(['admin', 'editor', 'lector'])
+    .withMessage('El rol debe ser admin, editor o lector'),
+  body('institucion_id')
+    .optional()
+    .trim()
+    .isUUID()
+    .withMessage('institucion_id debe ser un UUID válido'),
+]
+
+const validateActualizarUsuario = [
+  body('nombre')
+    .optional()
+    .trim()
+    .isLength({ min: 3 })
+    .withMessage('El nombre debe tener al menos 3 caracteres'),
+  body('apellido')
+    .optional()
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage('El apellido no puede estar vacío'),
+  body('email')
+    .optional()
+    .trim()
+    .isEmail()
+    .withMessage('Debe ser un email válido')
+    .normalizeEmail(),
+  body('rol')
+    .optional()
+    .trim()
+    .isIn(['admin', 'editor', 'lector'])
+    .withMessage('El rol debe ser admin, editor o lector'),
+  body('activo')
+    .optional()
+    .isBoolean()
+    .withMessage('activo debe ser booleano'),
+  body('institucion_id')
+    .optional()
+    .trim()
+    .isUUID()
+    .withMessage('institucion_id debe ser un UUID válido'),
+]
+
 const validateUUIDParam = (name = 'id') => [
   param(name).trim().isUUID().withMessage(`${name} debe ser un UUID válido`),
 ]
@@ -288,6 +350,8 @@ module.exports = {
   validateEstudianteCrear,
   validateEstudianteActualizar,
   validatePlantilla,
+  validateCrearUsuario,
+  validateActualizarUsuario,
   validateUUIDParam,
   handleValidationErrors,
   validateUpdateProfile,

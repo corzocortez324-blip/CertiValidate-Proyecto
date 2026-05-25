@@ -3,7 +3,12 @@ const router = express.Router()
 
 const { verificarToken, requireEmailVerified } = require('../middlewares/auth.middleware')
 const { requirePermission, cargarInstitucionesUsuario } = require('../utils/authorization')
-const { validateUUIDParam, handleValidationErrors } = require('../utils/validators')
+const {
+  validateUUIDParam,
+  validateCrearUsuario,
+  validateActualizarUsuario,
+  handleValidationErrors,
+} = require('../utils/validators')
 const {
   listarUsuarios,
   obtenerUsuario,
@@ -34,6 +39,8 @@ router.post(
   '/',
   ...auth,
   requirePermission('usuario', 'crear'),
+  validateCrearUsuario,
+  handleValidationErrors,
   crearUsuario,
 )
 
@@ -42,6 +49,7 @@ router.put(
   ...auth,
   requirePermission('usuario', 'actualizar'),
   validateUUIDParam('id'),
+  validateActualizarUsuario,
   handleValidationErrors,
   actualizarUsuario,
 )
