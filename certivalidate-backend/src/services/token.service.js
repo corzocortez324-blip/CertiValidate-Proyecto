@@ -6,24 +6,26 @@ const { getEnv } = require('../utils/env')
 const hashToken = (token) =>
   crypto.createHash('sha256').update(token).digest('hex')
 
-const buildAccessToken = (usuario) =>
-  jwt.sign(
+const buildAccessToken = (usuario) => {
+  return jwt.sign(
     {
       id: usuario.id,
       email: usuario.email,
-      nombre: usuario.nombre,
-      type: 'access',
+      es_platform_admin: usuario.es_platform_admin,
     },
     getEnv('JWT_SECRET'),
-    { expiresIn: getEnv('JWT_EXPIRES_IN', '1h') },
+    {
+      expiresIn: getEnv('JWT_EXPIRES_IN'),
+    },
   )
+}
 
 const buildRefreshToken = (usuario) =>
   jwt.sign(
     {
       id: usuario.id,
       email: usuario.email,
-      nombre: usuario.nombre,
+      es_platform_admin: usuario.es_platform_admin,
     },
     getEnv('JWT_REFRESH_SECRET'),
     {

@@ -144,11 +144,11 @@ const login = async (req, res) => {
 
     const usuarioActualizado = await prisma.usuario.update({
       where: { id: usuario.id },
-      data:  { ultimo_acceso: new Date() },
+      data: { ultimo_acceso: new Date() },
     })
 
-    const token        = buildAccessToken(usuario)
-    const refreshToken = buildRefreshToken(usuario)
+    const token = buildAccessToken(usuarioActualizado)
+    const refreshToken = buildRefreshToken(usuarioActualizado)
 
     await persistRefreshToken({ token: refreshToken, usuarioId: usuario.id, ip, userAgent })
     await crearSesion({ token: refreshToken, usuarioId: usuario.id, ip, userAgent })

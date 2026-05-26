@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 const { verificarToken, requireEmailVerified } = require('../middlewares/auth.middleware')
+const { requirePlatformAdmin } = require('../middlewares/platformAdmin.middleware')
 const {
   listarInstituciones,
   obtenerInstitucion,
@@ -18,7 +19,15 @@ const {
   handleValidationErrors,
 } = require('../utils/validators')
 
-router.get('/', verificarToken, requireEmailVerified, cargarInstitucionesUsuario, requirePermission('institucion', 'ver'), listarInstituciones)
+router.get(
+  '/',
+  verificarToken,
+  requireEmailVerified,
+  cargarInstitucionesUsuario,
+  requirePermission('institucion', 'ver'),
+  listarInstituciones,
+)
+
 router.get(
   '/:id',
   verificarToken,
@@ -29,6 +38,7 @@ router.get(
   handleValidationErrors,
   obtenerInstitucion,
 )
+
 router.get(
   '/:id/estadisticas',
   verificarToken,
@@ -39,7 +49,17 @@ router.get(
   handleValidationErrors,
   obtenerEstadisticasInstitucion,
 )
-router.post('/', verificarToken, requireEmailVerified, validateInstitucionCrear, handleValidationErrors, crearInstitucion)
+
+router.post(
+  '/',
+  verificarToken,
+  requireEmailVerified,
+  requirePlatformAdmin,
+  validateInstitucionCrear,
+  handleValidationErrors,
+  crearInstitucion,
+)
+
 router.put(
   '/:id',
   verificarToken,
@@ -51,6 +71,7 @@ router.put(
   handleValidationErrors,
   actualizarInstitucion,
 )
+
 router.patch(
   '/:id/desactivar',
   verificarToken,

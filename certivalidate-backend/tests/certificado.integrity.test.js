@@ -130,6 +130,7 @@ describe('Providers No Implementados', () => {
       })
 
     expect(res.status).toBe(501)
+    expect(res.body.success).toBe(false)
     expect(res.body.error).toBeDefined()
   })
 
