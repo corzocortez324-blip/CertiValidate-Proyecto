@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api/auth.api';
 import { clearSession, getToken, setTokens, SESSION_EXPIRED_EVENT } from '../api/_client';
+import { can } from '../utils/permissions';
 
 const AuthContext = createContext(null);
 
@@ -21,24 +22,30 @@ const saveUserSession = (usuario, accesos) => {
 };
 
 const normalizeProfile = (data) => {
-  const usuario = data?.usuario || data;
-  const accesos = data?.accesos || data?.permisos || usuario?.accesos || [];
-  return { usuario, accesos: Array.isArray(accesos) ? accesos : [] };
-};
-
+    const usuario = data?.usuario || data;
+    const accesos =
+      data?.accesos ||
+      data?.permisos ||
+      data?.permissions ||
+      usuario?.accesos ||
+      usuario?.permisos ||
+      usuario?.permissions ||
+      [];
+    return { usuario, accesos: Array.isArray(accesos) ? accesos : [] };
+  };
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(loadUser);
   const [accesos, setAccesos] = useState(loadAccesos);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const clearAuthState = () => {
+  const clearAuthState = useCallback(() => {
     clearSession();
     localStorage.removeItem('user');
     localStorage.removeItem('accesos');
     setUser(null);
     setAccesos([]);
-  };
+  }, []);
 
   const persistSession = (data) => {
     setTokens(data.token, data.refreshToken);
@@ -48,12 +55,14 @@ export const AuthProvider = ({ children }) => {
     setAccesos(storedAccesos);
   };
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     const token = getToken();
     if (!token) return;
     try {
-      const data = await authApi.getPerfil();
-      const { usuario, accesos: storedAccesos } = normalizeProfile(data);
+      const perfil = await authApi.getPerfil();
+      const permisos = await authApi.getPermisos().catch(() => null);
+      const profileData = permisos?.data ? { ...perfil, accesos: permisos.data?.accesos || perfil.accesos || [] } : perfil;
+      const { usuario, accesos: storedAccesos } = normalizeProfile(profileData);
       if (!usuario) throw new Error('Perfil inválido');
       saveUserSession(usuario, storedAccesos);
       setUser(usuario);
@@ -61,7 +70,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       clearAuthState();
     }
-  };
+  }, [clearAuthState]);
 
   useEffect(() => {
     refreshProfile().finally(() => setLoading(false));
@@ -71,7 +80,7 @@ export const AuthProvider = ({ children }) => {
     };
     window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
     return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
-  }, [navigate]);
+  }, [clearAuthState, navigate, refreshProfile]);
 
   const login = async (email, password) => {
     const data = await authApi.login(email, password);
@@ -118,7 +127,8 @@ export const AuthProvider = ({ children }) => {
 
   const hasPermission = useCallback((permission) => {
     if (!user) return false;
-    return accesos.some((a) => a.permisos?.includes(permission));
+    if (!permission) return true;
+    return can(permission, user, accesos);
   }, [user, accesos]);
 
   return (

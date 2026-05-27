@@ -2,9 +2,10 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { NoAuthorized } from '../NoAuthorized';
+import { can } from '../../utils/permissions';
 
 export const PermissionRoute = ({ permission, element }) => {
-  const { user, loading, hasPermission } = useAuth();
+  const { user, loading, accesos } = useAuth();
 
   if (loading) {
     return (
@@ -18,25 +19,7 @@ export const PermissionRoute = ({ permission, element }) => {
     return <Navigate to="/login" replace />;
   }
 
-  const roleName =
-    user?.rol?.nombre ||
-    user?.rol ||
-    user?.role?.nombre ||
-    user?.role ||
-    '';
-
-  const normalizedRole = String(roleName).toLowerCase();
-
-  const isAdmin =
-    normalizedRole === 'admin' ||
-    normalizedRole === 'administrador' ||
-    normalizedRole.includes('admin');
-
-  if (isAdmin) {
-    return element;
-  }
-
-  if (permission && !hasPermission(permission)) {
+  if (permission && !can(permission, user, accesos)) {
     return <NoAuthorized />;
   }
 

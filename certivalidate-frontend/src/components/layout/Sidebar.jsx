@@ -17,6 +17,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { can, isAdminUser, getRoleName } from '../../utils/permissions';
 import './Sidebar.css';
 
 const allNavItems = [
@@ -46,26 +47,15 @@ const ROLE_FALLBACK = { label: 'Usuario', color: '#94a3b8' };
 
 export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const { user, logout, hasPermission } = useAuth();
+  const { user, logout, accesos } = useAuth();
 
-  const roleName =
-    user?.rol?.nombre ||
-    user?.rol ||
-    user?.role?.nombre ||
-    user?.role ||
-    '';
-
-  const normalizedRole = String(roleName).toLowerCase();
-
-  const isAdmin =
-    normalizedRole === 'admin' ||
-    normalizedRole === 'administrador' ||
-    normalizedRole.includes('admin');
+  const normalizedRole = getRoleName(user);
+  const isAdmin = isAdminUser(user);
 
   const navItems = allNavItems.filter((item) => {
     if (isAdmin) return true;
     if (!item.permission) return true;
-    return hasPermission(item.permission);
+    return can(item.permission, user, accesos);
   });
 
   const meta = ROLE_META[normalizedRole] || ROLE_FALLBACK;

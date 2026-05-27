@@ -206,7 +206,7 @@ export const UsuariosPage = () => {
                             <button
                               className="icon-btn"
                               title="Editar"
-                              onClick={() => openEdit(u, usr => ({ nombre: usr.nombre, apellido: usr.apellido || '', email: usr.email, rol: usr.rol || 'lector', activo: usr.activo }))}
+                              onClick={() => openEdit(u, usr => ({ nombre: usr.nombre, apellido: usr.apellido || '', email: usr.email, rol: usr.rol?.nombre || usr.rol || 'lector', activo: usr.activo ?? true }))}
                             >
                               <Pencil size={15} />
                             </button>

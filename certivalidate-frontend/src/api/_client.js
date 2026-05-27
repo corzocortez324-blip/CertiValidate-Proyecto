@@ -45,6 +45,51 @@ const safeParseJson = async (response) => {
   }
 }
 
+const buildErrorMessage = (status, data) => {
+  // Use backend message when available and informative
+  const backendMsg = data?.message
+
+  if (status === 400) {
+    // Format validation errors array if present
+    if (Array.isArray(data?.errors) && data.errors.length > 0) {
+      const details = data.errors.map((e) => e.msg || e.message || JSON.stringify(e)).join(' | ')
+      return backendMsg ? `${backendMsg}: ${details}` : `Datos inválidos: ${details}`
+    }
+    return backendMsg || 'Los datos enviados no son válidos.'
+  }
+
+  if (status === 401) {
+    return backendMsg || 'Sesión expirada. Por favor inicia sesión nuevamente.'
+  }
+
+  if (status === 403) {
+    // Prefer backend message (may include "verifica tu email" etc.)
+    return backendMsg || 'No tienes permisos para esta acción.'
+  }
+
+  if (status === 404) {
+    return backendMsg || 'Recurso no encontrado.'
+  }
+
+  if (status === 409) {
+    return backendMsg || 'Ya existe un registro con esos datos.'
+  }
+
+  if (status === 422) {
+    return backendMsg || 'Datos de dominio inválidos.'
+  }
+
+  if (status === 429) {
+    return backendMsg || 'Demasiadas solicitudes. Espera unos segundos e intenta de nuevo.'
+  }
+
+  if (status >= 500) {
+    return backendMsg || 'Error interno del servidor. Por favor intenta de nuevo.'
+  }
+
+  return backendMsg || 'Error desconocido.'
+}
+
 let isRefreshing = false
 let refreshSubscribers = []
 
@@ -142,7 +187,7 @@ const request = async (endpoint, options = {}) => {
     const data = await safeParseJson(res)
     if (!res.ok || data?.success === false) {
       throw new ApiError(
-        data?.message || res.statusText || 'Error desconocido',
+        buildErrorMessage(res.status, data),
         res.status,
         data,
       )

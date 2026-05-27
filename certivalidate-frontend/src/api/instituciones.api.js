@@ -3,7 +3,7 @@ import { qs } from '../utils/queryString'
 
 export const institucionesApi = {
   listar: async ({ page = 1, limit = 10 } = {}) => {
-    const res = await request(`/instituciones/${qs({ page, limit })}`)
+    const res = await request(`/instituciones${qs({ page, limit })}`)
     return res.data // { data: [...], meta: { total, page, limit, totalPages } }
   },
 
@@ -18,7 +18,7 @@ export const institucionesApi = {
   },
 
   crear: async ({ nombre, dominio, logo_url, activa = true }) => {
-    const res = await request('/instituciones/', {
+    const res = await request('/instituciones', {
       method: 'POST',
       body: {
         nombre,

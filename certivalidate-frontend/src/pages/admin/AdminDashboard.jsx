@@ -281,7 +281,7 @@ async function buildXlsx(tipo, period, stats) {
   URL.revokeObjectURL(url);
 }
 
-function buildPDF(tipo, period, stats) {
+function buildPDF(tipo, period, stats, showToast) {
   const fecha        = new Date().toLocaleDateString('es-CO', { dateStyle: 'long' });
   const periodoLabel = PERIODO_LABEL[period] ?? period;
   const tipoLabel    = TIPO_LABEL[tipo] ?? tipo;
@@ -410,7 +410,7 @@ function buildPDF(tipo, period, stats) {
   setTimeout(() => { win.print(); }, 450);
 }
 
-function ExportModal({ stats, period, onClose }) {
+function ExportModal({ stats, period, onClose, showToast }) {
   const [exportPeriod,   setExportPeriod]   = useState(period ?? '30d');
   const [exportTipo,     setExportTipo]     = useState('ejecutivo');
   const [exportFormato,  setExportFormato]  = useState('excel');
@@ -433,7 +433,7 @@ function ExportModal({ stats, period, onClose }) {
     try {
       if (exportFormato === 'pdf') {
         await new Promise(r => setTimeout(r, 600));
-        buildPDF(exportTipo, exportPeriod, stats);
+        buildPDF(exportTipo, exportPeriod, stats, showToast);
       } else {
         await buildXlsx(exportTipo, exportPeriod, stats);
       }
@@ -727,6 +727,7 @@ export const AdminDashboard = () => {
           stats={stats}
           period={period}
           onClose={() => setShowExport(false)}
+          showToast={showToast}
         />
       )}
 

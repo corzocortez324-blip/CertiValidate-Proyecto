@@ -55,7 +55,7 @@ function PreviewConfirmModal({ previewHtml, loading, onCancel, onConfirm }) {
             </div>
           ) : previewHtml ? (
             <iframe
-              srcDoc={previewSource}
+              srcDoc={previewHtml}
               title="Vista previa del certificado"
               className="pcm-iframe"
               sandbox="allow-same-origin"

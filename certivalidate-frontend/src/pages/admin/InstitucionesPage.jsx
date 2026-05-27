@@ -37,7 +37,7 @@ export const InstitucionesPage = () => {
 
       <div className="page-toolbar">
         <span>{instituciones.length} institución(es)</span>
-        {hasPermission('institucion:actualizar') && (
+        {hasPermission('institucion:crear') && (
           <Button variant="primary" icon={<Plus size={18} />} onClick={() => openCreate()}>
             Nueva Institución
           </Button>
