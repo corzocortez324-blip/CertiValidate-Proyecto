@@ -38,12 +38,20 @@ app.use(
   }),
 )
 
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+const allowedOrigins = (
+  process.env.FRONTEND_URL ||
+  'http://localhost:5173,http://localhost:5174,http://localhost:5175'
+)
   .split(',')
   .map((origin) => origin.trim())
+  .filter(Boolean)
 
 if (process.env.NODE_ENV !== 'production') {
-  allowedOrigins.push('http://localhost:4173')
+  allowedOrigins.push(
+    'http://localhost:4173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+  )
 }
 
 app.use(

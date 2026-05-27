@@ -27,6 +27,7 @@ const PERMISOS = [
   { recurso: 'estudiante', accion: 'eliminar' },
   { recurso: 'estudiante', accion: 'listar' },
   { recurso: 'estudiante', accion: 'ver' },
+  { recurso: 'institucion', accion: 'crear' },
   { recurso: 'institucion', accion: 'actualizar' },
   { recurso: 'institucion', accion: 'ver' },
   { recurso: 'institucion', accion: 'estadisticas' },

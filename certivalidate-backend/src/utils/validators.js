@@ -108,7 +108,7 @@ const validateRevocacion = [
       'OTRO',
     ])
     .withMessage(
-      'motivo_codigo debe ser uno de: FRAUDE, ERROR_DATOS, ERROR_EMISION, DECISION_INSTITUCIONAL, DUPLICADO, CADUCIDAD, OTRO'
+      'motivo_codigo debe ser uno de: FRAUDE, ERROR_DATOS, ERROR_EMISION, DECISION_INSTITUCIONAL, DUPLICADO, CADUCIDAD, OTRO',
     ),
   body('motivo_detalle')
     .optional()
@@ -307,15 +307,7 @@ const validateActualizarUsuario = [
     .trim()
     .isIn(['admin', 'editor', 'lector'])
     .withMessage('El rol debe ser admin, editor o lector'),
-  body('activo')
-    .optional()
-    .isBoolean()
-    .withMessage('activo debe ser booleano'),
-  body('institucion_id')
-    .optional()
-    .trim()
-    .isUUID()
-    .withMessage('institucion_id debe ser un UUID válido'),
+  body('activo').optional().isBoolean().withMessage('activo debe ser booleano'),
 ]
 
 const validateUUIDParam = (name = 'id') => [

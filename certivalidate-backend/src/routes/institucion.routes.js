@@ -1,8 +1,10 @@
 const express = require('express')
 const router = express.Router()
 
-const { verificarToken, requireEmailVerified } = require('../middlewares/auth.middleware')
-const { requirePlatformAdmin } = require('../middlewares/platformAdmin.middleware')
+const {
+  verificarToken,
+  requireEmailVerified,
+} = require('../middlewares/auth.middleware')
 const {
   listarInstituciones,
   obtenerInstitucion,
@@ -11,7 +13,10 @@ const {
   desactivarInstitucion,
   obtenerEstadisticasInstitucion,
 } = require('../controllers/institucion.controller')
-const { requirePermission, cargarInstitucionesUsuario } = require('../utils/authorization')
+const {
+  requirePermission,
+  cargarInstitucionesUsuario,
+} = require('../utils/authorization')
 const {
   validateInstitucionCrear,
   validateInstitucionActualizar,
@@ -54,7 +59,6 @@ router.post(
   '/',
   verificarToken,
   requireEmailVerified,
-  requirePlatformAdmin,
   validateInstitucionCrear,
   handleValidationErrors,
   crearInstitucion,
