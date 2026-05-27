@@ -7,12 +7,16 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "seed": "node prisma/seed.js",
+    "cleanup:test-users": "node scripts/cleanup-test-users.js",
+    "cleanup:test-users:confirm": "node scripts/cleanup-test-users.js --confirm",
     "postinstall": "prisma generate",
     "migrate": "prisma migrate deploy",
     "migrate:dev": "dotenv -e .env -- prisma migrate dev",
     "migrate:reset": "dotenv -e .env -- prisma migrate reset",
+    "migrate:test": "dotenv -e .env.test -- prisma migrate dev",
+    "migrate:test:reset": "dotenv -e .env.test -- prisma migrate reset",
     "lint": "eslint src/",
-    "test": "jest --runInBand --detectOpenHandles --testPathIgnorePatterns=node_modules"
+    "test": "cross-env NODE_ENV=test dotenv -e .env.test -- jest --runInBand --detectOpenHandles --testPathIgnorePatterns=node_modules"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -44,6 +48,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
+    "cross-env": "^7.0.3",
     "dotenv-cli": "^11.0.0",
     "eslint": "^10.2.1",
     "jest": "^30.3.0",

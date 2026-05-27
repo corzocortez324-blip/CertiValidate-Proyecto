@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('../src/utils/load-env')
 const { PrismaClient } = require('@prisma/client')
 const { PrismaPg } = require('@prisma/adapter-pg')
 const { Pool } = require('pg')
@@ -9,7 +9,10 @@ const prisma = new PrismaClient({ adapter })
 
 const ROLES = [
   { nombre: 'admin', descripcion: 'Acceso total a todos los recursos' },
-  { nombre: 'editor', descripcion: 'Puede crear y editar recursos, sin acceso administrativo' },
+  {
+    nombre: 'editor',
+    descripcion: 'Puede crear y editar recursos, sin acceso administrativo',
+  },
   { nombre: 'lector', descripcion: 'Solo lectura' },
 ]
 
@@ -44,18 +47,34 @@ const PERMISOS = [
 const PERMISOS_POR_ROL = {
   admin: PERMISOS.map((p) => `${p.recurso}:${p.accion}`),
   editor: [
-    'certificado:emitir', 'certificado:revocar', 'certificado:listar',
-    'certificado:ver', 'certificado:descargar',
-    'estudiante:crear', 'estudiante:actualizar', 'estudiante:listar', 'estudiante:ver',
-    'institucion:ver', 'institucion:estadisticas',
-    'plantilla:crear', 'plantilla:actualizar', 'plantilla:archivar', 'plantilla:ver', 'plantilla:listar',
+    'certificado:emitir',
+    'certificado:revocar',
+    'certificado:listar',
+    'certificado:ver',
+    'certificado:descargar',
+    'estudiante:crear',
+    'estudiante:actualizar',
+    'estudiante:listar',
+    'estudiante:ver',
+    'institucion:ver',
+    'institucion:estadisticas',
+    'plantilla:crear',
+    'plantilla:actualizar',
+    'plantilla:archivar',
+    'plantilla:ver',
+    'plantilla:listar',
     'auditoria:ver',
   ],
   lector: [
-    'certificado:listar', 'certificado:ver', 'certificado:descargar',
-    'estudiante:listar', 'estudiante:ver',
-    'institucion:ver', 'institucion:estadisticas',
-    'plantilla:ver', 'plantilla:listar',
+    'certificado:listar',
+    'certificado:ver',
+    'certificado:descargar',
+    'estudiante:listar',
+    'estudiante:ver',
+    'institucion:ver',
+    'institucion:estadisticas',
+    'plantilla:ver',
+    'plantilla:listar',
     'auditoria:ver',
   ],
 }
@@ -77,7 +96,9 @@ async function main() {
   const permisosCreados = {}
   for (const permiso of PERMISOS) {
     const p = await prisma.permiso.upsert({
-      where: { recurso_accion: { recurso: permiso.recurso, accion: permiso.accion } },
+      where: {
+        recurso_accion: { recurso: permiso.recurso, accion: permiso.accion },
+      },
       update: {},
       create: permiso,
     })

@@ -19,9 +19,10 @@ const warnEnv = [
 ]
 
 const getEnv = (key, fallback = undefined) => {
-  // Allow DIRECT_URL as a fallback for DATABASE_URL
   if (key === 'DATABASE_URL') {
-    const value = process.env.DATABASE_URL || process.env.DIRECT_URL
+    const value =
+      process.env.DATABASE_URL ||
+      (process.env.NODE_ENV !== 'test' ? process.env.DIRECT_URL : undefined)
     if (value !== undefined && value !== null && value !== '') return value
   } else {
     const value = process.env[key]
@@ -35,8 +36,10 @@ const getEnv = (key, fallback = undefined) => {
 
 const validateRequiredEnv = () => {
   const missingEnv = requiredEnv.filter((key) => {
-    if (key === 'DATABASE_URL')
+    if (key === 'DATABASE_URL') {
+      if (process.env.NODE_ENV === 'test') return !process.env.DATABASE_URL
       return !process.env.DATABASE_URL && !process.env.DIRECT_URL
+    }
     return !process.env[key]
   })
   if (missingEnv.length > 0) {

@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('../src/utils/load-env')
 
 const provider = require('../src/services/academic-provider.service')
 

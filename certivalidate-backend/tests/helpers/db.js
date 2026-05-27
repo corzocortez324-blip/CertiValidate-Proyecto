@@ -2,20 +2,39 @@ const bcrypt = require('bcrypt')
 const prisma = require('../../src/utils/prisma')
 const TEST_PREFIX = '__test__'
 
+const assertSafeTestDatabase = () => {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error('cleanupTestData solo puede ejecutarse en NODE_ENV=test')
+  }
+
+  const databaseUrl = process.env.DATABASE_URL || process.env.DIRECT_URL || ''
+  if (!databaseUrl) {
+    throw new Error(
+      'cleanupTestData requiere DATABASE_URL/DIRECT_URL definido en el entorno de test.',
+    )
+  }
+
+  if (!/test|localhost/i.test(databaseUrl)) {
+    throw new Error(
+      `cleanupTestData abortado: la base de datos configurada no es de pruebas/local (${databaseUrl}).`,
+    )
+  }
+}
+
 const createTestUser = async (emailSuffix, password = 'TestPass123') => {
   const hash = await bcrypt.hash(password, 10)
-return prisma.usuario.create({
-  data: {
-    nombre: 'Test',
-    apellido: 'User',
-    email: `${TEST_PREFIX}${emailSuffix}@certivalidate.test`,
-    password_hash: hash,
-    activo: true,
-    email_verificado: true,
-    totp_enabled: false,
-    totp_secret: null,
-  },
-})
+  return prisma.usuario.create({
+    data: {
+      nombre: 'Test',
+      apellido: 'User',
+      email: `${TEST_PREFIX}${emailSuffix}@certivalidate.test`,
+      password_hash: hash,
+      activo: true,
+      email_verificado: true,
+      totp_enabled: false,
+      totp_secret: null,
+    },
+  })
 }
 
 const createTestInstitucion = async (suffix) => {
@@ -74,6 +93,8 @@ const createTestPlantilla = async (institucionId, suffix) => {
  * Si Auditoria tampoco puede borrarse, Usuario recibe soft-delete (activo=false).
  */
 const cleanupTestData = async () => {
+  assertSafeTestDatabase()
+
   const testUsers = await prisma.usuario.findMany({
     where: { email: { startsWith: TEST_PREFIX } },
     select: { id: true },
@@ -106,33 +127,33 @@ const cleanupTestData = async () => {
   // 2. Revocacion → Certificado + Usuario
   // Borrar fila a fila: si el trigger de inmutabilidad bloquea alguna,
   // se registra su certificado_id como "bloqueado" y se salta su cadena.
-const blockedCertIds = new Set()
+  const blockedCertIds = new Set()
 
-if (certIds.length > 0) {
-  try {
-    await prisma.revocacion.deleteMany({
-      where: { certificado_id: { in: certIds } },
-    })
-  } catch {
-    // fallback solo si algún trigger bloquea
-    const revocaciones = await prisma.revocacion.findMany({
-      where: { certificado_id: { in: certIds } },
-      select: { id: true, certificado_id: true },
-    })
+  if (certIds.length > 0) {
+    try {
+      await prisma.revocacion.deleteMany({
+        where: { certificado_id: { in: certIds } },
+      })
+    } catch {
+      // fallback solo si algún trigger bloquea
+      const revocaciones = await prisma.revocacion.findMany({
+        where: { certificado_id: { in: certIds } },
+        select: { id: true, certificado_id: true },
+      })
 
-    await Promise.allSettled(
-      revocaciones.map(async (rev) => {
-        try {
-          await prisma.revocacion.delete({
-            where: { id: rev.id },
-          })
-        } catch {
-          blockedCertIds.add(rev.certificado_id)
-        }
-      }),
-    )
+      await Promise.allSettled(
+        revocaciones.map(async (rev) => {
+          try {
+            await prisma.revocacion.delete({
+              where: { id: rev.id },
+            })
+          } catch {
+            blockedCertIds.add(rev.certificado_id)
+          }
+        }),
+      )
+    }
   }
-}
 
   const deletableCertIds = certIds.filter((id) => !blockedCertIds.has(id))
 
@@ -155,16 +176,17 @@ if (certIds.length > 0) {
   }
 
   const auditoriaFilter = []
-  if (testUserIds.length > 0) auditoriaFilter.push({ usuario_id: { in: testUserIds } })
-  if (testInstIds.length > 0) auditoriaFilter.push({ institucion_id: { in: testInstIds } })
+  if (testUserIds.length > 0)
+    auditoriaFilter.push({ usuario_id: { in: testUserIds } })
+  if (testInstIds.length > 0)
+    auditoriaFilter.push({ institucion_id: { in: testInstIds } })
 
   let auditoriaEliminada = false
   if (auditoriaFilter.length > 0) {
     try {
       await prisma.auditoria.deleteMany({ where: { OR: auditoriaFilter } })
       auditoriaEliminada = true
-    } catch {
-    }
+    } catch {}
   }
 
   if (deletableCertIds.length > 0) {
@@ -223,14 +245,14 @@ if (certIds.length > 0) {
     // 11. IntentoLogin (sin FK)
     // Incluir IP de loopback: tests usan emails fijos sin TEST_PREFIX
     // (ej. 'noexiste@certivalidate.test') que acumulan intentos entre runs.
-await prisma.intentoLogin.deleteMany({
-  where: {
-    OR: [
-      { email: { startsWith: TEST_PREFIX } },
-      { email: { endsWith: '@certivalidate.test' } },
-    ],
-  },
-})
+    await prisma.intentoLogin.deleteMany({
+      where: {
+        OR: [
+          { email: { startsWith: TEST_PREFIX } },
+          { email: { endsWith: '@certivalidate.test' } },
+        ],
+      },
+    })
 
     // 12. UsuarioInstitucion → Usuario + Institucion + Rol (antes de Institucion)
     await prisma.usuarioInstitucion.deleteMany({
@@ -253,7 +275,9 @@ await prisma.intentoLogin.deleteMany({
       })
       blockedInstIds = [...new Set(blocked.map((c) => c.institucion_id))]
     }
-    const deletableInstIds = testInstIds.filter((id) => !blockedInstIds.includes(id))
+    const deletableInstIds = testInstIds.filter(
+      (id) => !blockedInstIds.includes(id),
+    )
     if (deletableInstIds.length > 0) {
       await prisma.institucion.deleteMany({
         where: { id: { in: deletableInstIds } },

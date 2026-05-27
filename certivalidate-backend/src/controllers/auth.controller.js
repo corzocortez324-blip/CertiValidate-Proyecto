@@ -28,12 +28,21 @@ const {
   listarSesiones,
   revocarSesionPorId,
 } = require('../services/sesion.service')
-const { registrarIntento, verificarBloqueo } = require('../services/intentoLogin.service')
+const {
+  registrarIntento,
+  verificarBloqueo,
+} = require('../services/intentoLogin.service')
 
 const getUserAgent = (req) => req.headers['user-agent'] || null
 
 const formatUsuario = (usuario) => {
-  const { password_hash, token_verificacion, token_verificacion_expira, totp_secret, ...datos } = usuario
+  const {
+    password_hash,
+    token_verificacion,
+    token_verificacion_expira,
+    totp_secret,
+    ...datos
+  } = usuario
   return datos
 }
 
@@ -69,13 +78,13 @@ const register = async (req, res) => {
       },
     })
 
-if (process.env.NODE_ENV !== 'test') {
-  await enviarEmailVerificacion({
-    email: nuevoUsuario.email,
-    nombre: nuevoUsuario.nombre,
-    token: tokenVerificacion,
-  })
-}
+    if (process.env.NODE_ENV !== 'test') {
+      await enviarEmailVerificacion({
+        email: nuevoUsuario.email,
+        nombre: nuevoUsuario.nombre,
+        token: tokenVerificacion,
+      })
+    }
 
     await registrarAuditoria(
       prisma,
@@ -103,7 +112,7 @@ if (process.env.NODE_ENV !== 'test') {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body
-    const ip        = getClientIp(req)
+    const ip = getClientIp(req)
     const userAgent = getUserAgent(req)
 
     if (!email || !password) {
@@ -139,7 +148,12 @@ const login = async (req, res) => {
 
     if (usuario.totp_enabled) {
       const partial_token = buildPartialToken(usuario.id)
-      return sendSuccess(res, { requires2FA: true, partial_token }, 'Se requiere verificación 2FA', 200)
+      return sendSuccess(
+        res,
+        { requires2FA: true, partial_token },
+        'Se requiere verificación 2FA',
+        200,
+      )
     }
 
     const usuarioActualizado = await prisma.usuario.update({
@@ -150,15 +164,30 @@ const login = async (req, res) => {
     const token = buildAccessToken(usuarioActualizado)
     const refreshToken = buildRefreshToken(usuarioActualizado)
 
-    await persistRefreshToken({ token: refreshToken, usuarioId: usuario.id, ip, userAgent })
-    await crearSesion({ token: refreshToken, usuarioId: usuario.id, ip, userAgent })
+    await persistRefreshToken({
+      token: refreshToken,
+      usuarioId: usuario.id,
+      ip,
+      userAgent,
+    })
+    await crearSesion({
+      token: refreshToken,
+      usuarioId: usuario.id,
+      ip,
+      userAgent,
+    })
 
     const accesos = await obtenerAccesosUsuario(usuario.id)
     const rolPrincipal = resolverRolPrincipal(accesos)
 
     return sendSuccess(
       res,
-      { token, refreshToken, usuario: { ...formatUsuario(usuarioActualizado), rol: rolPrincipal }, accesos },
+      {
+        token,
+        refreshToken,
+        usuario: { ...formatUsuario(usuarioActualizado), rol: rolPrincipal },
+        accesos,
+      },
       'Login exitoso',
       200,
     )
@@ -207,15 +236,18 @@ const refreshToken = async (req, res) => {
       return sendError(res, 'Usuario desactivado', 403)
     }
 
-    const newToken        = buildAccessToken(usuario)
+    const newToken = buildAccessToken(usuario)
     const newRefreshToken = await rotateRefreshToken({
       currentToken: refreshToken,
       usuario,
-      ip:        getClientIp(req),
+      ip: getClientIp(req),
       userAgent: getUserAgent(req),
     })
 
-    await actualizarSesion({ oldToken: refreshToken, newToken: newRefreshToken })
+    await actualizarSesion({
+      oldToken: refreshToken,
+      newToken: newRefreshToken,
+    })
 
     return sendSuccess(
       res,
@@ -224,7 +256,10 @@ const refreshToken = async (req, res) => {
       200,
     )
   } catch (error) {
-    logger.error({ err: error, requestId: req.requestId }, 'Error en refreshToken')
+    logger.error(
+      { err: error, requestId: req.requestId },
+      'Error en refreshToken',
+    )
     return sendError(res, 'Error al renovar token', 500)
   }
 }
@@ -237,7 +272,10 @@ const logout = async (req, res) => {
       return sendError(res, 'Refresh token es obligatorio', 400)
     }
 
-    await revokeRefreshToken({ token: refreshToken, usuarioId: req.usuario?.id || null })
+    await revokeRefreshToken({
+      token: refreshToken,
+      usuarioId: req.usuario?.id || null,
+    })
     await eliminarSesion(refreshToken)
 
     return sendSuccess(res, null, 'Sesión cerrada correctamente', 200)
@@ -346,7 +384,10 @@ const actualizarPerfil = async (req, res) => {
 
     return sendSuccess(res, formatUsuario(usuarioActualizado), mensaje, 200)
   } catch (error) {
-    logger.error({ err: error, requestId: req.requestId }, 'Error en actualizarPerfil')
+    logger.error(
+      { err: error, requestId: req.requestId },
+      'Error en actualizarPerfil',
+    )
     return sendError(res, 'Error al actualizar perfil', 500)
   }
 }
@@ -408,7 +449,10 @@ const cambiarPassword = async (req, res) => {
       200,
     )
   } catch (error) {
-    logger.error({ err: error, requestId: req.requestId }, 'Error en cambiarPassword')
+    logger.error(
+      { err: error, requestId: req.requestId },
+      'Error en cambiarPassword',
+    )
     return sendError(res, 'Error al cambiar contraseña', 500)
   }
 }
@@ -426,9 +470,17 @@ const obtenerPerfil = async (req, res) => {
     const accesos = await obtenerAccesosUsuario(usuario.id)
     const rolPrincipal = resolverRolPrincipal(accesos)
 
-    return sendSuccess(res, { ...formatUsuario(usuario), rol: rolPrincipal }, 'Perfil obtenido correctamente', 200)
+    return sendSuccess(
+      res,
+      { ...formatUsuario(usuario), rol: rolPrincipal, accesos },
+      'Perfil obtenido correctamente',
+      200,
+    )
   } catch (error) {
-    logger.error({ err: error, requestId: req.requestId }, 'Error en obtenerPerfil')
+    logger.error(
+      { err: error, requestId: req.requestId },
+      'Error en obtenerPerfil',
+    )
     return sendError(res, 'Error al obtener perfil', 500)
   }
 }
@@ -461,7 +513,10 @@ const verificarEmail = async (req, res) => {
 
     return sendSuccess(res, null, 'Email verificado correctamente', 200)
   } catch (error) {
-    logger.error({ err: error, requestId: req.requestId }, 'Error en verificarEmail')
+    logger.error(
+      { err: error, requestId: req.requestId },
+      'Error en verificarEmail',
+    )
     return sendError(res, 'Error al verificar email', 500)
   }
 }
@@ -471,7 +526,10 @@ const obtenerPermisos = async (req, res) => {
     const accesos = await obtenerAccesosUsuario(req.usuario.id)
     return sendSuccess(res, { accesos }, 'Accesos obtenidos correctamente', 200)
   } catch (error) {
-    logger.error({ err: error, requestId: req.requestId }, 'Error en obtenerPermisos')
+    logger.error(
+      { err: error, requestId: req.requestId },
+      'Error en obtenerPermisos',
+    )
     return sendError(res, 'Error al obtener permisos', 500)
   }
 }
@@ -479,9 +537,17 @@ const obtenerPermisos = async (req, res) => {
 const listarSesionesActivas = async (req, res) => {
   try {
     const sesiones = await listarSesiones(req.usuario.id)
-    return sendSuccess(res, { sesiones }, 'Sesiones obtenidas correctamente', 200)
+    return sendSuccess(
+      res,
+      { sesiones },
+      'Sesiones obtenidas correctamente',
+      200,
+    )
   } catch (error) {
-    logger.error({ err: error, requestId: req.requestId }, 'Error en listarSesionesActivas')
+    logger.error(
+      { err: error, requestId: req.requestId },
+      'Error en listarSesionesActivas',
+    )
     return sendError(res, 'Error al obtener sesiones', 500)
   }
 }
@@ -494,12 +560,15 @@ const revocarSesionActiva = async (req, res) => {
     // También revocar el refresh token asociado
     await prisma.refreshToken.updateMany({
       where: { token_hash: sesion.token_hash, revoked_at: null },
-      data:  { revoked_at: new Date() },
+      data: { revoked_at: new Date() },
     })
 
     return sendSuccess(res, null, 'Sesión revocada correctamente', 200)
   } catch (error) {
-    logger.error({ err: error, requestId: req.requestId }, 'Error en revocarSesionActiva')
+    logger.error(
+      { err: error, requestId: req.requestId },
+      'Error en revocarSesionActiva',
+    )
     return sendError(res, 'Error al revocar sesión', 500)
   }
 }
@@ -508,9 +577,17 @@ const cerrarTodasLasSesiones = async (req, res) => {
   try {
     await revokeAllUserRefreshTokens(req.usuario.id)
     await eliminarTodasSesiones(req.usuario.id)
-    return sendSuccess(res, null, 'Todas las sesiones cerradas correctamente', 200)
+    return sendSuccess(
+      res,
+      null,
+      'Todas las sesiones cerradas correctamente',
+      200,
+    )
   } catch (error) {
-    logger.error({ err: error, requestId: req.requestId }, 'Error en cerrarTodasLasSesiones')
+    logger.error(
+      { err: error, requestId: req.requestId },
+      'Error en cerrarTodasLasSesiones',
+    )
     return sendError(res, 'Error al cerrar todas las sesiones', 500)
   }
 }

@@ -62,7 +62,7 @@ npm run migrate
 > Para desarrollo con migraciones interactivas usa `npm run migrate:dev`.  
 > Si tu red bloquea el puerto 5432 (DIRECT_URL), ejecuta las migraciones desde el SQL Editor de Supabase o desde datos móviles.
 
-**5. Generar cliente Prisma** *(solo si no corrió con npm install)*
+**5. Generar cliente Prisma** _(solo si no corrió con npm install)_
 
 ```bash
 npx prisma generate
@@ -104,10 +104,11 @@ docker compose up --build
 ```
 
 Esto ejecuta en orden:
+
 - `migrate` — aplica `prisma migrate deploy` y termina
 - `api` — servidor Node.js en `localhost:3000` (arranca solo cuando `migrate` finaliza correctamente)
 
-**3. Poblar datos iniciales** *(primera vez)*
+**3. Poblar datos iniciales** _(primera vez)_
 
 ```bash
 docker compose run --rm api node prisma/seed.js
@@ -127,17 +128,56 @@ docker compose down
 
 El servidor no arranca si faltan `DATABASE_URL`, `JWT_SECRET` o `JWT_REFRESH_SECRET`.
 
-| Variable | Ejemplo | Descripción |
-|---|---|---|
-| `PORT` | `3000` | Puerto del servidor (opcional, default 3000) |
-| `NODE_ENV` | `production` | Entorno: `development` o `production` |
-| `DATABASE_URL` | `postgresql://...@pooler:6543/postgres` | URL del connection pooler de Supabase (puerto 6543) |
-| `DIRECT_URL` | `postgresql://...@db:5432/postgres` | URL directa para migraciones (puerto 5432) |
-| `JWT_SECRET` | cadena larga aleatoria | Secreto para firmar access tokens |
-| `JWT_REFRESH_SECRET` | cadena larga aleatoria diferente | Secreto para firmar refresh tokens |
-| `JWT_EXPIRES_IN` | `1h` | Duración del access token (opcional, default 1h) |
-| `JWT_REFRESH_EXPIRES_IN` | `7d` | Duración del refresh token (opcional, default 7d) |
-| `ENCRYPTION_KEY` | 64 caracteres hex | Clave AES-256-GCM para cifrar API keys de integraciones |
+| Variable                 | Ejemplo                                 | Descripción                                             |
+| ------------------------ | --------------------------------------- | ------------------------------------------------------- |
+| `PORT`                   | `3000`                                  | Puerto del servidor (opcional, default 3000)            |
+| `NODE_ENV`               | `production`                            | Entorno: `development` o `production`                   |
+| `DATABASE_URL`           | `postgresql://...@pooler:6543/postgres` | URL del connection pooler de Supabase (puerto 6543)     |
+| `DIRECT_URL`             | `postgresql://...@db:5432/postgres`     | URL directa para migraciones (puerto 5432)              |
+| `JWT_SECRET`             | cadena larga aleatoria                  | Secreto para firmar access tokens                       |
+| `JWT_REFRESH_SECRET`     | cadena larga aleatoria diferente        | Secreto para firmar refresh tokens                      |
+| `JWT_EXPIRES_IN`         | `1h`                                    | Duración del access token (opcional, default 1h)        |
+| `JWT_REFRESH_EXPIRES_IN` | `7d`                                    | Duración del refresh token (opcional, default 7d)       |
+| `ENCRYPTION_KEY`         | 64 caracteres hex                       | Clave AES-256-GCM para cifrar API keys de integraciones |
+
+## Pruebas
+
+Para ejecutar los tests sin contaminar la base real, usa el archivo de entorno de pruebas:
+
+1. Crea `.env.test` a partir de `.env.test.example`.
+2. Asegúrate de que `DATABASE_URL` apunte a una base `test` o `localhost`.
+3. Ejecuta:
+
+```bash
+npm test
+```
+
+La configuración de `tests/setup-env.js` fuerza `NODE_ENV=test`, carga únicamente `.env.test` con `dotenv` y detiene la ejecución si `DATABASE_URL` no apunta a localhost, 127.0.0.1 o no contiene `test`.
+
+> Durante `npm test` no se carga `.env` en ningún archivo del backend: los tests usan exclusivamente `.env.test`.
+
+Si necesitas preparar la base de datos de pruebas:
+
+```bash
+npm run migrate:test
+```
+
+Para resetear la base de pruebas y volver a ejecutar las migraciones:
+
+```bash
+npm run migrate:test:reset
+```
+
+### Base de datos de pruebas local
+
+Para levantar un PostgreSQL local aislado para tests puedes usar:
+
+```bash
+docker run --name certivalidate-test-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=certivalidate_test -p 5434:5432 -d postgres:16-alpine
+```
+
+Luego crea `.env.test` a partir de `.env.test.example` y asegúrate de que `DATABASE_URL` y `DIRECT_URL` apunten a `localhost:5434`.
+
 | `FRONTEND_URL` | `http://localhost:5173` | Origen(es) permitido(s) por CORS (separar con coma para múltiples) |
 | `PUBLIC_VERIFY_URL` | `http://localhost:3000/api/certificados/verificar` | URL pública de verificación que aparece en los PDFs generados |
 | `LOG_LEVEL` | `info` | Nivel de log pino: `trace`, `debug`, `info`, `warn`, `error` |
@@ -246,11 +286,11 @@ Al registrarse, el usuario recibe un token de verificación. Ciertos endpoints (
 
 Cada usuario tiene un rol por institución. Los permisos se verifican en cada endpoint con `requirePermission(recurso, accion)`.
 
-| Rol | Permisos |
-|---|---|
-| `admin` | Todos los permisos del sistema (18) |
+| Rol      | Permisos                                                                       |
+| -------- | ------------------------------------------------------------------------------ |
+| `admin`  | Todos los permisos del sistema (18)                                            |
 | `editor` | Emitir, listar, ver y descargar certificados. CRUD de estudiantes y plantillas |
-| `lector` | Listar y ver certificados, estudiantes, instituciones y plantillas |
+| `lector` | Listar y ver certificados, estudiantes, instituciones y plantillas             |
 
 ### Otras medidas
 
@@ -267,74 +307,74 @@ Cada usuario tiene un rol por institución. Los permisos se verifican en cada en
 
 ### Autenticación — `/api/auth`
 
-| Método | Ruta | Acceso | Descripción |
-|---|---|---|---|
-| POST | `/api/auth/register` | Público | Registro de nuevo usuario |
-| GET | `/api/auth/verificar-email?token=` | Público | Verifica el email con el token recibido |
-| POST | `/api/auth/login` | Público | Login — retorna access y refresh token |
-| POST | `/api/auth/refresh` | Público | Renueva access token usando refresh token |
-| POST | `/api/auth/logout` | JWT | Revoca el refresh token activo |
-| GET | `/api/auth/perfil` | JWT | Obtiene datos del usuario autenticado |
-| PUT | `/api/auth/perfil` | JWT + email verificado | Actualiza nombre, apellido o email |
-| PUT | `/api/auth/perfil/password` | JWT + email verificado | Cambia la contraseña e invalida todas las sesiones |
+| Método | Ruta                               | Acceso                 | Descripción                                        |
+| ------ | ---------------------------------- | ---------------------- | -------------------------------------------------- |
+| POST   | `/api/auth/register`               | Público                | Registro de nuevo usuario                          |
+| GET    | `/api/auth/verificar-email?token=` | Público                | Verifica el email con el token recibido            |
+| POST   | `/api/auth/login`                  | Público                | Login — retorna access y refresh token             |
+| POST   | `/api/auth/refresh`                | Público                | Renueva access token usando refresh token          |
+| POST   | `/api/auth/logout`                 | JWT                    | Revoca el refresh token activo                     |
+| GET    | `/api/auth/perfil`                 | JWT                    | Obtiene datos del usuario autenticado              |
+| PUT    | `/api/auth/perfil`                 | JWT + email verificado | Actualiza nombre, apellido o email                 |
+| PUT    | `/api/auth/perfil/password`        | JWT + email verificado | Cambia la contraseña e invalida todas las sesiones |
 
 ### Certificados — `/api/certificados`
 
-| Método | Ruta | Acceso | Descripción |
-|---|---|---|---|
-| POST | `/api/certificados/verificar` | Público | Verifica un certificado por hash SHA-256 o código único |
-| POST | `/api/certificados/emitir` | JWT + emitir | Genera un certificado con hash SHA-256 |
-| GET | `/api/certificados/listar` | JWT + listar | Lista certificados con paginación y filtros |
-| GET | `/api/certificados/:id` | JWT + ver | Detalle de un certificado |
-| GET | `/api/certificados/descargar/:id` | JWT + descargar | Descarga el certificado en PDF |
-| GET | `/api/certificados/:id/verificaciones` | JWT + ver | Historial de verificaciones públicas |
-| GET | `/api/certificados/:id/revocaciones` | JWT + ver | Historial de revocaciones |
-| POST | `/api/certificados/:id/revocar` | JWT + revocar | Revoca un certificado con motivo |
+| Método | Ruta                                   | Acceso          | Descripción                                             |
+| ------ | -------------------------------------- | --------------- | ------------------------------------------------------- |
+| POST   | `/api/certificados/verificar`          | Público         | Verifica un certificado por hash SHA-256 o código único |
+| POST   | `/api/certificados/emitir`             | JWT + emitir    | Genera un certificado con hash SHA-256                  |
+| GET    | `/api/certificados/listar`             | JWT + listar    | Lista certificados con paginación y filtros             |
+| GET    | `/api/certificados/:id`                | JWT + ver       | Detalle de un certificado                               |
+| GET    | `/api/certificados/descargar/:id`      | JWT + descargar | Descarga el certificado en PDF                          |
+| GET    | `/api/certificados/:id/verificaciones` | JWT + ver       | Historial de verificaciones públicas                    |
+| GET    | `/api/certificados/:id/revocaciones`   | JWT + ver       | Historial de revocaciones                               |
+| POST   | `/api/certificados/:id/revocar`        | JWT + revocar   | Revoca un certificado con motivo                        |
 
 ### Estudiantes — `/api/estudiantes`
 
-| Método | Ruta | Acceso | Descripción |
-|---|---|---|---|
-| GET | `/api/estudiantes` | JWT + listar | Lista estudiantes con paginación y búsqueda |
-| GET | `/api/estudiantes/:id` | JWT + ver | Detalle de un estudiante |
-| POST | `/api/estudiantes` | JWT + crear | Registra un nuevo estudiante |
-| PUT | `/api/estudiantes/:id` | JWT + actualizar | Actualiza datos del estudiante |
-| DELETE | `/api/estudiantes/:id` | JWT + eliminar | Elimina un estudiante sin certificados |
+| Método | Ruta                   | Acceso           | Descripción                                 |
+| ------ | ---------------------- | ---------------- | ------------------------------------------- |
+| GET    | `/api/estudiantes`     | JWT + listar     | Lista estudiantes con paginación y búsqueda |
+| GET    | `/api/estudiantes/:id` | JWT + ver        | Detalle de un estudiante                    |
+| POST   | `/api/estudiantes`     | JWT + crear      | Registra un nuevo estudiante                |
+| PUT    | `/api/estudiantes/:id` | JWT + actualizar | Actualiza datos del estudiante              |
+| DELETE | `/api/estudiantes/:id` | JWT + eliminar   | Elimina un estudiante sin certificados      |
 
 ### Instituciones — `/api/instituciones`
 
-| Método | Ruta | Acceso | Descripción |
-|---|---|---|---|
-| GET | `/api/instituciones` | JWT + ver | Lista instituciones del usuario |
-| GET | `/api/instituciones/:id` | JWT + ver | Detalle de una institución |
-| GET | `/api/instituciones/:id/estadisticas` | JWT + estadisticas | Conteos de estudiantes, certificados y verificaciones |
-| POST | `/api/instituciones` | JWT | Crea institución y vincula al creador como admin |
-| PUT | `/api/instituciones/:id` | JWT + actualizar | Actualiza datos de la institución |
-| PATCH | `/api/instituciones/:id/desactivar` | JWT + actualizar | Desactiva una institución |
+| Método | Ruta                                  | Acceso             | Descripción                                           |
+| ------ | ------------------------------------- | ------------------ | ----------------------------------------------------- |
+| GET    | `/api/instituciones`                  | JWT + ver          | Lista instituciones del usuario                       |
+| GET    | `/api/instituciones/:id`              | JWT + ver          | Detalle de una institución                            |
+| GET    | `/api/instituciones/:id/estadisticas` | JWT + estadisticas | Conteos de estudiantes, certificados y verificaciones |
+| POST   | `/api/instituciones`                  | JWT                | Crea institución y vincula al creador como admin      |
+| PUT    | `/api/instituciones/:id`              | JWT + actualizar   | Actualiza datos de la institución                     |
+| PATCH  | `/api/instituciones/:id/desactivar`   | JWT + actualizar   | Desactiva una institución                             |
 
 ### Plantillas — `/api/plantillas`
 
-| Método | Ruta | Acceso | Descripción |
-|---|---|---|---|
-| GET | `/api/plantillas` | JWT + listar | Lista plantillas disponibles |
-| GET | `/api/plantillas/:id` | JWT + ver | Detalle de una plantilla |
-| POST | `/api/plantillas` | JWT + crear | Crea una nueva plantilla HTML |
-| PUT | `/api/plantillas/:id` | JWT + actualizar | Actualiza una plantilla existente |
-| DELETE | `/api/plantillas/:id` | JWT + archivar | Archiva (soft delete) una plantilla |
+| Método | Ruta                  | Acceso           | Descripción                         |
+| ------ | --------------------- | ---------------- | ----------------------------------- |
+| GET    | `/api/plantillas`     | JWT + listar     | Lista plantillas disponibles        |
+| GET    | `/api/plantillas/:id` | JWT + ver        | Detalle de una plantilla            |
+| POST   | `/api/plantillas`     | JWT + crear      | Crea una nueva plantilla HTML       |
+| PUT    | `/api/plantillas/:id` | JWT + actualizar | Actualiza una plantilla existente   |
+| DELETE | `/api/plantillas/:id` | JWT + archivar   | Archiva (soft delete) una plantilla |
 
 ### Auditoría — `/api/auditoria`
 
-| Método | Ruta | Acceso | Descripción |
-|---|---|---|---|
-| GET | `/api/auditoria` | JWT + ver auditoría | Lista el log de operaciones con filtros y paginación |
-| GET | `/api/auditoria/:entidad/:entidad_id` | JWT + ver auditoría | Historial de auditoría de un recurso específico |
+| Método | Ruta                                  | Acceso              | Descripción                                          |
+| ------ | ------------------------------------- | ------------------- | ---------------------------------------------------- |
+| GET    | `/api/auditoria`                      | JWT + ver auditoría | Lista el log de operaciones con filtros y paginación |
+| GET    | `/api/auditoria/:entidad/:entidad_id` | JWT + ver auditoría | Historial de auditoría de un recurso específico      |
 
 ### Sistema
 
-| Método | Ruta | Acceso | Descripción |
-|---|---|---|---|
-| GET | `/health` | Público | Estado del servidor, DB, uptime y versión |
-| GET | `/api/docs` | Dev / `ENABLE_SWAGGER=true` | Documentación interactiva Swagger UI |
+| Método | Ruta        | Acceso                      | Descripción                               |
+| ------ | ----------- | --------------------------- | ----------------------------------------- |
+| GET    | `/health`   | Público                     | Estado del servidor, DB, uptime y versión |
+| GET    | `/api/docs` | Dev / `ENABLE_SWAGGER=true` | Documentación interactiva Swagger UI      |
 
 ---
 
@@ -372,9 +412,7 @@ Todos los endpoints retornan el mismo formato JSON.
   "success": false,
   "statusCode": 400,
   "message": "Errores de validación",
-  "errors": [
-    { "field": "email", "message": "Debe ser un email válido" }
-  ],
+  "errors": [{ "field": "email", "message": "Debe ser un email válido" }],
   "timestamp": "2026-04-17T00:00:00.000Z"
 }
 ```

@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('./utils/load-env')
 BigInt.prototype.toJSON = function () {
   return this.toString()
 }
