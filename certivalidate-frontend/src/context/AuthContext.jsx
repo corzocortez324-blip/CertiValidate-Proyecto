@@ -1,32 +1,81 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api/auth.api';
-import { clearTokens } from '../api/_client';
+import { clearSession, getToken, setTokens, SESSION_EXPIRED_EVENT } from '../api/_client';
 
 const AuthContext = createContext(null);
 
-const loadAccesos = () => {
-  try { return JSON.parse(localStorage.getItem('accesos') || '[]'); } catch { return []; }
+const safeJsonParse = (value) => {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+};
+
+const loadUser = () => safeJsonParse(localStorage.getItem('user'));
+const loadAccesos = () => safeJsonParse(localStorage.getItem('accesos')) || [];
+const saveUserSession = (usuario, accesos) => {
+  if (usuario) localStorage.setItem('user', JSON.stringify(usuario));
+  localStorage.setItem('accesos', JSON.stringify(accesos || []));
+};
+
+const normalizeProfile = (data) => {
+  const usuario = data?.usuario || data;
+  const accesos = data?.accesos || data?.permisos || usuario?.accesos || [];
+  return { usuario, accesos: Array.isArray(accesos) ? accesos : [] };
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState(loadUser);
   const [accesos, setAccesos] = useState(loadAccesos);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const clearAuthState = () => {
+    clearSession();
+    localStorage.removeItem('user');
+    localStorage.removeItem('accesos');
+    setUser(null);
+    setAccesos([]);
+  };
 
   const persistSession = (data) => {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('refreshToken', data.refreshToken);
-    localStorage.setItem('user', JSON.stringify(data.usuario));
-    localStorage.setItem('accesos', JSON.stringify(data.accesos || []));
-    setUser(data.usuario);
-    setAccesos(data.accesos || []);
+    setTokens(data.token, data.refreshToken);
+    const { usuario, accesos: storedAccesos } = normalizeProfile(data);
+    saveUserSession(usuario, storedAccesos);
+    setUser(usuario);
+    setAccesos(storedAccesos);
   };
+
+  const refreshProfile = async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const data = await authApi.getPerfil();
+      const { usuario, accesos: storedAccesos } = normalizeProfile(data);
+      if (!usuario) throw new Error('Perfil inválido');
+      saveUserSession(usuario, storedAccesos);
+      setUser(usuario);
+      setAccesos(storedAccesos);
+    } catch (error) {
+      clearAuthState();
+    }
+  };
+
+  useEffect(() => {
+    refreshProfile().finally(() => setLoading(false));
+    const onExpired = () => {
+      clearAuthState();
+      navigate('/login');
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
+  }, [navigate]);
 
   const login = async (email, password) => {
     const data = await authApi.login(email, password);
-    if (data.requires2FA) {
+    if (data?.requires2FA) {
       return { requires2FA: true, partial_token: data.partial_token };
     }
     persistSession(data);
@@ -44,26 +93,23 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const token = getToken();
     try {
-      if (refreshToken) await authApi.logout(refreshToken);
+      if (token) await authApi.logout(token);
     } catch (_) {
-      // Si el servidor falla, cerramos sesión localmente igual
+      // Si el servidor falla, limpiamos sesión localmente de todas formas.
     } finally {
-      clearTokens();
-      localStorage.removeItem('user');
-      localStorage.removeItem('accesos');
-      setUser(null);
-      setAccesos([]);
+      clearAuthState();
+      navigate('/login');
     }
   };
 
   const updateProfile = async (data) => {
     const updated = await authApi.updatePerfil(data);
-    const merged = { ...user, ...updated };
-    localStorage.setItem('user', JSON.stringify(merged));
-    setUser(merged);
-    return merged;
+    const usuario = updated?.usuario || updated || { ...user, ...data };
+    saveUserSession(usuario, accesos);
+    setUser(usuario);
+    return usuario;
   };
 
   const changePassword = async (currentPassword, newPassword) => {
@@ -72,10 +118,8 @@ export const AuthProvider = ({ children }) => {
 
   const hasPermission = useCallback((permission) => {
     if (!user) return false;
-    return accesos.some(a => a.permisos?.includes(permission));
+    return accesos.some((a) => a.permisos?.includes(permission));
   }, [user, accesos]);
-
-  const loading = false;
 
   return (
     <AuthContext.Provider value={{ user, accesos, loading, login, completeLogin2FA, register, logout, updateProfile, changePassword, hasPermission }}>

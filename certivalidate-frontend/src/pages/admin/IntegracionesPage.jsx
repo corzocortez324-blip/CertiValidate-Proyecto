@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { institucionesApi } from '../../api/instituciones.api';
 import { Card } from '../../components/ui/Card';
 import { Zap, Activity, CheckCircle2, AlertTriangle, XCircle, HelpCircle, RefreshCw } from 'lucide-react';
+import { useToast } from '../../components/ui/ToastProvider';
 import { formatDateTime } from '../../utils/helpers';
 import './IntegracionesPage.css';
 
@@ -9,7 +10,7 @@ const STATUS_META = {
   online:   { label: 'Operativo',    color: '#10b981', icon: CheckCircle2 },
   degraded: { label: 'Degradado',    color: '#f59e0b', icon: AlertTriangle },
   offline:  { label: 'Sin conexión', color: '#ef4444', icon: XCircle },
-  unknown:  { label: 'Desconocido',  color: '#6b7280', icon: HelpCircle },
+  unknown:  { label: 'Sin configuración',  color: '#6b7280', icon: HelpCircle },
 };
 
 function generateUptime(seed) {
@@ -37,7 +38,7 @@ function UptimeChart({ uptime }) {
 }
 
 function IntegracionCard({ inst, index }) {
-  const [status, setStatus] = useState(inst.activa ? 'online' : 'unknown');
+  const [status, setStatus] = useState(inst.activa ? 'unknown' : 'unknown');
   const [testing, setTesting] = useState(false);
   const [lastTested, setLastTested] = useState(null);
   const uptime = generateUptime((inst.id ?? index) + index * 7);
@@ -47,13 +48,16 @@ function IntegracionCard({ inst, index }) {
   const probarConexion = async () => {
     setTesting(true);
     setStatus('unknown');
-    await new Promise(r => setTimeout(r, 1600 + Math.random() * 1200));
-    const result = inst.activa
-      ? (Math.random() > 0.15 ? 'online' : 'degraded')
-      : 'offline';
-    setStatus(result);
-    setLastTested(new Date());
-    setTesting(false);
+    try {
+      await institucionesApi.probarConexion(inst.id);
+      setStatus('online');
+      setLastTested(new Date());
+    } catch {
+      setStatus('unknown');
+      setLastTested(new Date());
+    } finally {
+      setTesting(false);
+    }
   };
 
   const uptimePct = Math.round(
@@ -105,13 +109,17 @@ export const IntegracionesPage = () => {
   const [instituciones, setInstituciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { showToast } = useToast();
 
   useEffect(() => {
     institucionesApi.listar({ limit: 50 })
       .then(data => setInstituciones(data.data ?? []))
-      .catch(err => setError(err.message))
+      .catch((err) => {
+        setError(err.message || 'No fue posible cargar las instituciones.');
+        showToast('Error al cargar integraciones.', 'error');
+      })
       .finally(() => setLoading(false));
-  }, []);
+  }, [showToast]);
 
   return (
     <div className="integraciones-page animate-fade-in">
@@ -125,8 +133,7 @@ export const IntegracionesPage = () => {
       <div className="integ-info-banner">
         <Zap size={15} className="integ-info-icon" />
         <span>
-          Monitorea el estado de cada institución integrada al sistema.
-          Usa <strong>Probar conexión</strong> para verificar disponibilidad en tiempo real.
+          Monitorea el estado de cada institución integrada al sistema. Si no hay un endpoint de salud configurado, los estados se mostrarán como <strong>Pendiente de implementación</strong>.
         </span>
       </div>
 

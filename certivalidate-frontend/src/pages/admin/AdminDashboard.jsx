@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../components/ui/ToastProvider';
 import { adminApi } from '../../api/admin.api';
 import {
   FileBadge, CheckCircle, XCircle, ShieldCheck,
@@ -399,7 +400,10 @@ function buildPDF(tipo, period, stats) {
 </html>`;
 
   const win = window.open('', '_blank', 'width=960,height=720');
-  if (!win) { alert('Permite ventanas emergentes para exportar el PDF.'); return; }
+  if (!win) {
+    showToast('Permite ventanas emergentes para exportar el PDF.', 'warning');
+    return;
+  }
   win.document.write(html);
   win.document.close();
   win.focus();
@@ -568,6 +572,7 @@ function ExportModal({ stats, period, onClose }) {
 export const AdminDashboard = () => {
   const { hasPermission } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [stats, setStats]           = useState(null);
   const [period, setPeriod]         = useState('30d');

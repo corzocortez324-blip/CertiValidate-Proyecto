@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import {
   Search, User, AlertTriangle, CheckCircle2, XCircle, WifiOff,
   FileText, Eye, X, AlertCircle,
@@ -54,7 +55,7 @@ function PreviewConfirmModal({ previewHtml, loading, onCancel, onConfirm }) {
             </div>
           ) : previewHtml ? (
             <iframe
-              srcDoc={previewHtml}
+              srcDoc={previewSource}
               title="Vista previa del certificado"
               className="pcm-iframe"
               sandbox="allow-same-origin"
@@ -130,6 +131,15 @@ export const EmitirCertificadoForm = ({
       version:     plantilla?.version          || '1',
     };
   }, [selectedStudent, form.institucion_id, form.plantilla_id, instituciones, instPlantillas]);
+
+  const previewSource = useMemo(() => {
+    if (!previewHtml) return '';
+    const filled = previewHtml;
+    return DOMPurify.sanitize(
+      `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;}html,body{margin:0;padding:0;background:#fff;}</style></head><body>${filled}</body></html>`,
+      { USE_PROFILES: { html: true } }
+    );
+  }, [previewHtml]);
 
   useEffect(() => {
     setPreviewHtml('');

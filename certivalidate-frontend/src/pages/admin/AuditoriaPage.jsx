@@ -4,6 +4,7 @@ import { Pagination } from '../../components/ui/Pagination';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Modal } from '../../components/ui/Modal';
+import { useToast } from '../../components/ui/ToastProvider';
 import { formatDateTime } from '../../utils/helpers';
 import { getActionColor, formatAccion } from '../../constants/audit';
 import { Eye, RotateCcw, Download, FileJson, FileSpreadsheet, X } from 'lucide-react';
@@ -69,6 +70,7 @@ export const AuditoriaPage = () => {
   const [totalPages, setTotalPages]   = useState(1);
   const [loading, setLoading]         = useState(true);
   const [listError, setListError]     = useState('');
+  const { showToast } = useToast();
 
   const [filterEntidad, setFilterEntidad] = useState('');
   const [filterAccion, setFilterAccion]   = useState('');
@@ -104,11 +106,13 @@ export const AuditoriaPage = () => {
       setAuditorias(data.auditorias);
       setTotalPages(data.totalPages);
     } catch (err) {
-      setListError(err.message);
+      const message = err?.message || 'Error al cargar la auditoría';
+      setListError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
-  }, [buildParams]);
+  }, [buildParams, showToast]);
 
   useEffect(() => { load(); }, [load]);
 

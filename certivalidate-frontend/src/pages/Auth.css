@@ -233,12 +233,16 @@
 }
 
 .demo-label {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+
   text-align: center;
-  margin-bottom: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  color: #94a3b8;
 }
 
 .demo-grid {
@@ -471,4 +475,30 @@
   .auth-split-page { flex-direction: column; }
   .auth-left-panel { flex: none; padding: 2.5rem 1.5rem; }
   .auth-right-panel { padding: 2rem 1.5rem; }
+}
+
+
+.auth-register-link {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+
+  text-align: center;
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.auth-register-link a {
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-register-link a:hover {
+  text-decoration: underline;
 }

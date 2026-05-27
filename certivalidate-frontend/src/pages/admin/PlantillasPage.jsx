@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { useAuth } from '../../context/AuthContext';
 import { plantillasApi } from '../../api/plantillas.api';
 import { institucionesApi } from '../../api/instituciones.api';
@@ -41,6 +42,22 @@ export const PlantillasPage = () => {
   }, []);
 
   const displayed = filterInst ? plantillas.filter(p => p.institucion_id === filterInst) : plantillas;
+
+  const previewSource = useMemo(() => {
+    if (!previewPlantilla) return '';
+    const filled = previewPlantilla.template_html
+      .replace(/\{\{nombre\}\}/g, 'Ana Martínez')
+      .replace(/\{\{institucion\}\}/g, 'Universidad Central')
+      .replace(/\{\{curso\}\}/g, 'Desarrollo Web')
+      .replace(/\{\{fecha_emision\}\}/g, new Date().toLocaleDateString('es-CO'))
+      .replace(/\{\{duracion\}\}/g, '40')
+      .replace(/\{\{fecha_expiracion\}\}/g, 'Sin expiración');
+
+    return DOMPurify.sanitize(
+      `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;}html,body{margin:0;padding:0;background:#fff;}</style></head><body>${filled}</body></html>`,
+      { USE_PROFILES: { html: true } }
+    );
+  }, [previewPlantilla]);
 
   return (
     <div className="animate-fade-in">
@@ -136,15 +153,7 @@ export const PlantillasPage = () => {
                 className="plt-preview-iframe"
                 title={previewPlantilla.nombre}
                 sandbox="allow-same-origin"
-                srcDoc={`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;}html,body{margin:0;padding:0;background:#fff;}</style></head><body>${
-                  previewPlantilla.template_html
-                    .replace(/\{\{nombre\}\}/g, 'Ana Martínez')
-                    .replace(/\{\{institucion\}\}/g, 'Universidad Central')
-                    .replace(/\{\{curso\}\}/g, 'Desarrollo Web')
-                    .replace(/\{\{fecha_emision\}\}/g, new Date().toLocaleDateString('es-CO'))
-                    .replace(/\{\{duracion\}\}/g, '40')
-                    .replace(/\{\{fecha_expiracion\}\}/g, 'Sin expiración')
-                }</body></html>`}
+                srcDoc={previewSource}
               />
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useConfirm, useToast } from '../components/ui/ToastProvider'
 
 /**
  * Hook genérico para páginas CRUD con lista paginada o plana.
@@ -12,28 +13,34 @@ import { useState, useEffect, useCallback } from 'react'
  *   @param {string}  removeMethod      - Método del api para borrar: 'eliminar' | 'archivar' | 'desactivar'
  *   @param {string}  removeConfirmMsg  - Mensaje del confirm antes de borrar
  */
-export const useListPage = (api, {
-  initialForm = {},
-  limit = 10,
-  debounceMs = 300,
-  dataKey = null,
-  removeMethod = 'eliminar',
-  removeConfirmMsg = '¿Eliminar este registro? Esta acción no se puede deshacer.',
-} = {}) => {
-  const [items, setItems]           = useState([])
-  const [page, setPage]             = useState(1)
+export const useListPage = (
+  api,
+  {
+    initialForm = {},
+    limit = 10,
+    debounceMs = 300,
+    dataKey = null,
+    removeMethod = 'eliminar',
+    removeConfirmMsg = '¿Eliminar este registro? Esta acción no se puede deshacer.',
+  } = {},
+) => {
+  const [items, setItems] = useState([])
+  const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [loading, setLoading]       = useState(true)
-  const [listError, setListError]   = useState('')
+  const [loading, setLoading] = useState(true)
+  const [listError, setListError] = useState('')
 
-  const [search, setSearch]         = useState('')
-  const [debSearch, setDebSearch]   = useState('')
-  const [filters, setFilters]       = useState({})
+  const [search, setSearch] = useState('')
+  const [debSearch, setDebSearch] = useState('')
+  const [filters, setFilters] = useState({})
 
-  const [showForm, setShowForm]     = useState(false)
-  const [editing, setEditing]       = useState(null)
-  const [form, setForm]             = useState(initialForm)
-  const [formError, setFormError]   = useState('')
+  const [showForm, setShowForm] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [form, setForm] = useState(initialForm)
+  const [formError, setFormError] = useState('')
+
+  const { confirm } = useConfirm()
+  const { showToast } = useToast()
 
   // Debounce búsqueda
   useEffect(() => {
@@ -48,12 +55,18 @@ export const useListPage = (api, {
     setLoading(true)
     setListError('')
     try {
-      const res = await api.listar({ page, limit, search: debSearch || undefined, ...filters })
+      const res = await api.listar({
+        page,
+        limit,
+        search: debSearch || undefined,
+        ...filters,
+      })
       if (Array.isArray(res)) {
         setItems(res)
         setTotalPages(1)
       } else {
-        const key = dataKey || Object.keys(res).find(k => Array.isArray(res[k]))
+        const key =
+          dataKey || Object.keys(res).find((k) => Array.isArray(res[k]))
         setItems(res[key] ?? [])
         setTotalPages(res.totalPages ?? res.meta?.totalPages ?? 1)
       }
@@ -64,7 +77,9 @@ export const useListPage = (api, {
     }
   }, [api, page, limit, debSearch, filters, dataKey])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   const openCreate = (overrideForm) => {
     setEditing(null)
@@ -105,17 +120,18 @@ export const useListPage = (api, {
   }
 
   const handleRemove = async (id) => {
-    if (!confirm(removeConfirmMsg)) return
+    const confirmed = await confirm(removeConfirmMsg, 'Confirmar eliminación')
+    if (!confirmed) return
     try {
       await api[removeMethod](id)
       load()
     } catch (err) {
-      alert(err.message)
+      showToast(err.message || 'Error al procesar la acción.', 'error')
     }
   }
 
   const setFilter = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }))
+    setFilters((prev) => ({ ...prev, [key]: value }))
     setPage(1)
   }
 
@@ -127,11 +143,29 @@ export const useListPage = (api, {
 
   return {
     // Lista
-    items, page, totalPages, loading, listError, setPage, load,
+    items,
+    page,
+    totalPages,
+    loading,
+    listError,
+    setPage,
+    load,
     // Búsqueda y filtros
-    search, setSearch, filters, setFilter, clearFilters,
+    search,
+    setSearch,
+    filters,
+    setFilter,
+    clearFilters,
     // Formulario / modal
-    showForm, editing, form, setForm, formError,
-    openCreate, openEdit, closeForm, handleSubmit, handleRemove,
+    showForm,
+    editing,
+    form,
+    setForm,
+    formError,
+    openCreate,
+    openEdit,
+    closeForm,
+    handleSubmit,
+    handleRemove,
   }
 }

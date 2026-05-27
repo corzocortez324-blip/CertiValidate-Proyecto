@@ -1,8 +1,20 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, FileBadge, Users, Building2, FileText,
-  ScrollText, ShieldCheck, LogOut, ChevronLeft, ChevronRight, User, UserCheck, ShieldAlert, Zap
+  LayoutDashboard,
+  FileBadge,
+  Users,
+  Building2,
+  FileText,
+  ScrollText,
+  ShieldCheck,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  User,
+  UserCheck,
+  ShieldAlert,
+  Zap,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './Sidebar.css';
@@ -20,13 +32,14 @@ const allNavItems = [
 ];
 
 const ROLE_META = {
-  admin:     { label: 'Administrador', color: '#00f0ff' },
-  editor:    { label: 'Emisor',        color: '#b026ff' },
-  lector:    { label: 'Lector',        color: '#38bdf8' },
-  viewer:    { label: 'Viewer',        color: '#34d399' },
-  emisor:    { label: 'Emisor',        color: '#f59e0b' },
-  docente:   { label: 'Docente',       color: '#fb923c' },
-  validador: { label: 'Validador',     color: '#a78bfa' },
+  admin: { label: 'Administrador', color: '#00f0ff' },
+  administrador: { label: 'Administrador', color: '#00f0ff' },
+  editor: { label: 'Emisor', color: '#b026ff' },
+  lector: { label: 'Lector', color: '#38bdf8' },
+  viewer: { label: 'Viewer', color: '#34d399' },
+  emisor: { label: 'Emisor', color: '#f59e0b' },
+  docente: { label: 'Docente', color: '#fb923c' },
+  validador: { label: 'Validador', color: '#a78bfa' },
 };
 
 const ROLE_FALLBACK = { label: 'Usuario', color: '#94a3b8' };
@@ -35,8 +48,28 @@ export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const { user, logout, hasPermission } = useAuth();
 
-  const navItems = allNavItems.filter(item => !item.permission || hasPermission(item.permission));
-  const meta = ROLE_META[user?.rol] || ROLE_FALLBACK;
+  const roleName =
+    user?.rol?.nombre ||
+    user?.rol ||
+    user?.role?.nombre ||
+    user?.role ||
+    '';
+
+  const normalizedRole = String(roleName).toLowerCase();
+
+  const isAdmin =
+    normalizedRole === 'admin' ||
+    normalizedRole === 'administrador' ||
+    normalizedRole.includes('admin');
+
+  const navItems = allNavItems.filter((item) => {
+    if (isAdmin) return true;
+    if (!item.permission) return true;
+    return hasPermission(item.permission);
+  });
+
+  const meta = ROLE_META[normalizedRole] || ROLE_FALLBACK;
+
   const initials = `${user?.nombre?.charAt(0) || ''}${user?.apellido?.charAt(0) || ''}`.toUpperCase();
 
   return (
@@ -48,7 +81,12 @@ export const Sidebar = () => {
             <span>CertiValidate</span>
           </div>
         )}
-        <button className="collapse-btn" onClick={() => setCollapsed(!collapsed)} title={collapsed ? 'Expandir' : 'Colapsar'}>
+
+        <button
+          className="collapse-btn"
+          onClick={() => setCollapsed(!collapsed)}
+          title={collapsed ? 'Expandir' : 'Colapsar'}
+        >
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
       </div>
@@ -73,23 +111,38 @@ export const Sidebar = () => {
           <div className={`sidebar-user-block ${collapsed ? 'collapsed' : ''}`}>
             <div
               className="user-avatar"
-              style={{ borderColor: meta.color, background: `${meta.color}15`, color: meta.color }}
-              title={`${user.nombre} ${user.apellido} — ${meta.label}`}
+              style={{
+                borderColor: meta.color,
+                background: `${meta.color}15`,
+                color: meta.color,
+              }}
+              title={`${user?.nombre || ''} ${user?.apellido || ''} — ${meta.label}`}
             >
               {initials || <User size={18} />}
             </div>
+
             {!collapsed && (
               <div className="sidebar-user-info">
-                <p className="user-name">{user.nombre} {user.apellido}</p>
-                <p className="user-role" style={{ color: meta.color }}>{meta.label}</p>
+                <p className="user-name">
+                  {user?.nombre} {user?.apellido}
+                </p>
+                <p className="user-role" style={{ color: meta.color }}>
+                  {meta.label}
+                </p>
               </div>
             )}
           </div>
         )}
-        <NavLink to="/admin/perfil" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} title="Mi Perfil">
+
+        <NavLink
+          to="/admin/perfil"
+          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+          title="Mi Perfil"
+        >
           <User size={20} />
           {!collapsed && <span>Mi Perfil</span>}
         </NavLink>
+
         <button className="sidebar-link logout-btn" onClick={logout} title="Cerrar sesión">
           <LogOut size={20} />
           {!collapsed && <span>Salir</span>}
