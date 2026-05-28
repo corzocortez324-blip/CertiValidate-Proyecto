@@ -1,0 +1,416 @@
+.integ-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+/* ── Top bar ─────────────────────────────────────────────── */
+.det-topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.det-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.det-back-btn:hover {
+  color: var(--color-text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.det-title-area {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.det-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  font-family: var(--font-display);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.det-title-ph {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.det-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.det-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Probar conexión */
+.btn-det-test {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  background: rgba(0, 240, 255, 0.07);
+  color: var(--color-primary);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn-det-test:hover:not(:disabled) {
+  background: rgba(0, 240, 255, 0.13);
+  border-color: rgba(0, 240, 255, 0.45);
+}
+
+.btn-det-test:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Sincronizar */
+.btn-det-sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  background: rgba(99, 102, 241, 0.1);
+  color: #818cf8;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn-det-sync:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.55);
+  color: #a5b4fc;
+}
+
+.btn-det-sync:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Resumen bar ──────────────────────────────────────────── */
+.det-resumen-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0.85rem 1.25rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.det-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.det-stat-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.det-stat-num {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  font-family: var(--font-display);
+}
+
+.det-stat-label {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.det-stat-sep {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 0 0.85rem;
+  flex-shrink: 0;
+}
+
+.det-stat-ts {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+.det-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 1px solid var(--color-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.det-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.det-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.83rem;
+  font-weight: 500;
+  padding: 0.7rem 1.1rem;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  margin-bottom: -1px;
+}
+
+.det-tab:hover {
+  color: var(--color-text-main);
+}
+
+.det-tab--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* ── Content area ─────────────────────────────────────────── */
+.det-content {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Loading ─────────────────────────────────────────────── */
+.det-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 5rem 2rem;
+  color: var(--color-text-muted);
+  justify-content: center;
+  font-size: 0.88rem;
+}
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Empty state ──────────────────────────────────────────── */
+.det-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.det-empty-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.det-empty-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  margin: 0;
+}
+
+.det-empty-sub {
+  font-size: 0.81rem;
+  color: var(--color-text-muted);
+  max-width: 360px;
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* ── Table ───────────────────────────────────────────────── */
+.det-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+}
+
+.det-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.81rem;
+}
+
+.det-table thead tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.det-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.det-table th:first-child { padding-left: 1.25rem; }
+.det-table th:last-child  { padding-right: 1.25rem; }
+
+.det-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.12s;
+}
+
+.det-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.det-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.det-table td {
+  padding: 0.7rem 1rem;
+  color: var(--color-text-main);
+  vertical-align: middle;
+}
+
+.det-table td:first-child { padding-left: 1.25rem; }
+.det-table td:last-child  { padding-right: 1.25rem; }
+
+/* ── Cell types ──────────────────────────────────────────── */
+.det-cell-empty {
+  color: var(--color-text-muted);
+}
+
+.det-cell-text {
+  display: block;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.det-cell-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.69rem;
+  font-weight: 700;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.det-cell-tags {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .det-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .det-header-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .det-stat-ts {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .det-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-det-test,
+  .btn-det-sync {
+    justify-content: center;
+  }
+}

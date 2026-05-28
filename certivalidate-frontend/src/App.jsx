@@ -18,6 +18,7 @@ import { PerfilPage } from './pages/admin/PerfilPage';
 import { UsuariosPage } from './pages/admin/UsuariosPage';
 import { RolesPage } from './pages/admin/RolesPage';
 import { IntegracionesPage } from './pages/admin/IntegracionesPage';
+import { IntegracionDetallePage } from './pages/admin/IntegracionDetallePage';
 import { PERMISSIONS } from './constants/permissions';
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
             <Route path="usuarios" element={<PermissionRoute permission={PERMISSIONS.USUARIO_LISTAR} element={<UsuariosPage />} />} />
             <Route path="roles" element={<PermissionRoute permission={PERMISSIONS.USUARIO_LISTAR} element={<RolesPage />} />} />
             <Route path="integraciones" element={<PermissionRoute permission={PERMISSIONS.INSTITUCION_VER} element={<IntegracionesPage />} />} />
+            <Route path="integraciones/:institucionId" element={<PermissionRoute permission={PERMISSIONS.INSTITUCION_VER} element={<IntegracionDetallePage />} />} />
             <Route path="perfil" element={<PerfilPage />} />
           </Route>
 
