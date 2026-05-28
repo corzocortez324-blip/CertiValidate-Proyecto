@@ -46,8 +46,9 @@ export const institucionesApi = {
   },
 
   probarConexion: async (id) => {
-    throw new Error(
-      'Funcionalidad de prueba de conexión no disponible en esta versión.',
-    )
+    const res = await request(`/instituciones/${id}/probar-conexion`, {
+      method: 'POST',
+    })
+    return res.data
   },
 }

@@ -66,7 +66,7 @@ function InstAvatar({ nombre, color }) {
   );
 }
 
-function IntegracionCard({ inst }) {
+function IntegracionCard({ inst, showToast }) {
   const navigate = useNavigate();
   const [testing, setTesting] = useState(false);
   const [lastTested, setLastTested] = useState(null);
@@ -84,15 +84,15 @@ function IntegracionCard({ inst }) {
       await institucionesApi.probarConexion(inst.id);
       setTestResult('conectado');
       setTestMsg('Conexión verificada correctamente.');
+      showToast('Conexión exitosa con la API académica.', 'success');
     } catch (err) {
-      const msg = err?.message || '';
-      if (msg.toLowerCase().includes('no disponible') || msg.toLowerCase().includes('pendiente')) {
-        setTestResult('pendiente');
-        setTestMsg('Endpoint de salud no implementado en el backend aún.');
-      } else {
-        setTestResult('error');
-        setTestMsg(msg || 'No fue posible establecer conexión.');
+      let msg = err?.message || 'No fue posible establecer conexión.';
+      if (err instanceof TypeError || err?.name === 'TypeError') {
+        msg = 'Error de red. Verifica tu conexión e intenta de nuevo.';
       }
+      setTestResult('error');
+      setTestMsg(msg);
+      showToast(msg, 'error');
     } finally {
       setTesting(false);
       setLastTested(new Date());
@@ -246,7 +246,7 @@ export const IntegracionesPage = () => {
       ) : (
         <div className="integraciones-grid">
           {instituciones.map((inst) => (
-            <IntegracionCard key={inst.id} inst={inst} />
+            <IntegracionCard key={inst.id} inst={inst} showToast={showToast} />
           ))}
         </div>
       )}
