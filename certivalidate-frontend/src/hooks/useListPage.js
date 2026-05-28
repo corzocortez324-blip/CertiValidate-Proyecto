@@ -119,12 +119,25 @@ export const useListPage = (
     }
   }
 
+  const isUuid = (value) =>
+    typeof value === 'string' &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+
   const handleRemove = async (id) => {
+    if (!isUuid(id)) {
+      showToast(
+        'No se puede procesar esta acción porque el registro no tiene un ID real de la base de datos.',
+        'error',
+      )
+      return
+    }
+
     const confirmed = await confirm(removeConfirmMsg, 'Confirmar eliminación')
     if (!confirmed) return
+
     try {
       await api[removeMethod](id)
-      load()
+      await load()
     } catch (err) {
       showToast(err.message || 'Error al procesar la acción.', 'error')
     }
