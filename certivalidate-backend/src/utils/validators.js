@@ -310,6 +310,52 @@ const validateActualizarUsuario = [
   body('activo').optional().isBoolean().withMessage('activo debe ser booleano'),
 ]
 
+const validateIntegracionCrear = [
+  body('institucion_id')
+    .trim()
+    .notEmpty()
+    .withMessage('institucion_id es obligatorio')
+    .isUUID()
+    .withMessage('institucion_id debe ser un UUID válido'),
+  body('tipo')
+    .trim()
+    .notEmpty()
+    .withMessage('tipo es obligatorio'),
+  body('url_base')
+    .trim()
+    .notEmpty()
+    .withMessage('url_base es obligatoria')
+    .isURL({ protocols: ['http', 'https'], require_protocol: true })
+    .withMessage('url_base debe ser una URL válida (http o https)'),
+  body('api_key')
+    .optional({ nullable: true })
+    .trim(),
+  body('activa')
+    .optional()
+    .isBoolean()
+    .withMessage('activa debe ser booleano'),
+]
+
+const validateIntegracionActualizar = [
+  body('tipo')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('tipo no puede estar vacío'),
+  body('url_base')
+    .optional()
+    .trim()
+    .isURL({ protocols: ['http', 'https'], require_protocol: true })
+    .withMessage('url_base debe ser una URL válida (http o https)'),
+  body('api_key')
+    .optional({ nullable: true })
+    .trim(),
+  body('activa')
+    .optional()
+    .isBoolean()
+    .withMessage('activa debe ser booleano'),
+]
+
 const validateUUIDParam = (name = 'id') => [
   param(name).trim().isUUID().withMessage(`${name} debe ser un UUID válido`),
 ]
@@ -344,6 +390,8 @@ module.exports = {
   validatePlantilla,
   validateCrearUsuario,
   validateActualizarUsuario,
+  validateIntegracionCrear,
+  validateIntegracionActualizar,
   validateUUIDParam,
   handleValidationErrors,
   validateUpdateProfile,

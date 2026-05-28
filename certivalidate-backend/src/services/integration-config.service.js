@@ -201,7 +201,7 @@ async function obtenerProveedorPara(institucionId) {
  * @returns {Promise<object>} Integración creada/actualizada
  */
 async function crearOActualizarIntegracion(institucionId, datos) {
-  const { tipo, url_base, api_key } = datos
+  const { tipo, url_base, api_key, activa = true } = datos
 
   if (!institucionId || !tipo) {
     throw new Error('institucionId y tipo son obligatorios')
@@ -234,15 +234,13 @@ async function crearOActualizarIntegracion(institucionId, datos) {
       tipo,
       url_base,
       api_key: apiKeyEncriptada,
-      activa: true,
-      ultima_verificacion: new Date(),
+      activa,
     },
     update: {
       tipo,
       url_base,
       api_key: apiKeyEncriptada,
-      activa: true,
-      ultima_verificacion: new Date(),
+      activa,
     },
   })
 
@@ -255,6 +253,27 @@ async function crearOActualizarIntegracion(institucionId, datos) {
       tipo,
     },
     '[IntegrationConfig] Integración creada/actualizada',
+  )
+
+  return integracion
+}
+
+/**
+ * Eliminar integración por ID (hard delete)
+ *
+ * @param {string} id - ID de la integración
+ * @returns {Promise<object>} Integración eliminada
+ */
+async function eliminarIntegracion(id) {
+  const integracion = await prisma.integracion.delete({
+    where: { id },
+  })
+
+  configCache.delete(integracion.institucion_id)
+
+  logger.info(
+    { id, institucionId: integracion.institucion_id },
+    '[IntegrationConfig] Integración eliminada',
   )
 
   return integracion
@@ -386,6 +405,7 @@ module.exports = {
   obtenerProveedorPara,
   crearOActualizarIntegracion,
   desactivarIntegracion,
+  eliminarIntegracion,
   limpiarCache,
   verificarDisponibilidad,
   obtenerTodasLasIntegraciones,

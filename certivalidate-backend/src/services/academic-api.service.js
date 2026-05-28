@@ -61,6 +61,11 @@ async function buscarEstudiantePorDocumento(documento, opciones = {}) {
   const apiBase = getApiBase(opciones)
   const apiKey = getApiKey(opciones)
 
+  logger.debug(
+    { provider: 'external-api', endpoint: `/estudiantes/${documento}`, has_api_key: !!apiKey },
+    '[AcademicAPI] Iniciando búsqueda de estudiante',
+  )
+
   const inicio = Date.now()
   let ultimoError
 
@@ -147,6 +152,11 @@ async function listarEstudiantes(filtros = {}) {
   const maxRetries = filtros.maxRetries || MAX_RETRIES
   const apiBase = getApiBase(filtros)
   const apiKey = getApiKey(filtros)
+
+  logger.debug(
+    { provider: 'external-api', endpoint: '/estudiantes', has_api_key: !!apiKey },
+    '[AcademicAPI] Iniciando listado de estudiantes',
+  )
 
   const inicio = Date.now()
   let ultimoError
@@ -311,6 +321,11 @@ async function verificarDisponibilidad(config = {}) {
   const healthUrl = getHealthUrl(config)
   const apiKey = getApiKey(config)
 
+  logger.debug(
+    { provider: 'external-api', endpoint: healthUrl, has_api_key: !!apiKey },
+    '[AcademicAPI] Iniciando health check',
+  )
+
   try {
     const inicio = Date.now()
     await fetchConTimeout(healthUrl, {
@@ -348,8 +363,360 @@ async function verificarDisponibilidad(config = {}) {
   }
 }
 
+/**
+ * Listar certificados desde API externa
+ *
+ * @param {object} filtros - Filtros de búsqueda (también acepta url_base, api_key para config dinámica)
+ * @returns {Promise<array>} Lista de certificados
+ */
+async function listarCertificados(filtros = {}) {
+  const timeout = filtros.timeout || DEFAULT_TIMEOUT
+  const maxRetries = filtros.maxRetries || MAX_RETRIES
+  const apiBase = getApiBase(filtros)
+  const apiKey = getApiKey(filtros)
+
+  logger.debug(
+    { provider: 'external-api', endpoint: '/certificados', has_api_key: !!apiKey },
+    '[AcademicAPI] Iniciando listado de certificados',
+  )
+
+  const inicio = Date.now()
+  let ultimoError
+
+  for (let intento = 0; intento <= maxRetries; intento++) {
+    try {
+      const queryParams = new URLSearchParams({
+        skip: filtros.skip || 0,
+        take: filtros.take || 50,
+        ...(filtros.search && { search: filtros.search }),
+      })
+
+      const data = await fetchConTimeout(
+        `${apiBase}/certificados?${queryParams.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            ...(apiKey && { 'x-api-key': apiKey }),
+            'Content-Type': 'application/json',
+          },
+          timeout,
+        },
+      )
+
+      const duracion = Date.now() - inicio
+      logger.info(
+        {
+          provider: 'external-api',
+          endpoint: '/certificados (lista)',
+          responseTime: duracion,
+          cantidad: Array.isArray(data) ? data.length : 0,
+          intento: intento + 1,
+          exitoso: true,
+        },
+        '[AcademicAPI] Lista de certificados obtenida',
+      )
+
+      return data
+    } catch (error) {
+      ultimoError = error
+      const esRetryable = esErrorRetryable(error.statusCode)
+      const tiempoEspera = esRetryable ? calcularBackoff(intento) : 0
+
+      if (intento < maxRetries && esRetryable) {
+        logger.warn(
+          {
+            provider: 'external-api',
+            endpoint: '/certificados (lista)',
+            intento: intento + 1,
+            error: error.message,
+            reintentar: true,
+          },
+          '[AcademicAPI] Error, reintentando...',
+        )
+        await esperar(tiempoEspera)
+      } else {
+        break
+      }
+    }
+  }
+
+  logger.error(
+    {
+      provider: 'external-api',
+      endpoint: '/certificados (lista)',
+      intentos: maxRetries + 1,
+      error: ultimoError?.message,
+    },
+    '[AcademicAPI] Falló listando certificados',
+  )
+
+  throw ultimoError || new Error('Error listando certificados desde API')
+}
+
+/**
+ * Listar plantillas desde API externa
+ *
+ * @param {object} filtros - Filtros de búsqueda (también acepta url_base, api_key para config dinámica)
+ * @returns {Promise<array>} Lista de plantillas
+ */
+async function listarPlantillas(filtros = {}) {
+  const timeout = filtros.timeout || DEFAULT_TIMEOUT
+  const maxRetries = filtros.maxRetries || MAX_RETRIES
+  const apiBase = getApiBase(filtros)
+  const apiKey = getApiKey(filtros)
+
+  logger.debug(
+    { provider: 'external-api', endpoint: '/plantillas', has_api_key: !!apiKey },
+    '[AcademicAPI] Iniciando listado de plantillas',
+  )
+
+  const inicio = Date.now()
+  let ultimoError
+
+  for (let intento = 0; intento <= maxRetries; intento++) {
+    try {
+      const queryParams = new URLSearchParams({
+        skip: filtros.skip || 0,
+        take: filtros.take || 50,
+        ...(filtros.search && { search: filtros.search }),
+      })
+
+      const data = await fetchConTimeout(
+        `${apiBase}/plantillas?${queryParams.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            ...(apiKey && { 'x-api-key': apiKey }),
+            'Content-Type': 'application/json',
+          },
+          timeout,
+        },
+      )
+
+      const duracion = Date.now() - inicio
+      logger.info(
+        {
+          provider: 'external-api',
+          endpoint: '/plantillas (lista)',
+          responseTime: duracion,
+          cantidad: Array.isArray(data) ? data.length : 0,
+          intento: intento + 1,
+          exitoso: true,
+        },
+        '[AcademicAPI] Lista de plantillas obtenida',
+      )
+
+      return data
+    } catch (error) {
+      ultimoError = error
+      const esRetryable = esErrorRetryable(error.statusCode)
+      const tiempoEspera = esRetryable ? calcularBackoff(intento) : 0
+
+      if (intento < maxRetries && esRetryable) {
+        logger.warn(
+          {
+            provider: 'external-api',
+            endpoint: '/plantillas (lista)',
+            intento: intento + 1,
+            error: error.message,
+            reintentar: true,
+          },
+          '[AcademicAPI] Error, reintentando...',
+        )
+        await esperar(tiempoEspera)
+      } else {
+        break
+      }
+    }
+  }
+
+  logger.error(
+    {
+      provider: 'external-api',
+      endpoint: '/plantillas (lista)',
+      intentos: maxRetries + 1,
+      error: ultimoError?.message,
+    },
+    '[AcademicAPI] Falló listando plantillas',
+  )
+
+  throw ultimoError || new Error('Error listando plantillas desde API')
+}
+
+/**
+ * Listar cursos desde API externa
+ *
+ * @param {object} filtros - Filtros de búsqueda (también acepta url_base, api_key para config dinámica)
+ * @returns {Promise<array>} Lista de cursos
+ */
+async function listarCursos(filtros = {}) {
+  const timeout = filtros.timeout || DEFAULT_TIMEOUT
+  const maxRetries = filtros.maxRetries || MAX_RETRIES
+  const apiBase = getApiBase(filtros)
+  const apiKey = getApiKey(filtros)
+
+  logger.debug(
+    { provider: 'external-api', endpoint: '/cursos', has_api_key: !!apiKey },
+    '[AcademicAPI] Iniciando listado de cursos',
+  )
+
+  const inicio = Date.now()
+  let ultimoError
+
+  for (let intento = 0; intento <= maxRetries; intento++) {
+    try {
+      const data = await fetchConTimeout(
+        `${apiBase}/cursos`,
+        {
+          method: 'GET',
+          headers: {
+            ...(apiKey && { 'x-api-key': apiKey }),
+            'Content-Type': 'application/json',
+          },
+          timeout,
+        },
+      )
+
+      const duracion = Date.now() - inicio
+      logger.info(
+        {
+          provider: 'external-api',
+          endpoint: '/cursos (lista)',
+          responseTime: duracion,
+          cantidad: Array.isArray(data) ? data.length : 0,
+          intento: intento + 1,
+          exitoso: true,
+        },
+        '[AcademicAPI] Lista de cursos obtenida',
+      )
+
+      return data
+    } catch (error) {
+      ultimoError = error
+      const esRetryable = esErrorRetryable(error.statusCode)
+      const tiempoEspera = esRetryable ? calcularBackoff(intento) : 0
+
+      if (intento < maxRetries && esRetryable) {
+        logger.warn(
+          {
+            provider: 'external-api',
+            endpoint: '/cursos (lista)',
+            intento: intento + 1,
+            error: error.message,
+            reintentar: true,
+          },
+          '[AcademicAPI] Error, reintentando...',
+        )
+        await esperar(tiempoEspera)
+      } else {
+        break
+      }
+    }
+  }
+
+  logger.error(
+    {
+      provider: 'external-api',
+      endpoint: '/cursos (lista)',
+      intentos: maxRetries + 1,
+      error: ultimoError?.message,
+    },
+    '[AcademicAPI] Falló listando cursos',
+  )
+
+  throw ultimoError || new Error('Error listando cursos desde API')
+}
+
+/**
+ * Listar firmantes desde API externa
+ *
+ * @param {object} filtros - Filtros de búsqueda (también acepta url_base, api_key para config dinámica)
+ * @returns {Promise<array>} Lista de firmantes
+ */
+async function listarFirmantes(filtros = {}) {
+  const timeout = filtros.timeout || DEFAULT_TIMEOUT
+  const maxRetries = filtros.maxRetries || MAX_RETRIES
+  const apiBase = getApiBase(filtros)
+  const apiKey = getApiKey(filtros)
+
+  logger.debug(
+    { provider: 'external-api', endpoint: '/firmantes', has_api_key: !!apiKey },
+    '[AcademicAPI] Iniciando listado de firmantes',
+  )
+
+  const inicio = Date.now()
+  let ultimoError
+
+  for (let intento = 0; intento <= maxRetries; intento++) {
+    try {
+      const data = await fetchConTimeout(
+        `${apiBase}/firmantes`,
+        {
+          method: 'GET',
+          headers: {
+            ...(apiKey && { 'x-api-key': apiKey }),
+            'Content-Type': 'application/json',
+          },
+          timeout,
+        },
+      )
+
+      const duracion = Date.now() - inicio
+      logger.info(
+        {
+          provider: 'external-api',
+          endpoint: '/firmantes (lista)',
+          responseTime: duracion,
+          cantidad: Array.isArray(data) ? data.length : 0,
+          intento: intento + 1,
+          exitoso: true,
+        },
+        '[AcademicAPI] Lista de firmantes obtenida',
+      )
+
+      return data
+    } catch (error) {
+      ultimoError = error
+      const esRetryable = esErrorRetryable(error.statusCode)
+      const tiempoEspera = esRetryable ? calcularBackoff(intento) : 0
+
+      if (intento < maxRetries && esRetryable) {
+        logger.warn(
+          {
+            provider: 'external-api',
+            endpoint: '/firmantes (lista)',
+            intento: intento + 1,
+            error: error.message,
+            reintentar: true,
+          },
+          '[AcademicAPI] Error, reintentando...',
+        )
+        await esperar(tiempoEspera)
+      } else {
+        break
+      }
+    }
+  }
+
+  logger.error(
+    {
+      provider: 'external-api',
+      endpoint: '/firmantes (lista)',
+      intentos: maxRetries + 1,
+      error: ultimoError?.message,
+    },
+    '[AcademicAPI] Falló listando firmantes',
+  )
+
+  throw ultimoError || new Error('Error listando firmantes desde API')
+}
+
 module.exports = {
   buscarEstudiantePorDocumento,
   listarEstudiantes,
+  listarCertificados,
+  listarPlantillas,
+  listarCursos,
+  listarFirmantes,
   verificarDisponibilidad,
 }

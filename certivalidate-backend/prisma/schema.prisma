@@ -86,12 +86,12 @@ model RolPermiso {
   @@id([rol_id, permiso_id])
 }
 
-/// Modelo planificado — integraciones con LMS externos (Moodle, Canvas, etc.).
-/// No expuesto en ningún endpoint aún. Mantener en schema para no perder la migración.
+/// Integraciones con APIs académicas externas (REST, GraphQL, Moodle, etc.).
 /// api_key se almacena cifrada con AES-256-GCM. Leer con src/utils/crypto.js decrypt() antes de usar.
+/// Una integración por institución — institucion_id es único.
 model Integracion {
   id                  String      @id @default(uuid())
-  institucion_id      String
+  institucion_id      String      @unique
   tipo                String
   url_base            String?
   api_key             String?
