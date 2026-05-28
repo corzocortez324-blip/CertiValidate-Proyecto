@@ -14,6 +14,9 @@ const {
   obtenerEstadisticasInstitucion,
 } = require('../controllers/institucion.controller')
 const {
+  probarConexion,
+} = require('../controllers/integracion.controller')
+const {
   requirePermission,
   cargarInstitucionesUsuario,
 } = require('../utils/authorization')
@@ -85,6 +88,16 @@ router.patch(
   validateUUIDParam('id'),
   handleValidationErrors,
   desactivarInstitucion,
+)
+
+router.post(
+  '/:id/probar-conexion',
+  verificarToken,
+  requireEmailVerified,
+  cargarInstitucionesUsuario,
+  validateUUIDParam('id'),
+  handleValidationErrors,
+  probarConexion,
 )
 
 module.exports = router

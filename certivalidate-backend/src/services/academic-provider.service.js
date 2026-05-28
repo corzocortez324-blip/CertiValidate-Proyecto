@@ -42,6 +42,7 @@ async function buscarEstudiante({
     let estudiante
 
     switch (provider) {
+      case 'academic-api':
       case 'external-api':
         estudiante = await academicApi.buscarEstudiantePorDocumento(documento)
         break
@@ -154,6 +155,7 @@ async function listarEstudiantes({
     let estudiantes
 
     switch (provider) {
+      case 'academic-api':
       case 'external-api':
         estudiantes = await academicApi.listarEstudiantes(filtros)
         break
@@ -231,6 +233,7 @@ async function listarEstudiantesLocal({ institucionId, filtros = {} }) {
  */
 function esProveedorValido(provider) {
   const proveedoresImplementados = [
+    'academic-api',
     'external-api',
     'local-db',
   ]
@@ -244,6 +247,7 @@ function esProveedorValido(provider) {
  */
 function obtenerProveedoresDisponibles() {
   return [
+    'academic-api',
     'external-api',
     'local-db',
   ]

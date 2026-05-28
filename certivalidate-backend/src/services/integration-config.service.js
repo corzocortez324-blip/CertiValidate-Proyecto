@@ -110,6 +110,13 @@ async function obtenerConfiguracion(institucionId, opciones = {}) {
       }
     }
 
+    // Detección de provider:
+    // Si tiene url_base → siempre academic-api (independiente del valor del campo tipo)
+    // Si no tiene url_base → usar el tipo almacenado para determinar el provider
+    const provider = (integracion.activa && integracion.url_base)
+      ? 'academic-api'
+      : mapearTipoAProvider(integracion.tipo)
+
     const config = {
       id: integracion.id,
       tipo: integracion.tipo,
@@ -117,7 +124,7 @@ async function obtenerConfiguracion(institucionId, opciones = {}) {
       api_key: apiKeyDescifrada,
       activa: integracion.activa,
       ultimaVerificacion: integracion.ultima_verificacion,
-      provider: mapearTipoAProvider(integracion.tipo),
+      provider,
     }
 
     // Cachear
@@ -126,13 +133,14 @@ async function obtenerConfiguracion(institucionId, opciones = {}) {
       timestamp: Date.now(),
     })
 
-    logger.debug(
+    logger.info(
       {
         institucionId,
         provider: config.provider,
+        url_base: config.url_base,
         tipo: integracion.tipo,
       },
-      '[IntegrationConfig] Configuración cargada desde BD',
+      '[IntegrationConfig] Configuración de integración cargada',
     )
 
     return config
@@ -149,13 +157,19 @@ async function obtenerConfiguracion(institucionId, opciones = {}) {
 }
 
 /**
- * Mapear tipo de integración a provider de academic-provider.service
+ * Mapear tipo de integración a provider interno.
+ * Los valores 'REST', 'rest', 'REST/HTTP' y 'external-api' todos mapean a 'academic-api'.
  *
  * @private
  */
 function mapearTipoAProvider(tipo) {
   const mapa = {
-    'external-api': 'external-api',
+    // Variantes de API REST externa → academic-api
+    'REST': 'academic-api',
+    'rest': 'academic-api',
+    'REST/HTTP': 'academic-api',
+    'external-api': 'academic-api',
+    // Otros proveedores
     graphql: 'graphql',
     'supabase-direct': 'supabase-direct',
     'sql-server': 'sql-server',
@@ -307,10 +321,13 @@ async function verificarDisponibilidad(institucionId) {
       return false
     }
 
-    // Si es external-api, verificar health
-    if (config.provider === 'external-api') {
+    // Si es academic-api, verificar health usando la config real de la institución
+    if (config.provider === 'academic-api') {
       const academicApi = require('./academic-api.service')
-      const disponible = await academicApi.verificarDisponibilidad()
+      const disponible = await academicApi.verificarDisponibilidad({
+        url_base: config.url_base,
+        api_key: config.api_key,
+      })
 
       if (!disponible) {
         logger.warn(

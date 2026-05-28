@@ -883,6 +883,54 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /api/instituciones/{id}/probar-conexion:
+    post:
+      tags: [Instituciones]
+      summary: Probar conexión con la API académica externa de la institución
+      description: >
+        Ejecuta un health check real (`GET {url_base}/health`) contra la API académica
+        configurada para la institución. Actualiza `ultima_verificacion` en la BD.
+        Requiere que la institución tenga una integración de tipo `external-api` con `url_base` definida.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200':
+          description: Resultado de la prueba (conectado o pendiente/no disponible)
+          content:
+            application/json:
+              examples:
+                conectado:
+                  summary: Conexión exitosa
+                  value:
+                    success: true
+                    statusCode: 200
+                    message: Conexión verificada correctamente
+                    data:
+                      institucion_id: 550e8400-e29b-41d4-a716-446655440000
+                      provider: academic-api
+                      tipo: REST
+                      url_base: http://localhost:4000
+                      estado: conectado
+                      disponible: true
+                      ultima_verificacion: '2026-05-28T12:00:00.000Z'
+                    timestamp: '2026-05-28T12:00:00.000Z'
+                pendiente:
+                  summary: Sin integración o API no disponible
+                  value:
+                    success: false
+                    statusCode: 200
+                    message: Integración pendiente o no disponible
+                    data:
+                      institucion_id: 550e8400-e29b-41d4-a716-446655440000
+                      estado: pendiente
+                      disponible: false
+                    timestamp: '2026-05-28T12:00:00.000Z'
+        '400': { description: El parámetro id no es un UUID válido }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
   /api/instituciones/{id}/estadisticas:
     get:
       tags: [Instituciones]

@@ -10,6 +10,7 @@ const logger = require('../utils/logger')
  * - Fallback a caché local
  * - Logging distribuido
  * - Trazabilidad de llamadas
+ * - Config dinámica por institución (url_base, api_key)
  */
 
 const DEFAULT_TIMEOUT = parseInt(process.env.ACADEMIC_API_TIMEOUT || 5000)
@@ -17,15 +18,48 @@ const MAX_RETRIES = parseInt(process.env.ACADEMIC_API_MAX_RETRIES || 3)
 const BACKOFF_MULTIPLIER = 1.5
 
 /**
+ * Construir URL base para llamadas a la API de estudiantes/certificados.
+ * - Config dinámica: url_base apunta a la raíz (http://host:4000) → agrega /api
+ * - Env var: ACADEMIC_API_URL ya incluye /api
+ */
+function getApiBase(config = {}) {
+  return config.url_base
+    ? `${config.url_base}/api`
+    : process.env.ACADEMIC_API_URL
+}
+
+/**
+ * Construir URL del health check.
+ * - Config dinámica: url_base/health (sin /api)
+ * - Env var: ACADEMIC_API_URL/health (comportamiento legacy)
+ */
+function getHealthUrl(config = {}) {
+  return config.url_base
+    ? `${config.url_base}/health`
+    : `${process.env.ACADEMIC_API_URL}/health`
+}
+
+/**
+ * Obtener el valor de api_key a usar: config dinámica tiene prioridad sobre env var.
+ */
+function getApiKey(config = {}) {
+  return config.api_key !== undefined
+    ? config.api_key
+    : process.env.ACADEMIC_API_KEY
+}
+
+/**
  * Buscar estudiante por documento con retry y timeout
  *
  * @param {string} documento - Documento del estudiante
- * @param {object} opciones - Configuración (timeout, maxRetries)
+ * @param {object} opciones - Configuración (timeout, maxRetries, url_base, api_key)
  * @returns {Promise<object>} Datos del estudiante
  */
 async function buscarEstudiantePorDocumento(documento, opciones = {}) {
   const timeout = opciones.timeout || DEFAULT_TIMEOUT
   const maxRetries = opciones.maxRetries || MAX_RETRIES
+  const apiBase = getApiBase(opciones)
+  const apiKey = getApiKey(opciones)
 
   const inicio = Date.now()
   let ultimoError
@@ -33,11 +67,11 @@ async function buscarEstudiantePorDocumento(documento, opciones = {}) {
   for (let intento = 0; intento <= maxRetries; intento++) {
     try {
       const data = await fetchConTimeout(
-        `${process.env.ACADEMIC_API_URL}/estudiantes/${documento}`,
+        `${apiBase}/estudiantes/${documento}`,
         {
           method: 'GET',
           headers: {
-            'x-api-key': process.env.ACADEMIC_API_KEY,
+            ...(apiKey && { 'x-api-key': apiKey }),
             'Content-Type': 'application/json',
           },
           timeout,
@@ -105,12 +139,14 @@ async function buscarEstudiantePorDocumento(documento, opciones = {}) {
 /**
  * Listar estudiantes desde API externa
  *
- * @param {object} filtros - Filtros de búsqueda
+ * @param {object} filtros - Filtros de búsqueda (también acepta url_base, api_key para config dinámica)
  * @returns {Promise<array>} Lista de estudiantes
  */
 async function listarEstudiantes(filtros = {}) {
   const timeout = filtros.timeout || DEFAULT_TIMEOUT
   const maxRetries = filtros.maxRetries || MAX_RETRIES
+  const apiBase = getApiBase(filtros)
+  const apiKey = getApiKey(filtros)
 
   const inicio = Date.now()
   let ultimoError
@@ -124,11 +160,11 @@ async function listarEstudiantes(filtros = {}) {
       })
 
       const data = await fetchConTimeout(
-        `${process.env.ACADEMIC_API_URL}/estudiantes?${queryParams.toString()}`,
+        `${apiBase}/estudiantes?${queryParams.toString()}`,
         {
           method: 'GET',
           headers: {
-            'x-api-key': process.env.ACADEMIC_API_KEY,
+            ...(apiKey && { 'x-api-key': apiKey }),
             'Content-Type': 'application/json',
           },
           timeout,
@@ -267,24 +303,29 @@ function esperar(ms) {
 /**
  * Verificar disponibilidad de API
  *
+ * @param {object} config - Config dinámica opcional: { url_base, api_key }
+ *   url_base debe ser la URL raíz (ej: http://localhost:4000); el health se prueba en {url_base}/health
  * @returns {Promise<boolean>} True si API está disponible
  */
-async function verificarDisponibilidad() {
+async function verificarDisponibilidad(config = {}) {
+  const healthUrl = getHealthUrl(config)
+  const apiKey = getApiKey(config)
+
   try {
     const inicio = Date.now()
-    await fetchConTimeout(`${process.env.ACADEMIC_API_URL}/health`, {
+    await fetchConTimeout(healthUrl, {
       method: 'GET',
       headers: {
-        'x-api-key': process.env.ACADEMIC_API_KEY,
+        ...(apiKey && { 'x-api-key': apiKey }),
       },
-      timeout: 3000,
+      timeout: 5000,
     })
     const duracion = Date.now() - inicio
 
     logger.debug(
       {
         provider: 'external-api',
-        endpoint: '/health',
+        endpoint: healthUrl,
         responseTime: duracion,
         disponible: true,
       },
@@ -296,7 +337,7 @@ async function verificarDisponibilidad() {
     logger.warn(
       {
         provider: 'external-api',
-        endpoint: '/health',
+        endpoint: healthUrl,
         error: error.message,
         disponible: false,
       },

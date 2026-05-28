@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
-const fs = require('fs')
 const path = require('path')
 const dotenv = require('dotenv')
-const { PrismaClient } = require('@prisma/client')
 
 const confirmFlag = process.argv.includes('--confirm')
 const envFile = path.resolve(__dirname, '..', '.env')
@@ -25,6 +23,7 @@ if (!process.env.DATABASE_URL) {
 const isLocalDatabase = /localhost|127\.0\.0\.1|\.test/i.test(
   process.env.DATABASE_URL,
 )
+
 const needsExplicitConfirm = !isLocalDatabase
 
 if (needsExplicitConfirm && !confirmFlag) {
@@ -34,9 +33,15 @@ if (needsExplicitConfirm && !confirmFlag) {
   process.exit(1)
 }
 
-const prisma = new PrismaClient()
+const prisma = require('../src/utils/prisma')
 
-const TEST_PATTERNS = ['__test__', 'test', '@certivalidate.test', 'example.com']
+const TEST_PATTERNS = [
+  '__test__',
+  '__test_',
+  'certivalidate.test',
+  '@certivalidate.test',
+  'example.com',
+]
 
 const matchesTestPattern = (value = '') =>
   TEST_PATTERNS.some((pattern) =>
@@ -44,17 +49,21 @@ const matchesTestPattern = (value = '') =>
   )
 
 const isSafeCandidate = (usuario) => {
-  const hayTexto = [usuario.email, usuario.nombre, usuario.apellido].some(
+  const textMatch = [usuario.email, usuario.nombre, usuario.apellido].some(
     matchesTestPattern,
   )
 
-  if (!hayTexto) return false
+  if (!textMatch) return false
 
   if (usuario.activo === true) {
-    return ['__test__', '@certivalidate.test', 'example.com'].some((pattern) =>
-      String(usuario.email || '')
-        .toLowerCase()
-        .includes(pattern.toLowerCase()),
+    return [
+      '__test__',
+      '__test_',
+      '@certivalidate.test',
+      'certivalidate.test',
+      'example.com',
+    ].some((pattern) =>
+      String(usuario.email || '').toLowerCase().includes(pattern.toLowerCase()),
     )
   }
 
@@ -90,9 +99,10 @@ async function main() {
   console.log(`Usuarios activos: ${activos}`)
   console.log(`Usuarios inactivos: ${inactivos}`)
   console.log('Primeros 20 emails:')
-  candidatos
-    .slice(0, 20)
-    .forEach((usuario) => console.log(`  - ${usuario.email}`))
+
+  candidatos.slice(0, 20).forEach((usuario) => {
+    console.log(`  - ${usuario.email}`)
+  })
 
   if (candidatos.length === 0) {
     console.log('No hay usuarios candidatos para limpiar.')
@@ -108,21 +118,67 @@ async function main() {
 
   const ids = candidatos.map((usuario) => usuario.id)
 
-  await prisma.$transaction([
-    prisma.auditoria.deleteMany({ where: { usuario_id: { in: ids } } }),
-    prisma.revocacion.deleteMany({ where: { revocado_por: { in: ids } } }),
-    prisma.refreshToken.deleteMany({ where: { usuario_id: { in: ids } } }),
-    prisma.sesionActiva.deleteMany({ where: { usuario_id: { in: ids } } }),
-    prisma.usuarioInstitucion.deleteMany({
-      where: { usuario_id: { in: ids } },
-    }),
-  ])
+  console.log('Eliminando relaciones borrables...')
 
-  const deleted = await prisma.usuario.deleteMany({
+  await prisma.revocacion
+    .deleteMany({
+      where: { revocado_por: { in: ids } },
+    })
+    .catch((error) => {
+      console.warn('No se pudieron eliminar revocaciones:', error.message)
+    })
+
+  await prisma.refreshToken
+    .deleteMany({
+      where: { usuario_id: { in: ids } },
+    })
+    .catch((error) => {
+      console.warn('No se pudieron eliminar refresh tokens:', error.message)
+    })
+
+  await prisma.sesionActiva
+    .deleteMany({
+      where: { usuario_id: { in: ids } },
+    })
+    .catch((error) => {
+      console.warn('No se pudieron eliminar sesiones activas:', error.message)
+    })
+
+  await prisma.usuarioInstitucion
+    .deleteMany({
+      where: { usuario_id: { in: ids } },
+    })
+    .catch((error) => {
+      console.warn('No se pudieron eliminar usuario-institución:', error.message)
+    })
+
+  console.log('Intentando eliminar usuarios test...')
+
+  try {
+    const deleted = await prisma.usuario.deleteMany({
+      where: { id: { in: ids } },
+    })
+
+    console.log(`Usuarios eliminados físicamente: ${deleted.count}`)
+    return
+  } catch (error) {
+    console.warn(
+      'No se pudieron eliminar físicamente todos los usuarios. Se aplicará soft delete.',
+    )
+    console.warn(error.message)
+  }
+
+  const now = new Date()
+
+  const softDeleted = await prisma.usuario.updateMany({
     where: { id: { in: ids } },
+    data: {
+      activo: false,
+      deleted_at: now,
+    },
   })
 
-  console.log(`Usuarios eliminados: ${deleted.count}`)
+  console.log(`Usuarios marcados como eliminados: ${softDeleted.count}`)
 }
 
 main()
@@ -133,3 +189,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
+  
