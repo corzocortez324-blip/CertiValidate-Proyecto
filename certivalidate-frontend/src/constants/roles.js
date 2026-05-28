@@ -17,8 +17,4 @@ export const ROLE_PERMISSIONS = {
     'estudiante:listar', 'estudiante:ver',
     'institucion:ver', 'institucion:estadisticas',
   ],
-  // Roles adicionales — permisos gestionados vía Roles y Permisos page
-  docente: [],
-  emisor: [],
-  viewer: [],
 }

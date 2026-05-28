@@ -37,10 +37,6 @@ const ROLE_META = {
   administrador: { label: 'Administrador', color: '#00f0ff' },
   editor: { label: 'Emisor', color: '#b026ff' },
   lector: { label: 'Lector', color: '#38bdf8' },
-  viewer: { label: 'Viewer', color: '#34d399' },
-  emisor: { label: 'Emisor', color: '#f59e0b' },
-  docente: { label: 'Docente', color: '#fb923c' },
-  validador: { label: 'Validador', color: '#a78bfa' },
 };
 
 const ROLE_FALLBACK = { label: 'Usuario', color: '#94a3b8' };

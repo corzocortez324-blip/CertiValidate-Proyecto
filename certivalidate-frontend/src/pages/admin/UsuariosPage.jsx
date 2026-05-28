@@ -19,21 +19,29 @@ const KNOWN_ROLE_STYLE = {
 };
 const FALLBACK_COLORS = ['#8b5cf6','#f59e0b','#10b981','#f472b6','#fb923c','#34d399'];
 
-function getRoleStyle(nombre, idx = 0) {
+// Normaliza rol a string: soporta string, objeto {nombre} o null/undefined
+function normalizeRolName(rol) {
+  if (!rol) return '';
+  if (typeof rol === 'object') return rol?.nombre || '';
+  return String(rol);
+}
+
+function getRoleStyle(rolField, idx = 0) {
+  const nombre = normalizeRolName(rolField);
   if (KNOWN_ROLE_STYLE[nombre]) return KNOWN_ROLE_STYLE[nombre];
   const color = FALLBACK_COLORS[idx % FALLBACK_COLORS.length];
   return { color, bg: `${color}26` };
 }
 
-function getRoleLabel(nombre, rolesList = []) {
+function getRoleLabel(rolField, rolesList = []) {
+  const nombre = normalizeRolName(rolField);
+  if (!nombre) return 'Sin rol';
+  if (nombre === 'admin')  return 'Administrador';
+  if (nombre === 'editor') return 'Emisor';
+  if (nombre === 'lector') return 'Lector';
   const found = rolesList.find(r => r.nombre === nombre);
-  if (found) {
-    if (nombre === 'admin')  return 'Administrador';
-    if (nombre === 'editor') return 'Emisor';
-    if (nombre === 'lector') return 'Validador';
-    return nombre.charAt(0).toUpperCase() + nombre.slice(1);
-  }
-  return nombre || 'Sin rol';
+  if (found) return nombre.charAt(0).toUpperCase() + nombre.slice(1);
+  return nombre;
 }
 
 const INITIAL_FORM = { nombre: '', apellido: '', email: '', password: '', rol: 'lector', activo: true };
@@ -69,9 +77,10 @@ export const UsuariosPage = () => {
     e.preventDefault();
     if (editing) {
       const original = usuarios.find(u => u.id === editing);
-      if (original && original.rol !== form.rol) {
+      const originalRolName = normalizeRolName(original?.rol);
+      if (original && originalRolName !== form.rol) {
         setRolConfirm({
-          prevRol: original.rol,
+          prevRol: originalRolName,
           newRol: form.rol,
           onConfirm: () => {
             setRolConfirm(null);
@@ -101,7 +110,7 @@ export const UsuariosPage = () => {
   };
 
   const filtered = usuarios.filter(u => {
-    if (filterRol && u.rol !== filterRol) return false;
+    if (filterRol && normalizeRolName(u.rol) !== filterRol) return false;
     if (filterEstado === 'true'  && !u.activo)  return false;
     if (filterEstado === 'false' && u.activo)   return false;
     return true;
@@ -206,7 +215,7 @@ export const UsuariosPage = () => {
                             <button
                               className="icon-btn"
                               title="Editar"
-                              onClick={() => openEdit(u, usr => ({ nombre: usr.nombre, apellido: usr.apellido || '', email: usr.email, rol: usr.rol?.nombre || usr.rol || 'lector', activo: usr.activo ?? true }))}
+                              onClick={() => openEdit(u, usr => ({ nombre: usr.nombre, apellido: usr.apellido || '', email: usr.email, rol: normalizeRolName(usr.rol) || 'lector', activo: usr.activo ?? true }))}
                             >
                               <Pencil size={15} />
                             </button>
@@ -249,7 +258,7 @@ export const UsuariosPage = () => {
           isLastAdmin={
             !!editing &&
             form.rol === 'admin' &&
-            usuarios.filter(u => u.rol === 'admin' && u.activo).length <= 1
+            usuarios.filter(u => normalizeRolName(u.rol) === 'admin' && u.activo).length <= 1
           }
         />
       </Modal>

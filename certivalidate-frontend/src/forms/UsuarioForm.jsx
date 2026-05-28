@@ -5,7 +5,7 @@ import { ShieldAlert, Pencil, Eye, Shield, Info } from 'lucide-react';
 const KNOWN_ROLE_META = {
   admin:  { label: 'Administrador', color: '#6366f1', icon: ShieldAlert },
   editor: { label: 'Emisor',        color: '#06b6d4', icon: Pencil },
-  lector: { label: 'Validador',     color: '#0ea5e9', icon: Eye },
+  lector: { label: 'Lector',        color: '#0ea5e9', icon: Eye },
 };
 
 // Paleta de colores para roles desconocidos
