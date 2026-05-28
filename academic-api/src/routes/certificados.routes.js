@@ -6,4 +6,6 @@ const certificadosController = require('../controllers/certificados.controller')
 
 router.get('/', validarApiKey, certificadosController.listar)
 
+router.get('/:codigo', validarApiKey, certificadosController.buscarPorCodigo)
+
 module.exports = router
