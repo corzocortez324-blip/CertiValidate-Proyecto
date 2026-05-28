@@ -277,7 +277,7 @@ const validateCrearUsuario = [
     .optional()
     .trim()
     .isIn(['admin', 'editor', 'lector'])
-    .withMessage('El rol debe ser admin, editor o lector'),
+    .withMessage('Rol inválido. Roles permitidos: admin, editor, lector'),
   body('institucion_id')
     .optional()
     .trim()
@@ -306,7 +306,7 @@ const validateActualizarUsuario = [
     .optional()
     .trim()
     .isIn(['admin', 'editor', 'lector'])
-    .withMessage('El rol debe ser admin, editor o lector'),
+    .withMessage('Rol inválido. Roles permitidos: admin, editor, lector'),
   body('activo').optional().isBoolean().withMessage('activo debe ser booleano'),
 ]
 

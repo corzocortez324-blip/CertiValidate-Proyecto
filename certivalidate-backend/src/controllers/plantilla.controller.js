@@ -211,24 +211,24 @@ const archivarPlantilla = async (req, res) => {
       return sendSuccess(res, plantilla, 'La plantilla ya estaba inactiva', 200)
     }
 
-    const certActivos = await prisma.certificado.count({
-      where: {
-        plantilla_id: id,
-        estado: 'valido',
-        deleted_at: null,
-      },
+    const totalCerts = await prisma.certificado.count({
+      where: { plantilla_id: id, deleted_at: null },
     })
+
+    if (totalCerts > 0) {
+      return sendError(
+        res,
+        `No se puede archivar: la plantilla tiene ${totalCerts} certificado(s) asociado(s)`,
+        409,
+      )
+    }
 
     const plantillaActualizada = await prisma.plantillaCertificado.update({
       where: { id },
       data: { activa: false },
     })
 
-    const mensaje = certActivos > 0
-      ? `Plantilla archivada. Advertencia: tiene ${certActivos} certificado(s) válido(s) emitido(s) con esta plantilla.`
-      : 'Plantilla archivada correctamente'
-
-    return sendSuccess(res, plantillaActualizada, mensaje, 200)
+    return sendSuccess(res, plantillaActualizada, 'Plantilla archivada correctamente', 200)
   } catch (error) {
     logger.error({ err: error, requestId: req.requestId }, 'Error en archivarPlantilla')
     return sendError(res, 'Error al archivar plantilla', 500)

@@ -981,15 +981,15 @@ paths:
       summary: Archivar plantilla (desactivar)
       description: >
         Marca la plantilla como inactiva (`activa: false`). No elimina el registro de la base de datos.
-        Si tiene certificados válidos asociados, se archiva igualmente pero el mensaje de respuesta
-        incluye una advertencia con el número de certificados afectados.
+        Si la plantilla tiene certificados asociados (cualquier estado), devuelve 409 Conflict y no la archiva.
+        El `id` debe ser un UUID válido; de lo contrario se devuelve 400.
       security:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/UUIDPath'
       responses:
         '200':
-          description: Plantilla archivada correctamente (o con advertencia si tiene certificados activos)
+          description: Plantilla archivada correctamente
           content:
             application/json:
               schema:
@@ -998,9 +998,11 @@ paths:
                   - type: object
                     properties:
                       data: { $ref: '#/components/schemas/PlantillaCertificado' }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Conflict — la plantilla tiene certificados asociados y no puede archivarse }
 
   /api/auditoria:
     get:
@@ -1152,7 +1154,12 @@ paths:
     put:
       tags: [Usuarios]
       summary: Actualizar usuario
-      description: Permite cambiar nombre, apellido, email, estado activo y rol.
+      description: >
+        Permite cambiar nombre, apellido, email, estado activo y rol.
+        Solo el rol `admin` puede ejecutar esta operación.
+        Roles permitidos para el campo `rol`: `admin`, `editor`, `lector`.
+        El rol se persiste en `UsuarioInstitucion` mediante upsert para la institución del admin autenticado.
+        La respuesta incluye el campo `rol` actualizado.
       security:
         - bearerAuth: []
       parameters:
@@ -1168,10 +1175,13 @@ paths:
                 apellido: { type: string }
                 email:    { type: string, format: email }
                 activo:   { type: boolean }
-                rol:      { type: string, enum: [admin, editor, lector] }
+                rol:
+                  type: string
+                  enum: [admin, editor, lector]
+                  description: "Roles válidos: admin, editor, lector. Cualquier otro valor devuelve 400."
       responses:
         '200':
-          description: Usuario actualizado correctamente
+          description: Usuario actualizado correctamente con rol persistido
           content:
             application/json:
               schema:
