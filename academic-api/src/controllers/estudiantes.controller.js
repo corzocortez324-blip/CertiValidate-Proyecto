@@ -1,71 +1,47 @@
 const prisma = require('../utils/prisma')
+const { ESTUDIANTES } = require('../data/demo-data')
+
+function mapEstudiante(e) {
+  return {
+    documento: e.documento,
+    tipo_documento: e.tipo_documento ?? 'CC',
+    nombres: e.nombres ?? e.nombre,
+    apellidos: e.apellidos ?? e.apellido,
+    email: e.email ?? null,
+    programa: e.programa,
+    estado: e.estadoAcademico ?? e.estado,
+    fecha_registro: e.fecha_registro ?? e.createdAt ?? null,
+  }
+}
 
 async function listar(req, res) {
+  console.log(`[academic-api] GET /api/estudiantes — ${new Date().toISOString()}`)
   try {
-    const estudiantes = await prisma.estudiante.findMany({
-      include: {
-        certificados: true,
-      },
-    })
-
-    return res.json({
-      success: true,
-      data: estudiantes,
-    })
-  } catch (error) {
-    console.error('ERROR REAL listar:')
-    console.error(error)
-
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    })
+    const rows = await prisma.estudiante.findMany()
+    const data = rows.map(mapEstudiante)
+    return res.json({ success: true, total: data.length, data })
+  } catch {
+    return res.json({ success: true, total: ESTUDIANTES.length, data: ESTUDIANTES, demo: true })
   }
 }
 
 async function buscarPorDocumento(req, res) {
+  const { documento } = req.params
+  console.log(`[academic-api] GET /api/estudiantes/${documento} — ${new Date().toISOString()}`)
+
   try {
-    console.log('ENTRÓ A buscarPorDocumento')
-
-    const { documento } = req.params
-
-    console.log('DOCUMENTO:', documento)
-
-    const estudiante = await prisma.estudiante.findFirst({
-      where: {
-        documento,
-      },
-      include: {
-        certificados: true,
-      },
-    })
-
-    console.log('ESTUDIANTE:', estudiante)
-
-    if (!estudiante) {
-      return res.status(404).json({
-        success: false,
-        message: 'Estudiante no encontrado',
-      })
+    const row = await prisma.estudiante.findFirst({ where: { documento } })
+    if (!row) {
+      const demo = ESTUDIANTES.find((e) => e.documento === documento)
+      if (demo) return res.json({ success: true, data: demo, demo: true })
+      return res.status(404).json({ success: false, message: 'Registro no encontrado' })
     }
-
-    return res.json({
-      success: true,
-      data: estudiante,
-    })
-  } catch (error) {
-    console.error('ERROR REAL buscarPorDocumento:')
-    console.error(error)
-
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-      stack: error.stack,
-    })
+    return res.json({ success: true, data: mapEstudiante(row) })
+  } catch {
+    const demo = ESTUDIANTES.find((e) => e.documento === documento)
+    if (demo) return res.json({ success: true, data: demo, demo: true })
+    return res.status(404).json({ success: false, message: 'Registro no encontrado' })
   }
 }
 
-module.exports = {
-  listar,
-  buscarPorDocumento,
-}
+module.exports = { listar, buscarPorDocumento }

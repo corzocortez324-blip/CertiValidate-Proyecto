@@ -1,21 +1,22 @@
 function validarApiKey(req, res, next) {
-  const configuredKey = process.env.API_KEY
+  const isProduction = process.env.NODE_ENV === 'production'
+  const expectedKey = process.env.ACADEMIC_API_KEY
+  const providedKey = req.headers['x-api-key']
 
-  // Demo mode: if no API_KEY is configured, allow all requests through
-  if (!configuredKey) {
+  if (providedKey && expectedKey && providedKey === expectedKey) {
+    req.log.info({ authMode: 'api-key' }, 'Autorizado por API Key')
     return next()
   }
 
-  const apiKey = req.header('x-api-key')
-
-  if (!apiKey || apiKey !== configuredKey) {
-    return res.status(401).json({
-      success: false,
-      message: 'API Key inválida o ausente',
-    })
+  if (!isProduction) {
+    req.log.info({ authMode: 'demo' }, 'Autorizado por modo demo/desarrollo')
+    return next()
   }
 
-  next()
+  return res.status(401).json({
+    success: false,
+    message: 'API Key inválida o ausente',
+  })
 }
 
 module.exports = validarApiKey

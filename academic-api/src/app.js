@@ -5,6 +5,9 @@ const pinoHttp = require('pino-http')
 
 const estudiantesRoutes = require('./routes/estudiantes.routes')
 const certificadosRoutes = require('./routes/certificados.routes')
+const plantillasRoutes = require('./routes/plantillas.routes')
+const cursosRoutes = require('./routes/cursos.routes')
+const firmantesRoutes = require('./routes/firmantes.routes')
 
 const app = express()
 
@@ -29,5 +32,8 @@ app.get('/health', (req, res) => {
 
 app.use('/api/estudiantes', estudiantesRoutes)
 app.use('/api/certificados', certificadosRoutes)
+app.use('/api/plantillas', plantillasRoutes)
+app.use('/api/cursos', cursosRoutes)
+app.use('/api/firmantes', firmantesRoutes)
 
 module.exports = app
