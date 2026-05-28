@@ -1,24 +1,98 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { institucionesApi } from '../../api/instituciones.api';
-import { Card } from '../../components/ui/Card';
-import { Activity, HelpCircle, RefreshCw, Info } from 'lucide-react';
+import {
+  RefreshCw, Info, CheckCircle, XCircle, Clock,
+  HelpCircle, Settings, Link2, AlertCircle,
+} from 'lucide-react';
 import { useToast } from '../../components/ui/ToastProvider';
 import { formatDateTime } from '../../utils/helpers';
 import './IntegracionesPage.css';
 
+const STATUS_CONFIG = {
+  conectado: {
+    label: 'Conectado',
+    color: '#10b981',
+    bg: 'rgba(16,185,129,0.10)',
+    border: 'rgba(16,185,129,0.30)',
+    cardBorder: 'rgba(16,185,129,0.22)',
+    Icon: CheckCircle,
+  },
+  pendiente: {
+    label: 'Pendiente',
+    color: '#f59e0b',
+    bg: 'rgba(245,158,11,0.10)',
+    border: 'rgba(245,158,11,0.30)',
+    cardBorder: 'rgba(245,158,11,0.18)',
+    Icon: Clock,
+  },
+  error: {
+    label: 'Error',
+    color: '#ef4444',
+    bg: 'rgba(239,68,68,0.10)',
+    border: 'rgba(239,68,68,0.30)',
+    cardBorder: 'rgba(239,68,68,0.22)',
+    Icon: XCircle,
+  },
+  sin_configurar: {
+    label: 'Sin configurar',
+    color: '#6b7280',
+    bg: 'rgba(107,114,128,0.10)',
+    border: 'rgba(107,114,128,0.28)',
+    cardBorder: 'rgba(107,114,128,0.18)',
+    Icon: HelpCircle,
+  },
+};
+
+function getInitialStatus(inst) {
+  if (!inst.dominio || !inst.activa) return 'sin_configurar';
+  return 'pendiente';
+}
+
+function InstAvatar({ nombre, color }) {
+  const initials = nombre
+    ?.split(' ')
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase() || '?';
+  return (
+    <div
+      className="integ-avatar"
+      style={{ background: `${color}1a`, borderColor: `${color}44`, color }}
+    >
+      {initials}
+    </div>
+  );
+}
+
 function IntegracionCard({ inst }) {
+  const navigate = useNavigate();
   const [testing, setTesting] = useState(false);
   const [lastTested, setLastTested] = useState(null);
+  const [testResult, setTestResult] = useState(null);
   const [testMsg, setTestMsg] = useState('');
+
+  const status = testResult ?? getInitialStatus(inst);
+  const cfg = STATUS_CONFIG[status];
+  const StatusIcon = cfg.Icon;
 
   const probarConexion = async () => {
     setTesting(true);
     setTestMsg('');
     try {
       await institucionesApi.probarConexion(inst.id);
-      setTestMsg('Conexión exitosa.');
+      setTestResult('conectado');
+      setTestMsg('Conexión verificada correctamente.');
     } catch (err) {
-      setTestMsg(err?.message || 'Prueba de conexión pendiente de implementación en el backend.');
+      const msg = err?.message || '';
+      if (msg.toLowerCase().includes('no disponible') || msg.toLowerCase().includes('pendiente')) {
+        setTestResult('pendiente');
+        setTestMsg('Endpoint de salud no implementado en el backend aún.');
+      } else {
+        setTestResult('error');
+        setTestMsg(msg || 'No fue posible establecer conexión.');
+      }
     } finally {
       setTesting(false);
       setLastTested(new Date());
@@ -26,49 +100,84 @@ function IntegracionCard({ inst }) {
   };
 
   return (
-    <div className="integ-card glass-panel integ-card--unknown" style={{ '--card-color': '#6b7280' }}>
+    <div
+      className={`integ-card integ-card--${status}`}
+      style={{ borderColor: cfg.cardBorder }}
+    >
+      <div className="integ-card-accent" style={{ background: cfg.color }} />
+
       <div className="integ-card-header">
+        <InstAvatar nombre={inst.nombre} color={cfg.color} />
         <div className="integ-card-info">
-          <div className="integ-icon-wrap" style={{ background: 'rgba(107,114,128,0.18)', borderColor: 'rgba(107,114,128,0.4)' }}>
-            <Activity size={16} style={{ color: '#6b7280' }} />
-          </div>
-          <div>
-            <p className="integ-name">{inst.nombre}</p>
-            {inst.dominio && <span className="integ-domain">{inst.dominio}</span>}
-          </div>
+          <p className="integ-name" title={inst.nombre}>{inst.nombre}</p>
+          <span className="integ-domain">
+            {inst.dominio
+              ? <><Link2 size={10} style={{ verticalAlign: 'middle', marginRight: 3 }} />{inst.dominio}</>
+              : 'Sin dominio configurado'}
+          </span>
         </div>
         <div
           className="integ-status-badge"
-          style={{ color: '#6b7280', background: 'rgba(107,114,128,0.15)', borderColor: 'rgba(107,114,128,0.35)' }}
+          style={{ color: cfg.color, background: cfg.bg, borderColor: cfg.border }}
         >
-          <HelpCircle size={12} />
-          {inst.activa ? 'Sin configurar' : 'Inactiva'}
+          <StatusIcon size={11} />
+          {cfg.label}
         </div>
       </div>
 
+      <div className="integ-meta">
+        <div className="integ-meta-row">
+          <span className="integ-meta-label">Estado API</span>
+          <span className="integ-meta-value" style={{ color: cfg.color, fontWeight: 600 }}>
+            {cfg.label}
+          </span>
+        </div>
+        <div className="integ-meta-row">
+          <span className="integ-meta-label">Institución</span>
+          <span className="integ-meta-value">
+            {inst.activa
+              ? <span style={{ color: '#10b981' }}>Activa</span>
+              : <span style={{ color: '#6b7280' }}>Inactiva</span>}
+          </span>
+        </div>
+        <div className="integ-meta-row">
+          <span className="integ-meta-label">Última prueba</span>
+          <span className="integ-meta-value">
+            {lastTested ? formatDateTime(lastTested) : '—'}
+          </span>
+        </div>
+      </div>
+
+      {testMsg && (
+        <div className={`integ-test-msg integ-test-msg--${testResult}`}>
+          <AlertCircle size={13} style={{ flexShrink: 0, marginTop: 1 }} />
+          {testMsg}
+        </div>
+      )}
+
       <div className="integ-footer">
-        <span className="integ-last-tested">
-          {lastTested
-            ? `Probado: ${formatDateTime(lastTested)}`
-            : 'Sin probar aún'}
-        </span>
+        {status === 'sin_configurar' && (
+          <button
+            className="btn-configurar"
+            onClick={() => navigate('/admin/instituciones')}
+            type="button"
+          >
+            <Settings size={13} />
+            Configurar
+          </button>
+        )}
         <button
           className="btn-test-conexion"
           onClick={probarConexion}
           disabled={testing}
           type="button"
-          title="Requiere endpoint de salud configurado en el backend"
+          title={!inst.dominio ? 'Configure un dominio primero en Instituciones' : 'Probar conexión con el API externo'}
+          style={{ marginLeft: status !== 'sin_configurar' ? 'auto' : undefined }}
         >
           <RefreshCw size={13} className={testing ? 'spin' : ''} />
           {testing ? 'Probando…' : 'Probar conexión'}
         </button>
       </div>
-
-      {testMsg && (
-        <p className="integ-test-msg" style={{ color: testMsg.includes('exitosa') ? '#10b981' : '#f59e0b' }}>
-          {testMsg}
-        </p>
-      )}
     </div>
   );
 }
@@ -81,7 +190,7 @@ export const IntegracionesPage = () => {
 
   useEffect(() => {
     institucionesApi.listar({ limit: 50 })
-      .then(data => setInstituciones(data?.data ?? []))
+      .then((data) => setInstituciones(data?.data ?? []))
       .catch((err) => {
         setError(err.message || 'No fue posible cargar las instituciones.');
         showToast('Error al cargar integraciones.', 'error');
@@ -94,32 +203,46 @@ export const IntegracionesPage = () => {
       <div className="page-header">
         <div>
           <h1>Integraciones</h1>
-          <p className="page-subtitle">Conexión con sistemas externos por institución</p>
+          <p className="page-subtitle">
+            Conexión de CertiValidate con APIs académicas externas por institución
+          </p>
         </div>
       </div>
 
       <div className="integ-info-banner">
-        <Info size={15} className="integ-info-icon" />
-        <span>
-          Este módulo permite conectar CertiValidate con una <strong>API académica externa</strong> para
-          consultar estudiantes, cursos o certificados desde otro sistema institucional.
-          El estado de cada integración depende de un endpoint de salud configurado en el backend.
-          Si no está configurado, aparece como <strong>Sin configurar</strong>.
-        </span>
+        <Info size={16} className="integ-info-icon" />
+        <div className="integ-info-content">
+          <strong>¿Qué hace este módulo?</strong>
+          <span>
+            Permite conectar CertiValidate con la <strong>API académica externa</strong> de cada
+            institución para consultar en tiempo real datos de estudiantes, cursos y certificados
+            registrados en sistemas de terceros. El estado de cada integración refleja la última
+            verificación del endpoint de salud configurado en el backend.
+            Si aún no está configurado, aparece como <strong>Sin configurar</strong> o{' '}
+            <strong>Pendiente</strong>.
+          </span>
+        </div>
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && (
+        <div className="alert alert-error">{error}</div>
+      )}
 
       {loading ? (
         <div className="integ-loading">
-          <RefreshCw size={20} className="spin" /> Cargando instituciones…
+          <RefreshCw size={20} className="spin" />
+          Cargando instituciones…
         </div>
       ) : instituciones.length === 0 ? (
-        <Card>
-          <div className="empty-state" style={{ padding: '3rem' }}>
-            No hay instituciones registradas. Crea una institución para configurar su integración.
+        <div className="integ-empty">
+          <div className="integ-empty-icon">
+            <Settings size={32} />
           </div>
-        </Card>
+          <p className="integ-empty-title">No hay instituciones registradas</p>
+          <p className="integ-empty-sub">
+            Crea una institución en el módulo de Instituciones para poder configurar su integración.
+          </p>
+        </div>
       ) : (
         <div className="integraciones-grid">
           {instituciones.map((inst) => (
