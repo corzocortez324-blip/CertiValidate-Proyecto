@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="shield-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="100%" stop-color="#b026ff"/>
+    </linearGradient>
+  </defs>
+  <!-- Shield filled with primary gradient -->
+  <path d="M16 4 L26 8.2 L26 16.8 C26 22 21.5 26.5 16 28.5 C10.5 26.5 6 22 6 16.8 L6 8.2 Z" fill="url(#shield-grad)"/>
+  <!-- Checkmark in dark color -->
+  <path d="M11.5 16.5 L14.5 19.5 L20.5 13" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

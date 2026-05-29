@@ -1,0 +1,3 @@
+ALTER TABLE "Auditoria"
+ADD COLUMN IF NOT EXISTS "hash_anterior" TEXT,
+ADD COLUMN IF NOT EXISTS "hash_actual" TEXT;

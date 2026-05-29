@@ -1,0 +1,2 @@
+ALTER TABLE "Usuario"
+ADD COLUMN IF NOT EXISTS "es_platform_admin" BOOLEAN NOT NULL DEFAULT false;

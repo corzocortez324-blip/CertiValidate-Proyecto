@@ -1,0 +1,1868 @@
+openapi: 3.0.3
+info:
+  title: CertiValidate API
+  version: 1.1.0
+  description: >
+    API REST para emisión, verificación y gestión de certificados digitales con hash SHA-256.
+
+    Autenticación
+
+    La mayoría de endpoints requieren un JWT en el header `Authorization: Bearer <token>`.
+    Los tokens se obtienen en `/api/auth/login` y se renuevan con `/api/auth/refresh`.
+
+    Control de acceso
+
+    El acceso es por institución. Un usuario solo puede ver y modificar recursos de
+    las instituciones a las que pertenece, según su rol (admin, editor, lector).
+
+servers:
+  - url: http://localhost:3000
+    description: Desarrollo local
+
+tags:
+  - name: Sistema
+  - name: Auth
+  - name: Certificados
+  - name: Estudiantes
+  - name: Instituciones
+  - name: Plantillas
+  - name: Auditoría
+  - name: Usuarios
+  - name: Admin
+    description: Estadísticas globales del sistema. Solo usuarios autenticados con email verificado.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ApiSuccess:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        statusCode: { type: integer, example: 200 }
+        message: { type: string }
+        data: { type: object }
+        timestamp: { type: string, format: date-time }
+
+    ApiError:
+      type: object
+      properties:
+        success: { type: boolean, example: false }
+        statusCode: { type: integer }
+        message: { type: string }
+        timestamp: { type: string, format: date-time }
+
+    ValidationError:
+      allOf:
+        - $ref: '#/components/schemas/ApiError'
+        - type: object
+          properties:
+            errors:
+              type: array
+              items:
+                type: object
+                properties:
+                  field: { type: string }
+                  message: { type: string }
+
+    Tokens:
+      type: object
+      properties:
+        token: { type: string, description: "Access token JWT (1h por defecto)" }
+        refreshToken: { type: string, description: "Refresh token JWT (7d por defecto)" }
+        usuario:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            nombre: { type: string }
+            email: { type: string, format: email }
+
+    AdminStats:
+      type: object
+      properties:
+        totalEmitidos:
+          type: integer
+          description: Total de certificados emitidos (sin importar estado)
+          example: 500
+        totalValidos:
+          type: integer
+          description: Certificados en estado emitido (no revocados)
+          example: 480
+        totalRevocados:
+          type: integer
+          description: Certificados revocados
+          example: 20
+        tasaValidez:
+          type: number
+          format: float
+          description: Porcentaje de certificados válidos sobre el total
+          example: 96.0
+        verificacionesHoy:
+          type: integer
+          description: Verificaciones públicas realizadas desde el inicio del día
+          example: 15
+        verificacionesSemana:
+          type: integer
+          description: Verificaciones públicas en los últimos 7 días
+          example: 87
+        verificacionesMes:
+          type: integer
+          description: Verificaciones públicas en los últimos 30 días
+          example: 350
+        tendencia:
+          type: array
+          description: Emisiones y verificaciones agrupadas por mes según el período seleccionado
+          items:
+            type: object
+            properties:
+              mes:
+                type: string
+                description: Año y mes en formato YYYY-MM
+                example: "2025-04"
+              emisiones:
+                type: integer
+                example: 80
+              verificaciones:
+                type: integer
+                example: 170
+        topEmisores:
+          type: array
+          description: Top 5 usuarios emisores con más certificados emitidos
+          items:
+            type: object
+            properties:
+              nombre:
+                type: string
+                example: Ana Martínez
+              total:
+                type: integer
+                example: 200
+        ultimasRevocaciones:
+          type: array
+          description: Últimas 5 revocaciones registradas
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              motivo_codigo:
+                type: string
+                example: FRAUDE
+              fecha_revocacion:
+                type: string
+                format: date-time
+              codigo_unico:
+                type: string
+                example: ABC123DEF456GHI7
+              titular:
+                type: string
+                nullable: true
+                example: Ana Martínez
+        emisionesDiarias:
+          type: array
+          description: Emisiones por día en los últimos 90 días (tiempo real)
+          items:
+            type: object
+            properties:
+              dia:
+                type: string
+                format: date
+                example: "2026-05-01"
+              total_emitidos:
+                type: integer
+                example: 12
+              total_revocados:
+                type: integer
+                example: 1
+        verificacionesDiarias:
+          type: array
+          description: Verificaciones públicas por día en los últimos 30 días (tiempo real)
+          items:
+            type: object
+            properties:
+              dia:
+                type: string
+                format: date
+                example: "2026-05-01"
+              total:
+                type: integer
+                example: 45
+
+    SesionActiva:
+      type: object
+      properties:
+        id:        { type: string, format: uuid }
+        ip:        { type: string, nullable: true, example: "192.168.1.1" }
+        userAgent: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+
+    MotivoRevocacion:
+      type: object
+      properties:
+        motivo:
+          type: string
+          example: ERROR_EMISION
+        motivoCategoria:
+          type: string
+          example: ERROR EMISION
+        motivo_detalle:
+          type: string
+          nullable: true
+          example: El nombre del estudiante estaba incorrecto
+        revocadoPor:
+          type: string
+          nullable: true
+          example: Ana Martínez
+        fechaRevocacion:
+          type: string
+          format: date-time
+        txHashRevocacion:
+          type: string
+          nullable: true
+          description: Hash de transacción blockchain (null si no está anclado)
+
+    Usuario:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        nombre: { type: string }
+        apellido: { type: string }
+        email: { type: string, format: email }
+        activo: { type: boolean }
+        ultimo_acceso: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    UsuarioConRol:
+      allOf:
+        - $ref: '#/components/schemas/Usuario'
+        - type: object
+          properties:
+            rol:
+              type: string
+              enum: [admin, editor, lector]
+              nullable: true
+              description: Rol principal del usuario en la institución
+
+    Institucion:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        nombre: { type: string }
+        dominio: { type: string, nullable: true }
+        logo_url: { type: string, nullable: true }
+        activa: { type: boolean }
+        created_at: { type: string, format: date-time }
+
+    Estudiante:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        institucion_id: { type: string, format: uuid }
+        nombre: { type: string }
+        apellido: { type: string }
+        documento: { type: string }
+        email: { type: string, format: email, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    Certificado:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        codigo_unico: { type: string }
+        hash_sha256: { type: string }
+        estado: { type: string, enum: [valido, revocado] }
+        fecha_emision: { type: string, format: date-time }
+        fecha_expiracion: { type: string, format: date-time, nullable: true }
+        estudiante_id: { type: string, format: uuid }
+        institucion_id: { type: string, format: uuid }
+        plantilla_id: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+
+    PlantillaCertificado:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        institucion_id: { type: string, format: uuid }
+        nombre: { type: string }
+        template_html: { type: string }
+        version: { type: integer }
+        activa: { type: boolean }
+        created_at: { type: string, format: date-time }
+
+    PaginatedResponse:
+      type: object
+      properties:
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+        totalPages: { type: integer }
+
+  parameters:
+    PageParam:
+      in: query
+      name: page
+      schema: { type: integer, default: 1, minimum: 1 }
+    LimitParam:
+      in: query
+      name: limit
+      schema: { type: integer, default: 10, minimum: 1, maximum: 100 }
+    UUIDPath:
+      in: path
+      name: id
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    ValidationError:
+      description: Error de validación de entrada
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ValidationError' }
+    Unauthorized:
+      description: No autenticado o token inválido/expirado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    Forbidden:
+      description: Sin permiso para acceder a este recurso
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    BadRequest:
+      description: Solicitud inválida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+
+paths:
+  /health:
+    get:
+      tags: [Sistema]
+      summary: Estado del servidor y conexión a BD
+      responses:
+        '200':
+          description: Servidor online y BD conectada
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          status: { type: string, example: ok }
+                          version: { type: string, example: 1.1.0 }
+                          uptime: { type: integer, description: Segundos en ejecución }
+                          db: { type: string, enum: [connected, disconnected] }
+        '503':
+          description: BD no disponible
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Registrar nuevo usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, email, password]
+              properties:
+                nombre: { type: string, minLength: 3 }
+                apellido: { type: string }
+                email: { type: string, format: email }
+                password:
+                  type: string
+                  minLength: 6
+                  description: Debe contener mayúscula, minúscula y número
+      responses:
+        '201':
+          description: Usuario creado correctamente
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409':
+          description: Email ya registrado
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Iniciar sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Tokens' }
+        '401':
+          description: Credenciales inválidas
+
+  /api/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Renovar access token usando refresh token
+      description: El refresh token se rota — el anterior queda revocado inmediatamente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: Tokens renovados
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Tokens' }
+        '401':
+          description: Refresh token inválido, expirado o ya rotado
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Cerrar sesión y revocar refresh token
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: Sesión cerrada
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/auth/perfil:
+    get:
+      tags: [Auth]
+      summary: Obtener perfil del usuario autenticado
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Perfil del usuario (sin password_hash)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Usuario' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    put:
+      tags: [Auth]
+      summary: Actualizar nombre, apellido o email
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string }
+                apellido: { type: string }
+                email: { type: string, format: email }
+      responses:
+        '200': { description: Perfil actualizado }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { description: Email ya en uso }
+
+  /api/auth/perfil/password:
+    put:
+      tags: [Auth]
+      summary: Cambiar contraseña e invalidar todas las sesiones activas
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword: { type: string }
+                newPassword: { type: string, minLength: 6 }
+      responses:
+        '200': { description: Contraseña cambiada. Todas las sesiones fueron invalidadas. }
+        '401': { description: Contraseña actual incorrecta }
+
+  /api/certificados/verificar:
+    post:
+      tags: [Certificados]
+      summary: Verificar certificado por código o hash (público — sin autenticación)
+      description: Registra la verificación en el historial. Acepta código único o hash SHA-256.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                codigo: { type: string, description: Código único del certificado }
+                hash: { type: string, description: Hash SHA-256 completo }
+      responses:
+        '200':
+          description: Resultado de verificación
+          content:
+            application/json:
+              example:
+                success: true
+                statusCode: 200
+                data:
+                  codigo_unico: A1B2C3D4
+                  estado: valido
+                  mensaje: Certificado verificado correctamente
+                  hash_verificado: true
+                  fecha_emision: "2026-04-01T00:00:00Z"
+                  fecha_expiracion: null
+                  titular: "Juan P***z"
+                  tipo_certificado: Técnico en Sistemas
+                  institucion: Universidad Cesar
+                  blockchain: null
+        '400': { description: Se requiere código o hash }
+        '409': { description: Integridad del certificado comprometida (hash no coincide) }
+        '429': { description: Demasiadas solicitudes — rate limit 50 req/15min }
+
+  /api/certificados/emitir:
+    post:
+      tags: [Certificados]
+      summary: Emitir un nuevo certificado
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estudiante_id, institucion_id, plantilla_id]
+              properties:
+                estudiante_id: { type: string, format: uuid }
+                institucion_id: { type: string, format: uuid }
+                plantilla_id: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Certificado emitido con hash SHA-256
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Certificado' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/certificados/listar:
+    get:
+      tags: [Certificados]
+      summary: Listar certificados con paginación y filtros
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: estado
+          schema: { type: string, enum: [valido, revocado, expirado] }
+        - in: query
+          name: institucion_id
+          schema: { type: string, format: uuid }
+        - in: query
+          name: estudiante_id
+          schema: { type: string, format: uuid }
+        - in: query
+          name: search
+          schema: { type: string }
+          description: Busca en código, hash, nombre/apellido/documento del estudiante, plantilla
+      responses:
+        '200':
+          description: Lista paginada de certificados
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/certificados/descargar/{id}:
+    get:
+      tags: [Certificados]
+      summary: Descargar certificado en PDF
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200':
+          description: Archivo PDF del certificado
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/certificados/{id}:
+    get:
+      tags: [Certificados]
+      summary: Detalle de un certificado
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200':
+          description: Certificado con estudiante, institución y plantilla incluidos
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/certificados/{id}/verificaciones:
+    get:
+      tags: [Certificados]
+      summary: Historial paginado de verificaciones públicas del certificado
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200': { description: Lista paginada de verificaciones (ip, user_agent, resultado, fecha) }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/certificados/{id}/revocaciones:
+    get:
+      tags: [Certificados]
+      summary: Historial paginado de revocaciones del certificado
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200': { description: Lista paginada de revocaciones con usuario revocador }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/certificados/{id}/revocar:
+    post:
+      tags: [Certificados]
+      summary: Revocar un certificado
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [motivo_codigo]
+              properties:
+                motivo_codigo: { type: string, example: ERROR_EMISION }
+                motivo_detalle: { type: string, maxLength: 500 }
+      responses:
+        '200': { description: Certificado revocado }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: El certificado ya estaba revocado }
+
+  /api/estudiantes:
+    get:
+      tags: [Estudiantes]
+      summary: Listar estudiantes de las instituciones del usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: institucion_id
+          schema: { type: string, format: uuid }
+        - in: query
+          name: search
+          schema: { type: string, description: Busca en nombre, apellido, documento, email }
+      responses:
+        '200': { description: Lista paginada de estudiantes }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Estudiantes]
+      summary: Crear un nuevo estudiante
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [institucion_id, nombre, apellido, documento]
+              properties:
+                institucion_id: { type: string, format: uuid }
+                nombre: { type: string, minLength: 2 }
+                apellido: { type: string, minLength: 2 }
+                documento: { type: string, minLength: 4 }
+                email: { type: string, format: email }
+      responses:
+        '201': { description: Estudiante creado }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/estudiantes/{id}:
+    get:
+      tags: [Estudiantes]
+      summary: Detalle de un estudiante
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200': { description: Estudiante encontrado }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Estudiantes]
+      summary: Actualizar datos del estudiante (todos los campos opcionales)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string }
+                apellido: { type: string }
+                documento: { type: string }
+                email: { type: string, format: email }
+                institucion_id: { type: string, format: uuid, description: Mover a otra institución propia }
+      responses:
+        '200': { description: Estudiante actualizado }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Estudiantes]
+      summary: Eliminar estudiante (requiere no tener certificados)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200': { description: Estudiante eliminado }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: El estudiante tiene certificados asociados y no puede eliminarse }
+
+  /api/instituciones:
+    get:
+      tags: [Instituciones]
+      summary: Listar instituciones a las que pertenece el usuario
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { description: Lista de instituciones }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Instituciones]
+      summary: Crear institución (el creador queda automáticamente como admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre]
+              properties:
+                nombre: { type: string, minLength: 3 }
+                dominio: { type: string }
+                logo_url: { type: string, format: uri }
+                activa: { type: boolean, default: true }
+      responses:
+        '201': { description: Institución creada }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/instituciones/{id}:
+    get:
+      tags: [Instituciones]
+      summary: Detalle de una institución con conteos (_count)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200': { description: Institución con _count.estudiantes, _count.plantillas, _count.certificados }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    put:
+      tags: [Instituciones]
+      summary: Actualizar datos de la institución
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string }
+                dominio: { type: string }
+                logo_url: { type: string, format: uri }
+                activa: { type: boolean }
+      responses:
+        '200': { description: Institución actualizada }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/instituciones/{id}/desactivar:
+    patch:
+      tags: [Instituciones]
+      summary: Desactivar una institución
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200': { description: Institución desactivada }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/instituciones/{id}/probar-conexion:
+    post:
+      tags: [Instituciones]
+      summary: Probar conexión con la API académica externa de la institución
+      description: >
+        Ejecuta un health check real (`GET {url_base}/health`) contra la API académica
+        configurada para la institución. Actualiza `ultima_verificacion` en la BD.
+        Requiere que la institución tenga una integración de tipo `external-api` con `url_base` definida.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200':
+          description: Resultado de la prueba (conectado o pendiente/no disponible)
+          content:
+            application/json:
+              examples:
+                conectado:
+                  summary: Conexión exitosa
+                  value:
+                    success: true
+                    statusCode: 200
+                    message: Conexión verificada correctamente
+                    data:
+                      institucion_id: 550e8400-e29b-41d4-a716-446655440000
+                      provider: academic-api
+                      tipo: REST
+                      url_base: http://localhost:4000
+                      estado: conectado
+                      disponible: true
+                      ultima_verificacion: '2026-05-28T12:00:00.000Z'
+                    timestamp: '2026-05-28T12:00:00.000Z'
+                pendiente:
+                  summary: Sin integración o API no disponible
+                  value:
+                    success: false
+                    statusCode: 200
+                    message: Integración pendiente o no disponible
+                    data:
+                      institucion_id: 550e8400-e29b-41d4-a716-446655440000
+                      estado: pendiente
+                      disponible: false
+                    timestamp: '2026-05-28T12:00:00.000Z'
+        '400': { description: El parámetro id no es un UUID válido }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/instituciones/{id}/estadisticas:
+    get:
+      tags: [Instituciones]
+      summary: Estadísticas de la institución
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200':
+          description: Conteos de estudiantes, certificados (válidos/revocados/expirados) y verificaciones públicas
+          content:
+            application/json:
+              example:
+                data:
+                  institucion_id: uuid
+                  estudiantes: 42
+                  plantillas: 3
+                  certificados: 120
+                  certificados_validos: 115
+                  certificados_revocados: 5
+                  certificados_expirados: 0
+                  verificaciones_publicas: 350
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/plantillas:
+    get:
+      tags: [Plantillas]
+      summary: Listar plantillas activas de las instituciones del usuario
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { description: Lista de plantillas activas }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Plantillas]
+      summary: Crear una nueva plantilla de certificado
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [institucion_id, nombre, template_html, version]
+              properties:
+                institucion_id: { type: string, format: uuid }
+                nombre: { type: string, minLength: 3 }
+                template_html: { type: string, minLength: 10 }
+                version: { type: integer, minimum: 1 }
+                activa: { type: boolean, default: true }
+      responses:
+        '201': { description: Plantilla creada }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/plantillas/{id}:
+    get:
+      tags: [Plantillas]
+      summary: Detalle de una plantilla
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200': { description: Plantilla encontrada }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Plantillas]
+      summary: Actualizar plantilla existente
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string }
+                template_html: { type: string }
+                version: { type: integer, minimum: 1 }
+                activa: { type: boolean }
+      responses:
+        '200': { description: Plantilla actualizada }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    delete:
+      tags: [Plantillas]
+      summary: Archivar plantilla (desactivar)
+      description: >
+        Marca la plantilla como inactiva (`activa: false`). No elimina el registro de la base de datos.
+        Si la plantilla tiene certificados asociados (cualquier estado), devuelve 409 Conflict y no la archiva.
+        El `id` debe ser un UUID válido; de lo contrario se devuelve 400.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200':
+          description: Plantilla archivada correctamente
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/PlantillaCertificado' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: Conflict — la plantilla tiene certificados asociados y no puede archivarse }
+
+  /api/auditoria:
+    get:
+      tags: [Auditoría]
+      summary: Listar log de auditoría (filtrado por instituciones del usuario)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: entidad
+          schema: { type: string, example: Certificado }
+        - in: query
+          name: accion
+          schema: { type: string, example: EMITIR_CERTIFICADO }
+        - in: query
+          name: usuario_id
+          schema: { type: string, format: uuid }
+        - in: query
+          name: fecha_desde
+          schema: { type: string, format: date }
+        - in: query
+          name: fecha_hasta
+          schema: { type: string, format: date }
+      responses:
+        '200': { description: Lista paginada de registros de auditoría }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/auditoria/{entidad}/{entidad_id}:
+    get:
+      tags: [Auditoría]
+      summary: Historial de auditoría de una entidad específica
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: entidad
+          required: true
+          schema: { type: string, example: Certificado }
+          description: Tipo de entidad (Certificado, Estudiante, Institucion, Plantilla, Usuario)
+        - in: path
+          name: entidad_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Historial de auditoría de la entidad }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ─── Usuarios ────────────────────────────────────────────────────────────────
+
+  /api/usuarios:
+    get:
+      tags: [Usuarios]
+      summary: Listar usuarios (solo admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - in: query
+          name: search
+          schema: { type: string }
+          description: Buscar por nombre, apellido o email
+      responses:
+        '200':
+          description: Lista paginada de usuarios
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/PaginatedResponse'
+                          - type: object
+                            properties:
+                              usuarios:
+                                type: array
+                                items: { $ref: '#/components/schemas/UsuarioConRol' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+    post:
+      tags: [Usuarios]
+      summary: Crear usuario (solo admin)
+      description: Crea un nuevo usuario y lo asigna a la institución del admin con el rol indicado.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, email, password]
+              properties:
+                nombre:   { type: string, example: Ana }
+                apellido: { type: string, example: Martínez }
+                email:    { type: string, format: email, example: ana@universidad.edu.co }
+                password: { type: string, format: password, minLength: 8 }
+                rol:
+                  type: string
+                  enum: [admin, editor, lector]
+                  default: lector
+      responses:
+        '201':
+          description: Usuario creado correctamente
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/UsuarioConRol' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { description: El email ya está registrado }
+
+  /api/usuarios/{id}:
+    get:
+      tags: [Usuarios]
+      summary: Obtener usuario por ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200':
+          description: Usuario obtenido correctamente
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/UsuarioConRol' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    put:
+      tags: [Usuarios]
+      summary: Actualizar usuario
+      description: >
+        Permite cambiar nombre, apellido, email, estado activo y rol.
+        Solo el rol `admin` puede ejecutar esta operación.
+        Roles permitidos para el campo `rol`: `admin`, `editor`, `lector`.
+        El rol se persiste en `UsuarioInstitucion` mediante upsert para la institución del admin autenticado.
+        La respuesta incluye el campo `rol` actualizado.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:   { type: string }
+                apellido: { type: string }
+                email:    { type: string, format: email }
+                activo:   { type: boolean }
+                rol:
+                  type: string
+                  enum: [admin, editor, lector]
+                  description: "Roles válidos: admin, editor, lector. Cualquier otro valor devuelve 400."
+      responses:
+        '200':
+          description: Usuario actualizado correctamente con rol persistido
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/UsuarioConRol' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { description: El email ya está en uso }
+
+    delete:
+      tags: [Usuarios]
+      summary: Eliminar usuario (soft delete)
+      description: Marca el usuario como eliminado y lo desactiva. No se puede eliminar la propia cuenta.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200': { description: Usuario eliminado correctamente }
+        '400': { description: No puedes eliminar tu propia cuenta }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ── Admin ────────────────────────────────────────────────────────────
+  /api/admin/stats:
+    get:
+      tags: [Admin]
+      summary: Estadísticas globales del dashboard
+      description: >
+        Devuelve KPIs globales del sistema: totales de certificados, tasa de validez,
+        conteos de verificaciones públicas, tendencia mensual de emisiones y verificaciones,
+        top 5 usuarios emisores y las últimas 5 revocaciones.
+
+
+        El parámetro `period` controla el rango temporal de la gráfica de tendencia:
+        - `7d` → 1 mes hacia atrás
+        - `30d` → 3 meses (por defecto)
+        - `90d` → 6 meses
+        - `1y` → 12 meses
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: period
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [7d, 30d, 90d, 1y]
+            default: 30d
+          description: Período para la gráfica de tendencia mensual
+      responses:
+        '200':
+          description: Estadísticas obtenidas correctamente
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AdminStats'
+              example:
+                success: true
+                statusCode: 200
+                message: Operación exitosa
+                data:
+                  totalEmitidos: 500
+                  totalValidos: 480
+                  totalRevocados: 20
+                  tasaValidez: 96.0
+                  verificacionesHoy: 15
+                  verificacionesSemana: 87
+                  verificacionesMes: 350
+                  tendencia:
+                    - mes: "2025-03"
+                      emisiones: 80
+                      verificaciones: 170
+                    - mes: "2025-04"
+                      emisiones: 130
+                      verificaciones: 240
+                    - mes: "2025-05"
+                      emisiones: 95
+                      verificaciones: 210
+                  topEmisores:
+                    - nombre: Ana Martínez
+                      total: 200
+                    - nombre: Carlos López
+                      total: 150
+                  ultimasRevocaciones:
+                    - id: "550e8400-e29b-41d4-a716-446655440000"
+                      motivo_codigo: FRAUDE
+                      fecha_revocacion: "2025-05-03T14:30:00Z"
+                      codigo_unico: ABC123DEF456GHI7
+                      titular: Ana Martínez
+                timestamp: "2025-05-05T10:00:00Z"
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '500': { description: Error interno al calcular las estadísticas }
+
+  # ─── Auth adicionales ────────────────────────────────────────────────────────
+
+  /api/auth/verificar-email:
+    get:
+      tags: [Auth]
+      summary: Verificar dirección de email mediante token
+      description: El token se envía por email al registrarse. Una vez verificado, el usuario puede iniciar sesión.
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema: { type: string }
+          description: Token de verificación recibido por email
+      responses:
+        '200':
+          description: Email verificado correctamente
+        '400':
+          description: Token de verificación inválido o expirado
+
+  /api/auth/permisos:
+    get:
+      tags: [Auth]
+      summary: Obtener accesos e instituciones del usuario autenticado
+      description: Devuelve los roles e instituciones asociados al usuario actual. Útil para el control de acceso en el frontend.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Accesos obtenidos correctamente
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          accesos:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                institucion_id: { type: string, format: uuid }
+                                rol: { type: string, enum: [admin, editor, lector] }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ─── 2FA ─────────────────────────────────────────────────────────────────────
+
+  /api/auth/2fa/setup:
+    get:
+      tags: [Auth]
+      summary: Iniciar configuración de autenticación en dos factores (2FA)
+      description: Genera un secreto TOTP y devuelve un QR en base64 para escanear con una app autenticadora (Google Authenticator, Authy, etc.). El usuario debe llamar a `/api/auth/2fa/enable` con un código válido para activarlo.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: QR y secreto TOTP generados
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          qrDataUrl:
+                            type: string
+                            description: Imagen QR en formato data URL (base64 PNG)
+                          secret:
+                            type: string
+                            description: Clave TOTP en texto plano para ingreso manual
+        '400':
+          description: El 2FA ya estaba habilitado
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/auth/2fa/enable:
+    post:
+      tags: [Auth]
+      summary: Activar 2FA confirmando con el primer código TOTP
+      description: Verifica el código generado por la app autenticadora y activa el 2FA en la cuenta. Requiere haber llamado previamente a `/api/auth/2fa/setup`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  description: Código TOTP de 6 dígitos generado por la app autenticadora
+                  example: "123456"
+      responses:
+        '200':
+          description: 2FA activado correctamente
+        '400':
+          description: Código TOTP inválido, 2FA ya activo o secreto no configurado
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/auth/2fa/disable:
+    post:
+      tags: [Auth]
+      summary: Desactivar 2FA con contraseña y código TOTP
+      description: Requiere la contraseña actual y un código TOTP válido para desactivar el 2FA. Elimina el secreto TOTP almacenado.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password, code]
+              properties:
+                password:
+                  type: string
+                  description: Contraseña actual del usuario
+                code:
+                  type: string
+                  description: Código TOTP de 6 dígitos
+                  example: "654321"
+      responses:
+        '200':
+          description: 2FA desactivado correctamente
+        '400':
+          description: Contraseña o código TOTP inválido, o 2FA no estaba habilitado
+        '401':
+          description: Contraseña incorrecta
+
+  /api/auth/2fa/verify:
+    post:
+      tags: [Auth]
+      summary: Completar inicio de sesión con código 2FA (segundo factor)
+      description: >
+        Cuando el login devuelve `require2FA: true`, el cliente recibe un `partial_token` de corta duración.
+        Este endpoint valida ese token junto al código TOTP y devuelve los tokens de acceso completos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [partial_token, code]
+              properties:
+                partial_token:
+                  type: string
+                  description: Token parcial recibido en el login cuando 2FA está activo
+                code:
+                  type: string
+                  description: Código TOTP de 6 dígitos
+                  example: "789012"
+      responses:
+        '200':
+          description: Login con 2FA exitoso — devuelve tokens de acceso completos
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/Tokens'
+                          - type: object
+                            properties:
+                              accesos:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    institucion_id: { type: string, format: uuid }
+                                    rol: { type: string, enum: [admin, editor, lector] }
+        '400':
+          description: Código TOTP inválido o 2FA no configurado
+        '401':
+          description: Token parcial inválido o expirado
+
+  # ─── Roles y Permisos ────────────────────────────────────────────────────────
+
+  /api/admin/roles:
+    get:
+      tags: [Admin]
+      summary: Listar roles con sus permisos actuales y todos los permisos disponibles
+      description: >
+        Devuelve todos los roles del sistema con los permisos que tienen asignados,
+        más la lista completa de permisos disponibles para usar como referencia al editar.
+        Requiere permiso `usuario:listar`.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Roles y permisos obtenidos correctamente
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          roles:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:          { type: string, format: uuid }
+                                nombre:      { type: string, example: admin }
+                                descripcion: { type: string, nullable: true }
+                                permisos:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      id:      { type: string, format: uuid }
+                                      clave:   { type: string, example: "certificado:emitir" }
+                                      recurso: { type: string, example: certificado }
+                                      accion:  { type: string, example: emitir }
+                          permisos:
+                            type: array
+                            description: Todos los permisos disponibles en el sistema
+                            items:
+                              type: object
+                              properties:
+                                id:      { type: string, format: uuid }
+                                clave:   { type: string, example: "certificado:emitir" }
+                                recurso: { type: string }
+                                accion:  { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/admin/roles/{rolId}/permisos:
+    put:
+      tags: [Admin]
+      summary: Actualizar permisos de un rol (reemplazo atómico)
+      description: >
+        Reemplaza en una transacción todos los permisos del rol especificado por los IDs
+        indicados en el body. Si `permisoIds` está vacío se quitan todos los permisos,
+        excepto para el rol `admin` que requiere al menos uno.
+        Requiere permiso `usuario:actualizar`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: rolId
+          required: true
+          schema: { type: string, format: uuid }
+          description: ID del rol a modificar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [permisoIds]
+              properties:
+                permisoIds:
+                  type: array
+                  description: IDs de los permisos que debe tener el rol
+                  items: { type: string, format: uuid }
+                  example: ["uuid-1", "uuid-2"]
+      responses:
+        '200':
+          description: Permisos del rol actualizados correctamente
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          id:      { type: string, format: uuid }
+                          nombre:  { type: string }
+                          permisos:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:    { type: string, format: uuid }
+                                clave: { type: string }
+        '400':
+          description: permisoIds inválido o intento de dejar al rol admin sin permisos
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ─── Sesiones activas ────────────────────────────────────────────────────────
+
+  /api/auth/sesiones:
+    get:
+      tags: [Auth]
+      summary: Listar sesiones activas del usuario autenticado
+      description: Devuelve todas las sesiones vigentes (no expiradas) del usuario. Útil para el panel de seguridad en Mi Perfil.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de sesiones activas
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          sesiones:
+                            type: array
+                            items: { $ref: '#/components/schemas/SesionActiva' }
+              example:
+                data:
+                  sesiones:
+                    - id: "uuid-1"
+                      ip: "190.24.12.4"
+                      userAgent: "Mozilla/5.0 Chrome/124"
+                      createdAt: "2026-05-10T08:00:00Z"
+                      expiresAt: "2026-05-17T08:00:00Z"
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/auth/sesiones/todas:
+    delete:
+      tags: [Auth]
+      summary: Cerrar todas las sesiones activas del usuario
+      description: Elimina todas las sesiones activas. Útil para revocar acceso desde todos los dispositivos tras un cambio de contraseña o sospecha de compromiso.
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { description: Todas las sesiones cerradas correctamente }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /api/auth/sesiones/{id}:
+    delete:
+      tags: [Auth]
+      summary: Revocar una sesión activa específica
+      description: Elimina una sesión activa por su ID. Solo el propietario puede revocar sus propias sesiones.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+          description: ID de la sesión a revocar
+      responses:
+        '200': { description: Sesión revocada correctamente }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ─── Certificados — motivo de revocación (T-73) ──────────────────────────────
+
+  /api/certificados/{id}/revocacion:
+    get:
+      tags: [Certificados]
+      summary: Obtener motivo de revocación de un certificado
+      description: >
+        Devuelve el detalle del motivo por el que fue revocado un certificado.
+        Solo accesible para admin o emisor de la misma institución.
+        El portal público **no** tiene acceso a este endpoint por privacidad institucional.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200':
+          description: Motivo de revocación obtenido correctamente
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/MotivoRevocacion' }
+              example:
+                data:
+                  motivo: ERROR_EMISION
+                  motivoCategoria: ERROR EMISION
+                  motivo_detalle: El nombre del estudiante estaba incorrecto al momento de emitir
+                  revocadoPor: Ana Martínez
+                  fechaRevocacion: "2026-05-10T14:30:00Z"
+                  txHashRevocacion: null
+        '400': { description: El certificado no está revocado }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ─── Admin — nuevos endpoints ─────────────────────────────────────────────────
+
+  /api/admin/stats/mv:
+    get:
+      tags: [Admin]
+      summary: Estadísticas desde vistas materializadas (para reportes y exportaciones)
+      description: >
+        Lee las tres vistas materializadas en una sola consulta. Los datos se actualizan
+        automáticamente mediante `pg_cron`: certificados cada hora, emisiones a las 2 AM UTC,
+        verificaciones a las 3 AM UTC. Usar para exportación de reportes ejecutivos,
+        **no** para el dashboard en tiempo real.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Estadísticas desde vistas materializadas
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          certificados:
+                            type: object
+                            properties:
+                              total_emitidos:   { type: integer, example: 500 }
+                              total_vigentes:   { type: integer, example: 480 }
+                              total_revocados:  { type: integer, example: 20 }
+                              tasa_validez:     { type: number, example: 96.0 }
+                              top_instituciones:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    institucion_id: { type: string, format: uuid }
+                                    nombre:         { type: string }
+                                    total:          { type: integer }
+                              actualizado_en: { type: string, format: date-time }
+                          emisiones:
+                            type: array
+                            description: Emisiones diarias (últimos 90 días)
+                            items:
+                              type: object
+                              properties:
+                                dia:             { type: string, format: date }
+                                total_emitidos:  { type: integer }
+                                total_revocados: { type: integer }
+                          verificaciones:
+                            type: object
+                            properties:
+                              total_verificaciones: { type: integer }
+                              por_estado:  { type: object }
+                              por_metodo:  { type: object }
+                              por_dia:     { type: array, items: { type: object } }
+                              tasa_validos: { type: number }
+                              actualizado_en: { type: string, format: date-time }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { description: Error al consultar las vistas materializadas }
+
+  /api/admin/revocaciones/motivos:
+    get:
+      tags: [Admin]
+      summary: Reporte de motivos frecuentes de revocación (T-76)
+      description: >
+        Agrupa todas las revocaciones por `motivo_codigo` y devuelve conteo y porcentaje
+        para cada categoría. Soporta filtros opcionales por institución y rango de fechas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: institucion_id
+          required: false
+          schema: { type: string, format: uuid }
+          description: Filtrar solo revocaciones de una institución específica
+        - in: query
+          name: fecha_desde
+          required: false
+          schema: { type: string, format: date, example: "2026-01-01" }
+        - in: query
+          name: fecha_hasta
+          required: false
+          schema: { type: string, format: date, example: "2026-05-31" }
+      responses:
+        '200':
+          description: Reporte de motivos generado correctamente
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          total_revocaciones:
+                            type: integer
+                            example: 20
+                          reporte:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                motivo_codigo:
+                                  type: string
+                                  example: ERROR_EMISION
+                                motivo_label:
+                                  type: string
+                                  example: ERROR EMISION
+                                total:
+                                  type: integer
+                                  example: 8
+                                porcentaje:
+                                  type: number
+                                  format: float
+                                  example: 40.0
+              example:
+                data:
+                  total_revocaciones: 20
+                  reporte:
+                    - { motivo_codigo: ERROR_EMISION,         motivo_label: ERROR EMISION,         total: 8, porcentaje: 40.0 }
+                    - { motivo_codigo: DECISION_INSTITUCIONAL, motivo_label: DECISION INSTITUCIONAL, total: 6, porcentaje: 30.0 }
+                    - { motivo_codigo: FRAUDE,                motivo_label: FRAUDE,                total: 4, porcentaje: 20.0 }
+                    - { motivo_codigo: DUPLICADO,             motivo_label: DUPLICADO,             total: 2, porcentaje: 10.0 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '500': { description: Error al generar el reporte }
