@@ -1,5 +1,4 @@
 node_modules/
-.env
 /src/generated/prisma
 coverage/
 dist/
@@ -8,5 +7,4 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 .claude/
-.env.test
 
