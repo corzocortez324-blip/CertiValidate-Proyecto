@@ -54,4 +54,12 @@ export const certificadosApi = {
     const res = await request(`/certificados/${id}/revocaciones${qs({ page, limit })}`);
     return res.data;
   },
+
+  enviarEmailPdf: async (id, pdfBase64) => {
+    const res = await request(`/certificados/${id}/email`, {
+      method: 'POST',
+      body: { pdf_base64: pdfBase64 },
+    });
+    return res.data;
+  },
 };

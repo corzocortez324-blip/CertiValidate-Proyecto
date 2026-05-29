@@ -64,19 +64,13 @@ const prepararDatos = async (certificado) => {
   let qrBuffer
   try {
     qrBuffer = await QRCode.toBuffer(qrUrl, {
-      width: 140,
-      margin: 1,
+      width: 160,
+      margin: 2,
       color: { dark: '#111827', light: '#ffffff' },
     })
   } catch (err) {
-    logger.warn(
-      {
-        certificado_id: certificado.id,
-        error: err.message,
-      },
-      '[PDFGenerator] Error generando QR',
-    )
-    qrBuffer = null
+    logger.error({ certificado_id: certificado.id, error: err.message }, '[PDFGenerator] Error generando QR')
+    throw new Error('No se pudo generar el código QR del certificado')
   }
 
   return {

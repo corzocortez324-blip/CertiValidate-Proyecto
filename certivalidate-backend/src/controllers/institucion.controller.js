@@ -2,6 +2,8 @@ const { sendSuccess, sendError } = require('../utils/response.utils')
 const prisma = require('../utils/prisma')
 const { getRolByNombre } = require('../utils/roles')
 const logger = require('../utils/logger')
+const { registrarAuditoria } = require('../utils/auditoria')
+const { getClientIp } = require('../utils/validators')
 
 const assertNoForbiddenFields = (req, res, fields) => {
   const attempted = fields.find((field) => field in req.body)
@@ -141,6 +143,9 @@ const crearInstitucion = async (req, res) => {
       return inst
     })
 
+    registrarAuditoria(prisma, req.usuario.id, 'CREAR_INSTITUCION', 'Institucion', nuevaInstitucion.id,
+      null, JSON.stringify({ nombre, dominio: dominio || null }), getClientIp(req), nuevaInstitucion.id)
+
     return sendSuccess(
       res,
       nuevaInstitucion,
@@ -225,6 +230,9 @@ const actualizarInstitucion = async (req, res) => {
               : institucionExistente.activa,
         },
       })
+
+    registrarAuditoria(prisma, req.usuario.id, 'ACTUALIZAR_INSTITUCION', 'Institucion', id,
+      JSON.stringify(institucionExistente), JSON.stringify(institucionActualizada), getClientIp(req), id)
 
     return sendSuccess(
       res,

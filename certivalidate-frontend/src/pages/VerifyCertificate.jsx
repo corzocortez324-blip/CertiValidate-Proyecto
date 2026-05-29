@@ -16,10 +16,19 @@ const HOW_IT_WORKS = [
   { icon: Lock,        title: 'Protección de Datos',   desc: 'Cumplimiento con la normativa de protección de datos vigente en Colombia.' },
 ];
 
-async function calcSHA256(file) {
+async function extractCodigoFromPDF(file) {
+  const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist');
+  GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).href;
   const buffer = await file.arrayBuffer();
-  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  const pdf = await getDocument({ data: buffer }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(item => item.str).join(' ');
+  }
+  const match = text.match(/[A-F0-9]{16}/);
+  return match ? match[0] : null;
 }
 
 // ── Componentes de resultado por estado ────────────────────────────
@@ -41,8 +50,8 @@ function EstadoValido({ result, onReset }) {
       <div className="result-data-grid">
         <div><span className="rd-label">Código único</span><strong className="rd-mono">{result.codigo_unico}</strong></div>
         {result.estudiante && <div><span className="rd-label">Titular</span><strong>{result.estudiante.nombre} {result.estudiante.apellido}</strong></div>}
-        {result.institucion && <div><span className="rd-label">Institución</span><strong>{result.institucion.nombre}</strong></div>}
-        {result.plantilla && <div><span className="rd-label">Acreditación</span><strong>{result.plantilla.nombre}</strong></div>}
+        {result.institucion && <div><span className="rd-label">Institución</span><strong>{result.institucion}</strong></div>}
+        {result.tipo_certificado && <div><span className="rd-label">Acreditación</span><strong>{result.tipo_certificado}</strong></div>}
         <div><span className="rd-label">Fecha de emisión</span><strong>{formatDate(result.fecha_emision)}</strong></div>
         {result.fecha_expiracion && <div><span className="rd-label">Expira</span><strong>{formatDate(result.fecha_expiracion)}</strong></div>}
         <div>
@@ -125,7 +134,7 @@ function EstadoRevocado({ result, onReset }) {
         <div className="result-data-grid">
           <div><span className="rd-label">Código único</span><strong className="rd-mono">{result.codigo_unico}</strong></div>
           {result.estudiante && <div><span className="rd-label">Titular</span><strong>{result.estudiante.nombre} {result.estudiante.apellido}</strong></div>}
-          {result.institucion && <div><span className="rd-label">Institución</span><strong>{result.institucion.nombre}</strong></div>}
+          {result.institucion && <div><span className="rd-label">Institución</span><strong>{result.institucion}</strong></div>}
           <div><span className="rd-label">Fecha de emisión</span><strong>{formatDate(result.fecha_emision)}</strong></div>
           {result.fecha_revocacion && <div><span className="rd-label">Fecha de revocación</span><strong style={{ color: '#fca5a5' }}>{formatDate(result.fecha_revocacion)}</strong></div>}
         </div>
@@ -291,8 +300,12 @@ export const VerifyCertificate = () => {
     setLoading(true);
     setResult(null);
     try {
-      const hash = await calcSHA256(file);
-      const data = await certificadosApi.verificar({ hash });
+      const codigo = await extractCodigoFromPDF(file);
+      if (!codigo) {
+        setResult({ estado: 'no_encontrado', mensaje: 'No se encontró un código de certificado válido en el PDF.' });
+        return;
+      }
+      const data = await certificadosApi.verificar({ codigo });
       setResult(data);
     } catch (err) {
       setResult({ estado: 'no_encontrado', mensaje: err.message || 'No encontrado.' });

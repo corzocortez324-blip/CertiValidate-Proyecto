@@ -1,7 +1,7 @@
 const crypto = require('crypto')
 const { sendSuccess, sendError } = require('../utils/response.utils')
 const { generarPDF } = require('../utils/pdf.generator')
-const { enviarEmailCertificado } = require('../utils/mailer')
+const { enviarEmailCertificado, enviarEmailCertificadoConPdf } = require('../utils/mailer')
 const prisma = require('../utils/prisma')
 const { registrarAuditoria } = require('../utils/auditoria')
 const { getClientIp } = require('../utils/validators')
@@ -352,18 +352,8 @@ const emitirCertificado = async (req, res) => {
       '[CertificadoController] Certificado emitido exitosamente',
     )
 
-    if (estudiante.email) {
-      const certCompleto = {
-        ...certificado,
-        estudiante,
-        institucion,
-        plantilla,
-      }
-
-      enviarEmailCertificado(certCompleto).catch((err) =>
-        logger.error({ err }, 'Error enviando email de certificado'),
-      )
-    }
+    // El email con el PDF del template lo envía el frontend vía POST /certificados/:id/email
+    // para garantizar que use el diseño real de la plantilla.
 
     return sendSuccess(
       res,
@@ -623,7 +613,15 @@ const listarCertificados = async (req, res) => {
         orderBy: { created_at: 'desc' },
         include: {
           estudiante: true,
-          plantilla: true,
+          plantilla: {
+            select: {
+              id: true,
+              nombre: true,
+              version: true,
+              activa: true,
+              institucion_id: true,
+            },
+          },
           institucion: true,
         },
       }),
@@ -662,6 +660,11 @@ const obtenerCertificado = async (req, res) => {
         estudiante: true,
         institucion: true,
         plantilla: true,
+        blockchain: {
+          where: { estado: 'confirmado' },
+          orderBy: { confirmado_en: 'desc' },
+          take: 1,
+        },
       },
     })
 
@@ -675,7 +678,15 @@ const obtenerCertificado = async (req, res) => {
       return sendError(res, 'No autorizado para ver este certificado', 403)
     }
 
-    return sendSuccess(res, cert, 'Certificado obtenido correctamente', 200)
+    const txBlockchain = cert.blockchain?.[0] ?? null
+    const certConBlockchain = {
+      ...cert,
+      tx_hash: txBlockchain?.tx_hash ?? null,
+      red_blockchain: txBlockchain?.red ?? null,
+      fecha_blockchain: txBlockchain?.confirmado_en ?? null,
+    }
+
+    return sendSuccess(res, certConBlockchain, 'Certificado obtenido correctamente', 200)
   } catch (error) {
     logger.error(
       { err: error, requestId: req.requestId },
@@ -730,6 +741,7 @@ const obtenerVerificaciones = async (req, res) => {
         ip: true,
         user_agent: true,
         resultado: true,
+        metodo: true,
         fecha: true,
       },
     })
@@ -974,6 +986,38 @@ const revocarCertificado = async (req, res) => {
   }
 }
 
+// Enviar email con PDF del certificado generado desde el frontend
+const enviarEmailConPdfTemplate = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { pdf_base64 } = req.body
+
+    if (!pdf_base64) return sendError(res, 'pdf_base64 es obligatorio', 400)
+
+    const cert = await prisma.certificado.findFirst({
+      where: { id, deleted_at: null },
+      include: { estudiante: true, institucion: true, plantilla: true },
+    })
+
+    if (!cert) return sendError(res, 'Certificado no encontrado', 404)
+
+    const institucionIds = req.institucionIds || []
+    if (!institucionIds.includes(cert.institucion_id))
+      return sendError(res, 'No autorizado', 403)
+
+    if (!cert.estudiante?.email)
+      return sendError(res, 'El estudiante no tiene email registrado', 400)
+
+    const pdfBuffer = Buffer.from(pdf_base64, 'base64')
+    await enviarEmailCertificadoConPdf(cert, pdfBuffer)
+
+    return sendSuccess(res, null, 'Email enviado correctamente', 200)
+  } catch (error) {
+    logger.error({ err: error, requestId: req.requestId }, 'Error en enviarEmailConPdfTemplate')
+    return sendError(res, 'Error al enviar el email', 500)
+  }
+}
+
 module.exports = {
   emitirCertificado,
   verificarCertificado,
@@ -984,4 +1028,5 @@ module.exports = {
   obtenerRevocaciones,
   obtenerMotivoRevocacion,
   revocarCertificado,
+  enviarEmailConPdfTemplate,
 }

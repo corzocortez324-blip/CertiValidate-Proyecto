@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import DOMPurify from 'dompurify';
+import { downloadCertificatePdf, certificatePdfToBase64 } from '../../utils/downloadCertificatePdf';
 import { useAuth } from '../../context/AuthContext';
 import { certificadosApi } from '../../api/certificados.api';
 import { institucionesApi } from '../../api/instituciones.api';
@@ -12,11 +14,79 @@ import { Card } from '../../components/ui/Card';
 import { formatDate, formatDateTime, getStatusClass, getStatusLabel } from '../../utils/helpers';
 import { EmitirCertificadoForm } from '../../forms/EmitirCertificadoForm';
 import { RevocarCertificadoForm } from '../../forms/RevocarCertificadoForm';
-import { Plus, Download, Ban, Eye, QrCode, Copy, Check, ChevronDown, ChevronUp, ExternalLink, Link2, Lock, History, FileBadge, ShieldCheck, Printer } from 'lucide-react';
+import { Plus, Download, Ban, Eye, QrCode, Copy, Check, ChevronDown, ChevronUp, ExternalLink, Link2, Lock, History, FileBadge, ShieldCheck, Printer, Mail } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import './CertificadosPage.css';
 
 const LIMIT = 10;
+
+// ── Limpia markdown code fences si el template fue guardado con ``` ────────────
+function cleanTemplateHtml(raw) {
+  return raw.replace(/^```[\w]*\n?/m, '').replace(/\n?```\s*$/m, '').trim();
+}
+
+// ── Sustituye variables {{var}} y retorna HTML sanitizado para el certificado ──
+function buildCertificateHtml(templateHtml, cert, qrUrl) {
+  if (!templateHtml) return '';
+  templateHtml = cleanTemplateHtml(templateHtml);
+
+  const fecha = cert.fecha_emision
+    ? new Date(cert.fecha_emision).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+    : '';
+  const fechaExp = cert.fecha_expiracion
+    ? new Date(cert.fecha_expiracion).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
+    : 'Sin expiración';
+  const nombre = `${cert.estudiante?.nombre || ''} ${cert.estudiante?.apellido || ''}`.trim();
+  const qrSrc  = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&color=111827&bgcolor=ffffff&data=${encodeURIComponent(qrUrl)}`;
+  const qrImg  = `<img src="${qrSrc}" width="130" height="130" alt="QR verificación" style="border-radius:4px;display:block;"/>`;
+
+  // Detectar si el template ya tiene {{qr}} antes de sustituir
+  const tieneQr = /\{\{qr\}\}/i.test(templateHtml);
+
+  const filled = templateHtml
+    .replace(/\{\{nombre\}\}/gi,           nombre)
+    .replace(/\{\{apellido\}\}/gi,          cert.estudiante?.apellido || '')
+    .replace(/\{\{institucion\}\}/gi,       cert.institucion?.nombre || '')
+    .replace(/\{\{curso\}\}/gi,             cert.plantilla?.nombre || '')
+    .replace(/\{\{programa\}\}/gi,          cert.plantilla?.nombre || '')
+    .replace(/\{\{fecha_emision\}\}/gi,     fecha)
+    .replace(/\{\{fecha_expiracion\}\}/gi,  fechaExp)
+    .replace(/\{\{codigo_unico\}\}/gi,      cert.codigo_unico || '')
+    .replace(/\{\{codigo\}\}/gi,            cert.codigo_unico || '')
+    .replace(/\{\{documento\}\}/gi,         cert.estudiante?.documento || '')
+    .replace(/\{\{hash\}\}/gi,              cert.hash_sha256?.slice(0, 16) + '…' || '')
+    .replace(/\{\{qr\}\}/gi,               qrImg);
+
+  // Si la plantilla no tenía {{qr}}, incrustar el QR en la esquina inferior derecha
+  const qrForzado = !tieneQr
+    ? `<div style="position:absolute;bottom:18px;right:18px;text-align:center;z-index:99;">
+        <img src="${qrSrc}" width="90" height="90" alt="QR" style="display:block;border-radius:4px;border:1px solid #e5e7eb;"/>
+        <span style="font-size:8px;color:#6b7280;display:block;margin-top:3px;">Escanear para verificar</span>
+       </div>`
+    : '';
+
+  return DOMPurify.sanitize(
+    `<!DOCTYPE html><html><head><meta charset="UTF-8">
+      <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; background: #fff; font-family: Arial, sans-serif; }
+        @media print { @page { margin: 0; } }
+      </style>
+    </head><body style="position:relative;">${filled}${qrForzado}</body></html>`,
+    { USE_PROFILES: { html: true } }
+  );
+}
+
+// Abre ventana para imprimir / guardar como PDF
+function printCertificate(templateHtml, cert, qrUrl) {
+  const html = buildCertificateHtml(templateHtml, cert, qrUrl);
+  if (!html) return;
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 600);
+}
 
 function CopyBtn({ text, title = 'Copiar' }) {
   const [copied, setCopied] = useState(false);
@@ -117,7 +187,7 @@ export const CertificadosPage = () => {
     setEmitLoading(true);
     setEmitError('');
     try {
-      await certificadosApi.emitir({
+      const cert = await certificadosApi.emitir({
         estudiante_id: emitForm.estudiante_id,
         institucion_id: emitForm.institucion_id,
         plantilla_id: emitForm.plantilla_id,
@@ -125,6 +195,17 @@ export const CertificadosPage = () => {
       setShowEmit(false);
       setPage(1);
       loadCerts();
+
+      // Enviar el email con el PDF del template en segundo plano
+      if (cert?.id) {
+        certificadosApi.getById(cert.id).then(async (full) => {
+          if (!full?.plantilla?.template_html || !full?.estudiante?.email) return;
+          const qrUrl  = `${window.location.origin}/?codigo=${full.codigo_unico}`;
+          const html   = buildCertificateHtml(full.plantilla.template_html, full, qrUrl);
+          const base64 = await certificatePdfToBase64(html);
+          await certificadosApi.enviarEmailPdf(full.id, base64);
+        }).catch(() => {});
+      }
     } catch (err) {
       setEmitError(err.message);
     } finally {
@@ -144,8 +225,36 @@ export const CertificadosPage = () => {
     }
   };
 
+  const handleEnviarEmail = async () => {
+    if (!detailCert?.plantilla?.template_html) return;
+    setSendingEmail(true);
+    try {
+      const qrUrl = `${window.location.origin}/?codigo=${detailCert.codigo_unico}`;
+      const html  = buildCertificateHtml(detailCert.plantilla.template_html, detailCert, qrUrl);
+      const base64 = await certificatePdfToBase64(html);
+      await certificadosApi.enviarEmailPdf(detailCert.id, base64);
+      alert('Certificado enviado por correo correctamente.');
+    } catch (err) {
+      alert(`Error al enviar: ${err.message}`);
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const handleDescargar = async (c) => {
     try {
+      // Obtiene el certificado completo con template_html
+      const full = await certificadosApi.getById(c.id);
+      const templateHtml = full?.plantilla?.template_html;
+
+      if (templateHtml) {
+        const qrUrl = `${window.location.origin}/?codigo=${full.codigo_unico}`;
+        const html  = buildCertificateHtml(templateHtml, full, qrUrl);
+        await downloadCertificatePdf(html, `certificado-${full.codigo_unico}`);
+        return;
+      }
+
+      // Fallback: descarga el PDF del backend si no hay template
       const blob = await certificadosApi.descargar(c.id);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -170,6 +279,10 @@ export const CertificadosPage = () => {
     setShowTimeline(v => !v);
   };
 
+  const [showCertPreview, setShowCertPreview] = useState(false);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+
   const openDetail = async (c) => {
     setDetailCert(c);
     setShowTechInfo(false);
@@ -177,7 +290,19 @@ export const CertificadosPage = () => {
     setVerificaciones([]);
     setVerifFetched(false);
     setShowTimeline(false);
+    setShowCertPreview(false);
+    setLoadingDetail(true);
     setShowDetail(true);
+
+    // Carga el certificado completo (incluye plantilla.template_html)
+    certificadosApi.getById(c.id)
+      .then(full => {
+        setDetailCert(prev => prev?.id === c.id ? { ...prev, ...full } : prev);
+        if (full?.plantilla?.template_html) setShowCertPreview(true);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingDetail(false));
+
     if (c.estado === 'revocado') {
       setLoadingRevoc(true);
       try {
@@ -420,23 +545,77 @@ export const CertificadosPage = () => {
                 Ver en portal de verificación pública
               </a>
 
-              <div className="cert-qr-section">
-                <strong className="cert-hash-label"><QrCode size={14} style={{ display: 'inline', marginRight: 6 }} />Código QR de verificación</strong>
-                <div className="cert-qr-wrap">
-                  <QRCodeCanvas
-                    id="cert-qr-canvas"
-                    value={qrUrl}
-                    size={140}
-                    bgColor="#ffffff"
-                    fgColor="#111827"
-                    level="M"
+              {/* Vista previa del certificado con plantilla */}
+              {loadingDetail ? (
+                <div className="cert-loading-preview">
+                  <div className="loading-spinner" />
+                  <p>Cargando certificado…</p>
+                </div>
+              ) : showCertPreview && detailCert.plantilla?.template_html ? (
+                <div className="cert-template-preview cert-template-enter">
+                  <div className="cert-template-toolbar">
+                    <strong className="cert-hash-label">
+                      <FileBadge size={14} style={{ display: 'inline', marginRight: 6 }} />
+                      Vista previa del certificado
+                    </strong>
+                    {detailCert.estudiante?.email && (
+                      <button
+                        className="btn-secondary cert-print-btn"
+                        onClick={handleEnviarEmail}
+                        disabled={sendingEmail}
+                      >
+                        <Mail size={14} />
+                        {sendingEmail ? 'Enviando…' : 'Enviar por correo'}
+                      </button>
+                    )}
+                  </div>
+                  <iframe
+                    title="Certificado"
+                    srcDoc={buildCertificateHtml(detailCert.plantilla.template_html, detailCert, qrUrl)}
+                    className="cert-template-body"
+                    style={{ width: '100%', minHeight: 480, border: 'none', background: '#fff', display: 'block' }}
+                    sandbox="allow-same-origin"
+                    onLoad={e => {
+                      const iframe = e.target;
+                      const doc = iframe.contentDocument;
+                      if (!doc) return;
+                      const body = doc.body;
+                      const contentW = Math.max(body.scrollWidth, body.offsetWidth, doc.documentElement.scrollWidth);
+                      const iframeW  = iframe.offsetWidth;
+                      if (contentW > iframeW + 4) {
+                        const scale = iframeW / contentW;
+                        body.style.transformOrigin = 'top left';
+                        body.style.transform = `scale(${scale})`;
+                        body.style.width = `${contentW}px`;
+                        iframe.style.height = `${Math.max(body.scrollHeight * scale, 480)}px`;
+                      } else {
+                        iframe.style.height = `${Math.max(body.scrollHeight, 480)}px`;
+                      }
+                    }}
                   />
                 </div>
-                <p className="cert-qr-hint">Escanea para verificar autenticidad</p>
-                <button className="btn-secondary cert-qr-download" onClick={downloadQr}>
-                  <Download size={14} /> Descargar QR
-                </button>
-              </div>
+              ) : (
+                <div className="cert-qr-section">
+                  <strong className="cert-hash-label">
+                    <QrCode size={14} style={{ display: 'inline', marginRight: 6 }} />
+                    Código QR de verificación
+                  </strong>
+                  <div className="cert-qr-wrap">
+                    <QRCodeCanvas
+                      id="cert-qr-canvas"
+                      value={qrUrl}
+                      size={140}
+                      bgColor="#ffffff"
+                      fgColor="#111827"
+                      level="M"
+                    />
+                  </div>
+                  <p className="cert-qr-hint">Escanea para verificar autenticidad</p>
+                  <button className="btn-secondary cert-qr-download" onClick={downloadQr}>
+                    <Download size={14} /> Descargar QR
+                  </button>
+                </div>
+              )}
 
               {/* Sección blockchain */}
               <div className="cert-blockchain-section">

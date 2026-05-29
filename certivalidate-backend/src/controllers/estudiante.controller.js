@@ -1,6 +1,8 @@
 const { sendSuccess, sendError } = require('../utils/response.utils')
 const prisma = require('../utils/prisma')
 const logger = require('../utils/logger')
+const { registrarAuditoria } = require('../utils/auditoria')
+const { getClientIp } = require('../utils/validators')
 const academicProvider = require('../services/academic-provider.service')
 const integrationConfig = require('../services/integration-config.service')
 
@@ -157,6 +159,9 @@ const crearEstudiante = async (req, res) => {
       },
     })
 
+    registrarAuditoria(prisma, req.usuario.id, 'CREAR_ESTUDIANTE', 'Estudiante', nuevoEstudiante.id,
+      null, JSON.stringify({ nombre, apellido, documento, email: email || null }), getClientIp(req), institucion_id)
+
     return sendSuccess(
       res,
       nuevoEstudiante,
@@ -237,6 +242,10 @@ const actualizarEstudiante = async (req, res) => {
       },
     })
 
+    registrarAuditoria(prisma, req.usuario.id, 'ACTUALIZAR_ESTUDIANTE', 'Estudiante', id,
+      JSON.stringify(estudianteExistente), JSON.stringify(estudianteActualizado),
+      getClientIp(req), estudianteActualizado.institucion_id)
+
     return sendSuccess(
       res,
       estudianteActualizado,
@@ -292,6 +301,9 @@ const eliminarEstudiante = async (req, res) => {
     }
 
     await prisma.estudiante.delete({ where: { id } })
+
+    registrarAuditoria(prisma, req.usuario.id, 'ELIMINAR_ESTUDIANTE', 'Estudiante', id,
+      JSON.stringify(estudianteExistente), null, getClientIp(req), estudianteExistente.institucion_id)
 
     return sendSuccess(res, null, 'Estudiante eliminado correctamente', 200)
   } catch (error) {

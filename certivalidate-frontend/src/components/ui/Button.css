@@ -19,17 +19,15 @@
   align-items: center;
 }
 
-/* Primary Variant (Neon Gradient) */
+/* Primary Variant */
 .btn-primary {
-  background: var(--gradient-primary);
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(0, 240, 255, 0.2);
+  background: var(--color-primary);
+  color: #030712;
+  font-weight: 700;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(176, 38, 255, 0.4);
-  filter: brightness(1.1);
+  background: var(--color-primary-hover);
 }
 
 .btn-primary:active {

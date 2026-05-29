@@ -12,6 +12,7 @@ const {
   obtenerRevocaciones,
   obtenerMotivoRevocacion,
   revocarCertificado,
+  enviarEmailConPdfTemplate,
 } = require('../controllers/certificado.controller')
 const {
   validateCertificado,
@@ -106,6 +107,17 @@ router.post(
   validateRevocacion,
   handleValidationErrors,
   revocarCertificado,
+)
+
+router.post(
+  '/:id/email',
+  verificarToken,
+  requireEmailVerified,
+  cargarInstitucionesUsuario,
+  requirePermission('certificado', 'ver'),
+  validateUUIDParam('id'),
+  handleValidationErrors,
+  enviarEmailConPdfTemplate,
 )
 
 router.post('/verificar', validateVerificarCertificado, handleValidationErrors, verificarCertificado)

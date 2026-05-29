@@ -33,16 +33,52 @@ export const PlantillaForm = ({ form, setForm, onSubmit, onCancel, editing, erro
       <div className="form-group">
         <label className="form-label">
           HTML de plantilla <span className="required-star">*</span>
-          <span className="plt-template-hint">
-            Variables: {'{{nombre}}'}, {'{{institucion}}'}, {'{{curso}}'}, {'{{fecha_emision}}'}
-          </span>
         </label>
+
+        {/* Variables disponibles con inserción rápida */}
+        <div className="plt-vars-grid">
+          {[
+            ['{{nombre}}',          'Nombre completo'],
+            ['{{apellido}}',        'Apellido'],
+            ['{{institucion}}',     'Institución'],
+            ['{{curso}}',           'Curso / Programa'],
+            ['{{fecha_emision}}',   'Fecha de emisión'],
+            ['{{fecha_expiracion}}','Fecha de expiración'],
+            ['{{codigo_unico}}',    'Código único'],
+            ['{{documento}}',       'Documento'],
+            ['{{hash}}',            'Hash SHA-256'],
+            ['{{qr}}',              'Código QR ⚠ obligatorio'],
+          ].map(([v, label]) => (
+            <button
+              key={v}
+              type="button"
+              className={`plt-var-chip${v === '{{qr}}' ? ' plt-var-chip--required' : ''}`}
+              title={label}
+              onClick={() => {
+                const ta = document.getElementById('plt-template-area');
+                if (!ta) return;
+                const s = ta.selectionStart, e = ta.selectionEnd;
+                const next = form.template_html.slice(0, s) + v + form.template_html.slice(e);
+                setForm(f => ({ ...f, template_html: next }));
+                setTimeout(() => { ta.focus(); ta.setSelectionRange(s + v.length, s + v.length); }, 0);
+              }}
+            >
+              <code>{v}</code>
+            </button>
+          ))}
+        </div>
+
         <textarea
+          id="plt-template-area"
           className="form-input form-textarea form-textarea-code"
           value={form.template_html}
           onChange={set('template_html')}
           required
+          placeholder="Escribe el HTML de la plantilla. Usa los botones de arriba para insertar variables."
         />
+        <p className="plt-template-note">
+          ⚠ Incluye <code>{'{{qr}}'}</code> en tu plantilla para que el código QR de verificación aparezca en el certificado.
+        </p>
       </div>
       <div className="form-actions-between">
         <button

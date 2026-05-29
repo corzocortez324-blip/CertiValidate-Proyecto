@@ -1,6 +1,8 @@
 const { sendSuccess, sendError } = require('../utils/response.utils')
 const prisma = require('../utils/prisma')
 const logger = require('../utils/logger')
+const { registrarAuditoria } = require('../utils/auditoria')
+const { getClientIp } = require('../utils/validators')
 
 // Listar plantillas activas
 const listarPlantillas = async (req, res) => {
@@ -113,6 +115,9 @@ const crearPlantilla = async (req, res) => {
       },
     })
 
+    registrarAuditoria(prisma, req.usuario.id, 'CREAR_PLANTILLA', 'PlantillaCertificado', nuevaPlantilla.id,
+      null, JSON.stringify({ nombre, version, activa: nuevaPlantilla.activa }), getClientIp(req), institucion_id)
+
     return sendSuccess(
       res,
       nuevaPlantilla,
@@ -183,6 +188,11 @@ const actualizarPlantilla = async (req, res) => {
       },
     })
 
+    registrarAuditoria(prisma, req.usuario.id, 'ACTUALIZAR_PLANTILLA', 'PlantillaCertificado', id,
+      JSON.stringify({ nombre: plantillaExistente.nombre, activa: plantillaExistente.activa }),
+      JSON.stringify({ nombre: plantillaActualizada.nombre, activa: plantillaActualizada.activa }),
+      getClientIp(req), plantillaActualizada.institucion_id)
+
     return sendSuccess(
       res,
       plantillaActualizada,
@@ -227,6 +237,10 @@ const archivarPlantilla = async (req, res) => {
       where: { id },
       data: { activa: false },
     })
+
+    registrarAuditoria(prisma, req.usuario.id, 'ARCHIVAR_PLANTILLA', 'PlantillaCertificado', id,
+      JSON.stringify({ activa: true }), JSON.stringify({ activa: false }),
+      getClientIp(req), plantilla.institucion_id)
 
     return sendSuccess(res, plantillaActualizada, 'Plantilla archivada correctamente', 200)
   } catch (error) {

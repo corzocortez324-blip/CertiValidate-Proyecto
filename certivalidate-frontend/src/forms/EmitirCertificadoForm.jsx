@@ -9,19 +9,29 @@ import { plantillasApi } from '../api/plantillas.api';
 import { Button } from '../components/ui/Button';
 
 function fillPreview(html, data = {}) {
-  const hoy = new Date().toLocaleDateString('es-CO');
+  const hoy  = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+  const nombre   = data.nombre   || 'Nombre';
+  const apellido = data.apellido || 'Apellido';
+  const plantilla = data.plantilla || 'Nombre del Programa';
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&color=111827&bgcolor=ffffff&data=CERT-2026-PREVIEW`;
+
   const replacements = {
-    '{{nombre}}':          data.nombre          || 'Nombre',
-    '{{apellido}}':        data.apellido         || 'Apellido',
-    '{{nombre_completo}}': data.nombre && data.apellido ? `${data.nombre} ${data.apellido}` : 'Nombre Apellido',
-    '{{documento}}':       data.documento        || '123456789',
-    '{{email}}':           data.email            || 'estudiante@ejemplo.com',
-    '{{codigo_unico}}':    'CERT-2026-PREVIEW',
-    '{{fecha_emision}}':   hoy,
-    '{{fecha_expiracion}}':'—',
-    '{{plantilla}}':       data.plantilla        || 'Nombre de la Plantilla',
-    '{{institucion}}':     data.institucion      || 'Institución',
-    '{{version}}':         data.version          || '1',
+    '{{nombre}}':           `${nombre} ${apellido}`.trim(),
+    '{{apellido}}':         apellido,
+    '{{nombre_completo}}':  `${nombre} ${apellido}`.trim(),
+    '{{documento}}':        data.documento  || '123456789',
+    '{{email}}':            data.email      || 'estudiante@ejemplo.com',
+    '{{codigo_unico}}':     'CERT-2026-PREVIEW',
+    '{{codigo}}':           'CERT-2026-PREVIEW',
+    '{{fecha_emision}}':    hoy,
+    '{{fecha_expiracion}}': 'Sin expiración',
+    '{{plantilla}}':        plantilla,
+    '{{curso}}':            plantilla,
+    '{{programa}}':         plantilla,
+    '{{institucion}}':      data.institucion || 'Institución',
+    '{{version}}':          data.version     || '1',
+    '{{hash}}':             'a1b2c3d4e5f6g7h8…',
+    '{{qr}}':               `<img src="${qrSrc}" width="120" height="120" alt="QR" style="border-radius:4px;display:block;"/>`,
   };
   let filled = html;
   for (const [key, val] of Object.entries(replacements)) {
@@ -59,6 +69,24 @@ function PreviewConfirmModal({ previewHtml, loading, onCancel, onConfirm }) {
               title="Vista previa del certificado"
               className="pcm-iframe"
               sandbox="allow-same-origin"
+              onLoad={e => {
+                const iframe = e.target;
+                const doc    = iframe.contentDocument;
+                if (!doc) return;
+                const body = doc.body;
+                const contentW = Math.max(body.scrollWidth, body.offsetWidth, doc.documentElement.scrollWidth);
+                const iframeW  = iframe.offsetWidth;
+                if (contentW > iframeW + 4) {
+                  const scale = iframeW / contentW;
+                  body.style.transformOrigin = 'top left';
+                  body.style.transform = `scale(${scale})`;
+                  body.style.width = `${contentW}px`;
+                  const scaledH = body.scrollHeight * scale;
+                  iframe.style.height = `${Math.max(scaledH, 480)}px`;
+                } else {
+                  iframe.style.height = `${Math.max(body.scrollHeight, 480)}px`;
+                }
+              }}
             />
           ) : (
             <div className="pcm-no-preview">
@@ -333,7 +361,7 @@ export const EmitirCertificadoForm = ({
 
       {showModal && (
         <PreviewConfirmModal
-          previewHtml={previewHtml}
+          previewHtml={previewSource}
           loading={loadingPreview}
           onCancel={() => setShowModal(false)}
           onConfirm={handleConfirm}

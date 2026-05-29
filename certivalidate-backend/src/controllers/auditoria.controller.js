@@ -3,16 +3,22 @@ const prisma = require('../utils/prisma')
 const logger = require('../utils/logger')
 
 const construirFiltroAuditoriaAutorizada = (usuarioId, institucionIds) => {
-  if (institucionIds.length === 0) {
+  if (institucionIds.length === 0 && !usuarioId) {
     return null
   }
 
-  return {
-    OR: [
-      { institucion_id: { in: institucionIds } },
-      { entidad: 'Usuario', entidad_id: usuarioId },
-    ],
+  const conditions = []
+
+  if (institucionIds.length > 0) {
+    conditions.push({ institucion_id: { in: institucionIds } })
   }
+
+  // Acciones propias del usuario (incluye las que tienen institucion_id null como LOGIN)
+  if (usuarioId) {
+    conditions.push({ usuario_id: usuarioId })
+  }
+
+  return conditions.length === 1 ? conditions[0] : { OR: conditions }
 }
 
 const listarAuditoria = async (req, res) => {
