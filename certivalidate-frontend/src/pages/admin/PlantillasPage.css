@@ -155,3 +155,14 @@
   padding: 0 3px;
   border-radius: 3px;
 }
+
+/* ── Card badges: visual vs HTML mode ────────────── */
+.plt-badge-visual {
+  color: var(--color-primary);
+  font-size: 0.7rem;
+}
+.plt-badge-html {
+  color: #fbbf24;
+  font-size: 0.7rem;
+}
+
