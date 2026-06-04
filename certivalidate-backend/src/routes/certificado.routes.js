@@ -15,6 +15,10 @@ const {
   enviarEmailConPdfTemplate,
 } = require('../controllers/certificado.controller')
 const {
+  registerCertificateOnBlockchain,
+  verifyCertificateBlockchain,
+} = require('../controllers/blockchain.controller')
+const {
   validateCertificado,
   validateRevocacion,
   validateVerificarCertificado,
@@ -118,6 +122,28 @@ router.post(
   validateUUIDParam('id'),
   handleValidationErrors,
   enviarEmailConPdfTemplate,
+)
+
+router.post(
+  '/:id/blockchain/register',
+  verificarToken,
+  requireEmailVerified,
+  cargarInstitucionesUsuario,
+  requirePermission('certificado', 'emitir'),
+  validateUUIDParam('id'),
+  handleValidationErrors,
+  registerCertificateOnBlockchain,
+)
+
+router.get(
+  '/:id/blockchain/verify',
+  verificarToken,
+  requireEmailVerified,
+  cargarInstitucionesUsuario,
+  requirePermission('certificado', 'ver'),
+  validateUUIDParam('id'),
+  handleValidationErrors,
+  verifyCertificateBlockchain,
 )
 
 router.post('/verificar', validateVerificarCertificado, handleValidationErrors, verificarCertificado)

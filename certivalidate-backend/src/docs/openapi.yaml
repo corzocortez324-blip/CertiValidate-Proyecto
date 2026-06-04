@@ -1736,6 +1736,129 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  # ─── Certificados — blockchain ───────────────────────────────────────────────
+
+  /api/certificados/{id}/blockchain/register:
+    post:
+      tags: [Certificados]
+      summary: Registrar certificado en blockchain
+      description: >
+        Genera el hash SHA-256 del certificado usando sus campos clave con JSON ordenado
+        e incluye el certificado_id para garantizar unicidad.
+        Registra el hash en blockchain (modo mock si BLOCKCHAIN_ENABLED=false) y guarda
+        la transacción en BlockchainTransaccion.
+        Devuelve error 409 si el certificado ya fue registrado.
+        Requiere permiso `certificado:emitir`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '201':
+          description: Certificado registrado en blockchain correctamente
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          certificado_id:
+                            type: string
+                            format: uuid
+                            example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                          hash:
+                            type: string
+                            example: "a3f1b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2"
+                          tx_hash:
+                            type: string
+                            example: "mock_tx_a3f1b2c4d5e6f7a8_1717200000000"
+                          network:
+                            type: string
+                            example: "mock"
+                          status:
+                            type: string
+                            example: "confirmado"
+                          registered_at:
+                            type: string
+                            format: date-time
+                          transaccion_id:
+                            type: string
+                            format: uuid
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: El certificado ya fue registrado en blockchain
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '500': { description: Error interno al registrar en blockchain }
+
+  /api/certificados/{id}/blockchain/verify:
+    get:
+      tags: [Certificados]
+      summary: Verificar integridad del certificado en blockchain
+      description: >
+        Recalcula el hash local del certificado y lo compara con el hash almacenado
+        en BlockchainTransaccion. También verifica la transacción contra la red blockchain.
+        Devuelve `valid: true` solo si ambos hashes coinciden y la transacción es válida.
+        Devuelve `valid: false` con mensaje descriptivo si el certificado no está registrado,
+        el hash no coincide, o la transacción no puede verificarse.
+        Requiere permiso `certificado:ver`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200':
+          description: Verificación blockchain completada
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          valid:
+                            type: boolean
+                            example: true
+                          certificado_id:
+                            type: string
+                            format: uuid
+                          hash_local:
+                            type: string
+                            example: "a3f1b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2"
+                          hash_registrado:
+                            type: string
+                            nullable: true
+                            example: "a3f1b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2"
+                          tx_hash:
+                            type: string
+                            nullable: true
+                            example: "mock_tx_a3f1b2c4d5e6f7a8_1717200000000"
+                          network:
+                            type: string
+                            nullable: true
+                            example: "mock"
+                          status:
+                            type: string
+                            nullable: true
+                            example: "confirmado"
+                          mensaje:
+                            type: string
+                            example: "Integridad verificada: el certificado no ha sido alterado"
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { description: Error interno al verificar en blockchain }
+
   # ─── Admin — nuevos endpoints ─────────────────────────────────────────────────
 
   /api/admin/stats/mv:

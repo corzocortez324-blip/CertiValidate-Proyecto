@@ -34,6 +34,18 @@ async function main() {
       'CertiValidate API v1.1.0 iniciada',
     )
   })
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      logger.fatal(
+        { port: PORT },
+        `Puerto ${PORT} ya está en uso. Detén el proceso que lo ocupa (ej: docker stop certivalidate-backendactualizado-api-1) y vuelve a intentarlo.`,
+      )
+    } else {
+      logger.fatal({ err }, 'Error al arrancar el servidor HTTP')
+    }
+    process.exit(1)
+  })
 }
 
 async function shutdown(signal) {
@@ -70,7 +82,9 @@ process.on('uncaughtException', (err) => {
   process.exit(1)
 })
 
-main().catch((err) => {
-  logger.fatal({ err }, 'Error al iniciar el servidor')
-  process.exit(1)
-})
+if (process.env.NODE_ENV !== 'test') {
+  main().catch((err) => {
+    logger.fatal({ err }, 'Error al iniciar el servidor')
+    process.exit(1)
+  })
+}

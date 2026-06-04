@@ -28,23 +28,22 @@ const probarConexion = async (req, res) => {
       usarCache: false,
     })
 
-    // Sin integración externa configurada → sin_configurar
+    // Sin integración externa configurada → pendiente
     if (!config || config.provider === 'local-db' || !config.url_base) {
       logger.info(
         { institucionId: id, provider: config?.provider, requestId },
         '[Integracion] Prueba de conexión: integración no configurada',
       )
 
-      return sendSuccess(
-        res,
-        {
+      return res.status(200).json({
+        success: false,
+        message: 'Integración pendiente o no disponible',
+        data: {
           institucion_id: id,
-          configurada: false,
-          estado: 'sin_configurar',
+          estado: 'pendiente',
           disponible: false,
         },
-        'Sin configurar',
-      )
+      })
     }
 
     // Probar health check contra la URL real de la institución
@@ -68,17 +67,15 @@ const probarConexion = async (req, res) => {
         '[Integracion] Prueba de conexión fallida: API no responde',
       )
 
-      return sendSuccess(
-        res,
-        {
+      return res.status(200).json({
+        success: false,
+        message: 'Integración pendiente o no disponible',
+        data: {
           institucion_id: id,
-          configurada: true,
-          estado: 'sin_conexion',
+          estado: 'pendiente',
           disponible: false,
-          url_base: config.url_base,
         },
-        'API externa no disponible',
-      )
+      })
     }
 
     const ultimaVerificacion = new Date().toISOString()
