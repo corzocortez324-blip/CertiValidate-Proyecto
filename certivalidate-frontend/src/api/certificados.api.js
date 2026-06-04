@@ -62,4 +62,14 @@ export const certificadosApi = {
     });
     return res.data;
   },
+
+  registrarBlockchain: async (id) => {
+    const res = await request(`/certificados/${id}/blockchain/register`, { method: 'POST' });
+    return res.data;
+  },
+
+  verificarBlockchain: async (id) => {
+    const res = await request(`/certificados/${id}/blockchain/verify`);
+    return res.data;
+  },
 };

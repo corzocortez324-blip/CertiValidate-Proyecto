@@ -659,3 +659,134 @@ tr.row-revoked td {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ── Blockchain: cabecera con badge + acciones ──────────────────────────── */
+.cert-blockchain-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cert-blockchain-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Botones de acción blockchain */
+.btn-blockchain {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.btn-blockchain:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-blockchain-register {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: #a5b4fc;
+}
+.btn-blockchain-register:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.7);
+  color: #c7d2fe;
+}
+
+.btn-blockchain-verify {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #6ee7b7;
+}
+.btn-blockchain-verify:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.6);
+  color: #a7f3d0;
+}
+
+/* Panel de resultado de verificación blockchain */
+.cert-blockchain-verify-panel {
+  margin-top: 0.5rem;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.blockchain-verify-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.blockchain-verify-error {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: #fca5a5;
+  padding: 0.4rem 0;
+}
+
+/* Badge de integridad */
+.blockchain-integrity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  width: fit-content;
+}
+.blockchain-integrity-badge.valid {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+.blockchain-integrity-badge.invalid {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.blockchain-verify-message {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Aviso de modo simulado */
+.blockchain-mock-notice {
+  font-size: 0.75rem;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.7rem;
+  width: fit-content;
+}
+
+.blockchain-close-btn {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.75rem;
+}

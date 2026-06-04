@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import DOMPurify from 'dompurify';
 import { downloadCertificatePdf, certificatePdfToBase64 } from '../../utils/downloadCertificatePdf';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../components/ui/ToastProvider';
 import { certificadosApi } from '../../api/certificados.api';
 import { institucionesApi } from '../../api/instituciones.api';
 import { estudiantesApi } from '../../api/estudiantes.api';
@@ -14,7 +15,7 @@ import { Card } from '../../components/ui/Card';
 import { formatDate, formatDateTime, getStatusClass, getStatusLabel } from '../../utils/helpers';
 import { EmitirCertificadoForm } from '../../forms/EmitirCertificadoForm';
 import { RevocarCertificadoForm } from '../../forms/RevocarCertificadoForm';
-import { Plus, Download, Ban, Eye, QrCode, Copy, Check, ChevronDown, ChevronUp, ExternalLink, Link2, Lock, History, FileBadge, ShieldCheck, Printer, Mail } from 'lucide-react';
+import { Plus, Download, Ban, Eye, QrCode, Copy, Check, ChevronDown, ChevronUp, ExternalLink, Link2, Lock, History, FileBadge, ShieldCheck, Printer, Mail, Blocks, AlertCircle } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import './CertificadosPage.css';
 
@@ -106,6 +107,7 @@ function CopyBtn({ text, title = 'Copiar' }) {
 
 export const CertificadosPage = () => {
   const { hasPermission } = useAuth();
+  const { showToast } = useToast();
 
   const [certs, setCerts]           = useState([]);
   const [page, setPage]             = useState(1);
@@ -283,6 +285,40 @@ export const CertificadosPage = () => {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
 
+  const [blockchainLoading, setBlockchainLoading]           = useState(false);
+  const [blockchainVerifyLoading, setBlockchainVerifyLoading] = useState(false);
+  const [blockchainVerifyResult, setBlockchainVerifyResult] = useState(null);
+  const [showBlockchainPanel, setShowBlockchainPanel]       = useState(false);
+
+  const handleRegistrarBlockchain = async () => {
+    setBlockchainLoading(true);
+    try {
+      await certificadosApi.registrarBlockchain(detailCert.id);
+      showToast('Certificado registrado en blockchain correctamente.', 'success');
+      const full = await certificadosApi.getById(detailCert.id);
+      setDetailCert(prev => prev?.id === full.id ? { ...prev, ...full } : prev);
+      setCerts(prev => prev.map(c => c.id === full.id ? { ...c, tx_hash: full.tx_hash } : c));
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setBlockchainLoading(false);
+    }
+  };
+
+  const handleVerificarBlockchain = async () => {
+    setBlockchainVerifyLoading(true);
+    setShowBlockchainPanel(true);
+    setBlockchainVerifyResult(null);
+    try {
+      const result = await certificadosApi.verificarBlockchain(detailCert.id);
+      setBlockchainVerifyResult(result);
+    } catch (err) {
+      setBlockchainVerifyResult({ _error: err.message });
+    } finally {
+      setBlockchainVerifyLoading(false);
+    }
+  };
+
   const openDetail = async (c) => {
     setDetailCert(c);
     setShowTechInfo(false);
@@ -293,6 +329,8 @@ export const CertificadosPage = () => {
     setShowCertPreview(false);
     setLoadingDetail(true);
     setShowDetail(true);
+    setBlockchainVerifyResult(null);
+    setShowBlockchainPanel(false);
 
     // Carga el certificado completo (incluye plantilla.template_html)
     certificadosApi.getById(c.id)
@@ -619,36 +657,154 @@ export const CertificadosPage = () => {
 
               {/* Sección blockchain */}
               <div className="cert-blockchain-section">
-                {detailCert.tx_hash ? (
-                  <>
+
+                {/* Cabecera: badge de estado + botones de acción */}
+                <div className="cert-blockchain-header">
+                  {detailCert.tx_hash ? (
                     <div className="cert-blockchain-verified">
-                      <Link2 size={13} /> Verificado en Blockchain
+                      <Link2 size={13} /> Blockchain registrado
                     </div>
-                    <div className="cert-blockchain-details">
+                  ) : (
+                    <div className="cert-blockchain-pending">
+                      <Lock size={13} /> Pendiente de blockchain
+                    </div>
+                  )}
+                  <div className="cert-blockchain-actions">
+                    {!detailCert.tx_hash && hasPermission('certificado:emitir') && (
+                      <button
+                        className="btn-blockchain btn-blockchain-register"
+                        onClick={handleRegistrarBlockchain}
+                        disabled={blockchainLoading}
+                        type="button"
+                      >
+                        <Blocks size={14} />
+                        {blockchainLoading ? 'Registrando…' : 'Registrar en Blockchain'}
+                      </button>
+                    )}
+                    {detailCert.tx_hash && (
+                      <button
+                        className="btn-blockchain btn-blockchain-verify"
+                        onClick={handleVerificarBlockchain}
+                        disabled={blockchainVerifyLoading}
+                        type="button"
+                      >
+                        <ShieldCheck size={14} />
+                        {blockchainVerifyLoading ? 'Verificando…' : 'Verificar Blockchain'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Datos on-chain cuando ya está registrado */}
+                {detailCert.tx_hash && (
+                  <div className="cert-blockchain-details">
+                    <div className="tech-info-row">
+                      <span className="tech-info-label">Transaction Hash</span>
+                      <div className="cert-code-row">
+                        <span className="hash-display">{detailCert.tx_hash.slice(0, 16)}…{detailCert.tx_hash.slice(-7)}</span>
+                        <CopyBtn text={detailCert.tx_hash} title="Copiar TX Hash" />
+                      </div>
+                    </div>
+                    {detailCert.red_blockchain && (
                       <div className="tech-info-row">
-                        <span className="tech-info-label">TX Hash</span>
+                        <span className="tech-info-label">Red</span>
+                        <span className="text-mono">{detailCert.red_blockchain}</span>
+                      </div>
+                    )}
+                    {detailCert.fecha_blockchain && (
+                      <div className="tech-info-row">
+                        <span className="tech-info-label">Fecha de registro</span>
+                        <span className="text-mono">{formatDate(detailCert.fecha_blockchain)}</span>
+                      </div>
+                    )}
+                    {detailCert.hash_sha256 && (
+                      <div className="tech-info-row">
+                        <span className="tech-info-label">Hash del certificado</span>
                         <div className="cert-code-row">
-                          <span className="hash-display">{detailCert.tx_hash.slice(0, 24)}…{detailCert.tx_hash.slice(-12)}</span>
-                          <CopyBtn text={detailCert.tx_hash} title="Copiar TX Hash" />
+                          <span className="hash-display">{detailCert.hash_sha256.slice(0, 20)}…{detailCert.hash_sha256.slice(-8)}</span>
+                          <CopyBtn text={detailCert.hash_sha256} title="Copiar hash" />
                         </div>
                       </div>
-                      {detailCert.fecha_blockchain && (
-                        <div className="tech-info-row">
-                          <span className="tech-info-label">Registrado on-chain</span>
-                          <span className="text-mono">{formatDate(detailCert.fecha_blockchain)}</span>
+                    )}
+                  </div>
+                )}
+
+                {/* Panel de resultado de verificación */}
+                {showBlockchainPanel && (
+                  <div className="cert-blockchain-verify-panel animate-fade-in">
+                    {blockchainVerifyLoading ? (
+                      <div className="blockchain-verify-loading">
+                        <div className="loading-spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />
+                        <span>Verificando integridad en blockchain…</span>
+                      </div>
+                    ) : blockchainVerifyResult?._error ? (
+                      <div className="blockchain-verify-error">
+                        <AlertCircle size={14} />
+                        <span>{blockchainVerifyResult._error}</span>
+                      </div>
+                    ) : blockchainVerifyResult ? (
+                      <>
+                        <div className={`blockchain-integrity-badge ${blockchainVerifyResult.valid ? 'valid' : 'invalid'}`}>
+                          {blockchainVerifyResult.valid
+                            ? <><ShieldCheck size={13} /> Integridad válida</>
+                            : <><AlertCircle size={13} /> Integridad no válida</>
+                          }
                         </div>
-                      )}
-                      {detailCert.red_blockchain && (
-                        <div className="tech-info-row">
-                          <span className="tech-info-label">Red</span>
-                          <span className="text-mono">{detailCert.red_blockchain}</span>
+                        {blockchainVerifyResult.message && (
+                          <p className="blockchain-verify-message">{blockchainVerifyResult.message}</p>
+                        )}
+                        <div className="cert-blockchain-details">
+                          {blockchainVerifyResult.status && (
+                            <div className="tech-info-row">
+                              <span className="tech-info-label">Estado</span>
+                              <span className="text-mono">{blockchainVerifyResult.status}</span>
+                            </div>
+                          )}
+                          {blockchainVerifyResult.network && (
+                            <div className="tech-info-row">
+                              <span className="tech-info-label">Red</span>
+                              <span className="text-mono">{blockchainVerifyResult.network}</span>
+                            </div>
+                          )}
+                          {blockchainVerifyResult.txHash && (
+                            <div className="tech-info-row">
+                              <span className="tech-info-label">Transaction Hash</span>
+                              <div className="cert-code-row">
+                                <span className="hash-display">{blockchainVerifyResult.txHash.slice(0, 16)}…{blockchainVerifyResult.txHash.slice(-7)}</span>
+                                <CopyBtn text={blockchainVerifyResult.txHash} title="Copiar TX Hash" />
+                              </div>
+                            </div>
+                          )}
+                          {blockchainVerifyResult.registeredAt && (
+                            <div className="tech-info-row">
+                              <span className="tech-info-label">Fecha de registro</span>
+                              <span className="text-mono">{formatDate(blockchainVerifyResult.registeredAt)}</span>
+                            </div>
+                          )}
+                          {blockchainVerifyResult.hash && (
+                            <div className="tech-info-row">
+                              <span className="tech-info-label">Hash verificado</span>
+                              <div className="cert-code-row">
+                                <span className="hash-display">{blockchainVerifyResult.hash.slice(0, 20)}…{blockchainVerifyResult.hash.slice(-8)}</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="cert-blockchain-pending">
-                    <Lock size={13} /> Registro en blockchain pendiente
+                        {(blockchainVerifyResult.txHash?.toLowerCase().includes('mock') ||
+                          blockchainVerifyResult.network?.toLowerCase().includes('mock')) && (
+                          <div className="blockchain-mock-notice">
+                            Registro simulado para entorno de pruebas
+                          </div>
+                        )}
+                        <button
+                          className="tech-toggle-btn blockchain-close-btn"
+                          onClick={() => setShowBlockchainPanel(false)}
+                          type="button"
+                        >
+                          Cerrar verificación
+                        </button>
+                      </>
+                    ) : null}
                   </div>
                 )}
               </div>
