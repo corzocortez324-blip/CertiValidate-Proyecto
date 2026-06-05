@@ -49,10 +49,22 @@ async function main() {
 }
 
 async function shutdown(signal) {
+  const SHUTDOWN_TIMEOUT_MS = 5000
+
+  const forceExit = setTimeout(() => {
+    logger.warn({ signal }, 'Apagado forzado: el servidor tardó demasiado en cerrar')
+    process.exit(1)
+  }, SHUTDOWN_TIMEOUT_MS)
+  forceExit.unref()
+
   try {
     logger.info({ signal }, 'Cerrando servidor...')
 
     if (server) {
+      // Cierra conexiones keep-alive inmediatamente para liberar el puerto
+      if (typeof server.closeAllConnections === 'function') {
+        server.closeAllConnections()
+      }
       await new Promise((resolve, reject) => {
         server.close((err) => {
           if (err) return reject(err)
@@ -62,9 +74,11 @@ async function shutdown(signal) {
     }
 
     await prisma.$disconnect()
+    clearTimeout(forceExit)
     process.exit(0)
   } catch (err) {
     logger.error({ err, signal }, 'Error durante el apagado del servidor')
+    clearTimeout(forceExit)
     process.exit(1)
   }
 }
@@ -82,9 +96,13 @@ process.on('uncaughtException', (err) => {
   process.exit(1)
 })
 
-if (process.env.NODE_ENV !== 'test') {
+function startServer() {
   main().catch((err) => {
     logger.fatal({ err }, 'Error al iniciar el servidor')
     process.exit(1)
   })
+}
+
+if (require.main === module) {
+  startServer()
 }

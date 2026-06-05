@@ -249,4 +249,207 @@ describe('GET /api/certificados/:id/blockchain/verify', () => {
     expect(res.status).toBe(401)
     expect(res.body.success).toBe(false)
   })
+
+  it('respuesta incluye integrityStatus, mode, certificadoId, institucionId en certificado registrado', async () => {
+    const res = await request(app)
+      .get(`/api/certificados/${certificadoA.id}/blockchain/verify`)
+      .set('Authorization', `Bearer ${tokenA}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body.data.integrityStatus).toBe('valid')
+    expect(['mock', 'real']).toContain(res.body.data.mode)
+    expect(res.body.data.certificadoId).toBe(certificadoA.id)
+    expect(res.body.data.institucionId).toBeDefined()
+    expect(res.body.data.hashLocal).toBeDefined()
+    expect(res.body.data.hashRegistrado).toBeDefined()
+    expect(res.body.data.txHash).toMatch(/^mock_tx_/)
+    expect(res.body.data.registeredAt).toBeDefined()
+  })
+})
+
+describe('GET /api/certificados/:id/blockchain/status', () => {
+  it('devuelve registered:false para certificado sin registro blockchain', async () => {
+    const estudianteX = await require('./helpers/db').createTestEstudiante(instB.id, `BCStatus_${UNIQUE}`)
+    const plantillaX = await require('./helpers/db').createTestPlantilla(instB.id, `BCStatus_${UNIQUE}`)
+
+    const certRes = await request(app)
+      .post('/api/certificados/emitir')
+      .set('Authorization', `Bearer ${tokenB}`)
+      .send({
+        estudiante_id: estudianteX.id,
+        institucion_id: instB.id,
+        plantilla_id: plantillaX.id,
+      })
+    const certPending = certRes.body.data
+
+    const res = await request(app)
+      .get(`/api/certificados/${certPending.id}/blockchain/status`)
+      .set('Authorization', `Bearer ${tokenB}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data.registered).toBe(false)
+    expect(res.body.data.integrityStatus).toBe('pending')
+    expect(res.body.data.txHash).toBeNull()
+    expect(res.body.data.status).toBeNull()
+    expect(['mock', 'real']).toContain(res.body.data.mode)
+    expect(res.body.data.certificadoId).toBe(certPending.id)
+  })
+
+  it('devuelve registered:true con integrityStatus:valid para certificado registrado en blockchain', async () => {
+    const res = await request(app)
+      .get(`/api/certificados/${certificadoA.id}/blockchain/status`)
+      .set('Authorization', `Bearer ${tokenA}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data.registered).toBe(true)
+    expect(res.body.data.integrityStatus).toBe('valid')
+    expect(res.body.data.status).toBe('confirmado')
+    expect(res.body.data.txHash).toMatch(/^mock_tx_/)
+    expect(res.body.data.network).toBeDefined()
+    expect(res.body.data.registeredAt).toBeDefined()
+    expect(res.body.data.certificadoId).toBe(certificadoA.id)
+  })
+
+  it('devuelve 403 si el usuario intenta ver status de certificado de otra institución', async () => {
+    const res = await request(app)
+      .get(`/api/certificados/${certificadoA.id}/blockchain/status`)
+      .set('Authorization', `Bearer ${tokenB}`)
+
+    expect(res.status).toBe(403)
+    expect(res.body.success).toBe(false)
+  })
+
+  it('devuelve 401 sin token', async () => {
+    const res = await request(app)
+      .get(`/api/certificados/${certificadoA.id}/blockchain/status`)
+
+    expect(res.status).toBe(401)
+    expect(res.body.success).toBe(false)
+  })
+
+  it('devuelve 404 si el certificado no existe', async () => {
+    const res = await request(app)
+      .get('/api/certificados/00000000-0000-0000-0000-000000000000/blockchain/status')
+      .set('Authorization', `Bearer ${tokenA}`)
+
+    expect(res.status).toBe(404)
+    expect(res.body.success).toBe(false)
+  })
+})
+
+describe('GET /api/certificados/:id/blockchain/receipt', () => {
+  it('devuelve comprobante completo para certificado registrado en blockchain', async () => {
+    const res = await request(app)
+      .get(`/api/certificados/${certificadoA.id}/blockchain/receipt`)
+      .set('Authorization', `Bearer ${tokenA}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data.certificadoId).toBe(certificadoA.id)
+    expect(res.body.data.codigoVerificacion).toBeDefined()
+    expect(res.body.data.hash).toBeDefined()
+    expect(res.body.data.txHash).toMatch(/^mock_tx_/)
+    expect(res.body.data.network).toBeDefined()
+    expect(res.body.data.status).toBe('confirmado')
+    expect(res.body.data.registeredAt).toBeDefined()
+    expect(['mock', 'real']).toContain(res.body.data.mode)
+    expect(res.body.data.issuer).toBeDefined()
+    expect(res.body.data.message).toContain('blockchain')
+  })
+
+  it('devuelve status no_registrado para certificado sin blockchain', async () => {
+    const estudianteY = await require('./helpers/db').createTestEstudiante(instB.id, `BCReceipt_${UNIQUE}`)
+    const plantillaY = await require('./helpers/db').createTestPlantilla(instB.id, `BCReceipt_${UNIQUE}`)
+
+    const certRes = await request(app)
+      .post('/api/certificados/emitir')
+      .set('Authorization', `Bearer ${tokenB}`)
+      .send({
+        estudiante_id: estudianteY.id,
+        institucion_id: instB.id,
+        plantilla_id: plantillaY.id,
+      })
+    const certSinBC = certRes.body.data
+
+    const res = await request(app)
+      .get(`/api/certificados/${certSinBC.id}/blockchain/receipt`)
+      .set('Authorization', `Bearer ${tokenB}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data.certificadoId).toBe(certSinBC.id)
+    expect(res.body.data.txHash).toBeNull()
+    expect(res.body.data.hash).toBeNull()
+    expect(res.body.data.status).toBe('no_registrado')
+  })
+
+  it('devuelve 403 si el usuario intenta ver comprobante de certificado de otra institución', async () => {
+    const res = await request(app)
+      .get(`/api/certificados/${certificadoA.id}/blockchain/receipt`)
+      .set('Authorization', `Bearer ${tokenB}`)
+
+    expect(res.status).toBe(403)
+    expect(res.body.success).toBe(false)
+  })
+
+  it('devuelve 401 sin token', async () => {
+    const res = await request(app)
+      .get(`/api/certificados/${certificadoA.id}/blockchain/receipt`)
+
+    expect(res.status).toBe(401)
+    expect(res.body.success).toBe(false)
+  })
+
+  it('devuelve 404 si el certificado no existe', async () => {
+    const res = await request(app)
+      .get('/api/certificados/00000000-0000-0000-0000-000000000000/blockchain/receipt')
+      .set('Authorization', `Bearer ${tokenA}`)
+
+    expect(res.status).toBe(404)
+    expect(res.body.success).toBe(false)
+  })
+})
+
+describe('POST /api/certificados/verificar — objeto blockchain en validación pública', () => {
+  it('incluye objeto blockchain con registered:true cuando el certificado tiene registro blockchain', async () => {
+    const res = await request(app)
+      .post('/api/certificados/verificar')
+      .send({ codigo: certificadoA.codigo_unico })
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data.blockchain).not.toBeNull()
+    expect(res.body.data.blockchain.registered).toBe(true)
+    expect(typeof res.body.data.blockchain.verified).toBe('boolean')
+    expect(['valid', 'invalid', 'pending']).toContain(res.body.data.blockchain.integrityStatus)
+    expect(res.body.data.blockchain.network).toBeDefined()
+    expect(res.body.data.blockchain.txHashMasked).toBeDefined()
+    // txHashMasked no debe exponer el txHash completo
+    expect(res.body.data.blockchain.txHashMasked.length).toBeLessThan(50)
+  })
+
+  it('devuelve blockchain:null en validación pública para certificado sin registro blockchain', async () => {
+    const estudianteZ = await require('./helpers/db').createTestEstudiante(instB.id, `BCPub_${UNIQUE}`)
+    const plantillaZ = await require('./helpers/db').createTestPlantilla(instB.id, `BCPub_${UNIQUE}`)
+
+    const certRes = await request(app)
+      .post('/api/certificados/emitir')
+      .set('Authorization', `Bearer ${tokenB}`)
+      .send({
+        estudiante_id: estudianteZ.id,
+        institucion_id: instB.id,
+        plantilla_id: plantillaZ.id,
+      })
+    const certSinBC = certRes.body.data
+
+    const res = await request(app)
+      .post('/api/certificados/verificar')
+      .send({ codigo: certSinBC.codigo_unico })
+
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+    expect(res.body.data.blockchain).toBeNull()
+  })
 })

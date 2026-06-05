@@ -562,7 +562,13 @@ paths:
                   titular: "Juan P***z"
                   tipo_certificado: Técnico en Sistemas
                   institucion: Universidad Cesar
-                  blockchain: null
+                  blockchain:
+                    registered: true
+                    verified: true
+                    integrityStatus: valid
+                    network: mock
+                    txHashMasked: "mock_tx_a3...000000"
+                    registeredAt: "2026-04-01T10:00:00Z"
         '400': { description: Se requiere código o hash }
         '409': { description: Integridad del certificado comprometida (hash no coincide) }
         '429': { description: Demasiadas solicitudes — rate limit 50 req/15min }
@@ -1829,17 +1835,21 @@ paths:
                           valid:
                             type: boolean
                             example: true
-                          certificado_id:
+                          integrityStatus:
                             type: string
-                            format: uuid
-                          hash_local:
+                            enum: [valid, invalid, pending]
+                            example: "valid"
+                          message:
+                            type: string
+                            example: "Integridad verificada: el certificado no ha sido alterado"
+                          hashLocal:
                             type: string
                             example: "a3f1b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2"
-                          hash_registrado:
+                          hashRegistrado:
                             type: string
                             nullable: true
                             example: "a3f1b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2"
-                          tx_hash:
+                          txHash:
                             type: string
                             nullable: true
                             example: "mock_tx_a3f1b2c4d5e6f7a8_1717200000000"
@@ -1851,13 +1861,160 @@ paths:
                             type: string
                             nullable: true
                             example: "confirmado"
+                          registeredAt:
+                            type: string
+                            format: date-time
+                            nullable: true
+                          mode:
+                            type: string
+                            enum: [mock, real]
+                            example: "mock"
+                          certificadoId:
+                            type: string
+                            format: uuid
+                          institucionId:
+                            type: string
+                            format: uuid
                           mensaje:
                             type: string
+                            description: Alias en español de message (compatibilidad)
                             example: "Integridad verificada: el certificado no ha sido alterado"
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '500': { description: Error interno al verificar en blockchain }
+
+  /api/certificados/{id}/blockchain/status:
+    get:
+      tags: [Certificados]
+      summary: Resumen del estado blockchain de un certificado
+      description: >
+        Devuelve si el certificado está registrado en blockchain, su integridad,
+        red, txHash, fecha de registro y última verificación pública.
+        No expone datos personales del estudiante.
+        Requiere permiso `certificado:ver`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200':
+          description: Estado blockchain del certificado
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          registered:
+                            type: boolean
+                            example: true
+                          status:
+                            type: string
+                            nullable: true
+                            example: "confirmado"
+                          network:
+                            type: string
+                            nullable: true
+                            example: "mock"
+                          txHash:
+                            type: string
+                            nullable: true
+                            example: "mock_tx_a3f1b2c4d5e6f7a8_1717200000000"
+                          registeredAt:
+                            type: string
+                            format: date-time
+                            nullable: true
+                          lastVerificationAt:
+                            type: string
+                            format: date-time
+                            nullable: true
+                          integrityStatus:
+                            type: string
+                            enum: [valid, invalid, pending]
+                            example: "valid"
+                          mode:
+                            type: string
+                            enum: [mock, real]
+                            example: "mock"
+                          certificadoId:
+                            type: string
+                            format: uuid
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { description: Error interno al obtener estado blockchain }
+
+  /api/certificados/{id}/blockchain/receipt:
+    get:
+      tags: [Certificados]
+      summary: Comprobante blockchain del certificado
+      description: >
+        Devuelve un comprobante listo para mostrar en el frontend (panel blockchain, badge).
+        Incluye hash, txHash, red, modo, institución emisora y mensaje de estado.
+        No expone datos personales del estudiante ni claves privadas.
+        Requiere permiso `certificado:ver`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UUIDPath'
+      responses:
+        '200':
+          description: Comprobante blockchain
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          certificadoId:
+                            type: string
+                            format: uuid
+                          codigoVerificacion:
+                            type: string
+                            example: "ABCD1234EFGH5678"
+                          hash:
+                            type: string
+                            nullable: true
+                            example: "a3f1b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2"
+                          txHash:
+                            type: string
+                            nullable: true
+                            example: "mock_tx_a3f1b2c4d5e6f7a8_1717200000000"
+                          network:
+                            type: string
+                            nullable: true
+                            example: "mock"
+                          status:
+                            type: string
+                            example: "confirmado"
+                          registeredAt:
+                            type: string
+                            format: date-time
+                            nullable: true
+                          mode:
+                            type: string
+                            enum: [mock, real]
+                            example: "mock"
+                          issuer:
+                            type: string
+                            nullable: true
+                            example: "Universidad Cesar"
+                          message:
+                            type: string
+                            example: "Certificado registrado y confirmado en blockchain"
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '500': { description: Error interno al obtener comprobante blockchain }
 
   # ─── Admin — nuevos endpoints ─────────────────────────────────────────────────
 

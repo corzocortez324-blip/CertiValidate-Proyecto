@@ -8,6 +8,7 @@ const { getClientIp } = require('../utils/validators')
 const logger = require('../utils/logger')
 const academicProvider = require('../services/academic-provider.service')
 const integrationConfig = require('../services/integration-config.service')
+const { generateCertificateHash } = require('../services/blockchain.service')
 
 const ofuscarNombre = (nombre, apellido) => {
   const n = (nombre ?? '').trim()
@@ -459,6 +460,38 @@ const verificarCertificado = async (req, res) => {
 
     const txBlockchain = cert.blockchain?.[0] ?? null
 
+    let blockchainInfo = null
+    if (txBlockchain) {
+      const hashBlockchain = generateCertificateHash(cert)
+      const hashCoincide = hashBlockchain === txBlockchain.hash
+      const blockchainVerified =
+        txBlockchain.estado === 'confirmado' && hashCoincide
+
+      let integrityStatus
+      if (blockchainVerified) {
+        integrityStatus = 'valid'
+      } else if (txBlockchain.estado === 'confirmado' && !hashCoincide) {
+        integrityStatus = 'invalid'
+      } else {
+        integrityStatus = 'pending'
+      }
+
+      const txHash = txBlockchain.tx_hash
+      const txHashMasked =
+        txHash && txHash.length > 16
+          ? `${txHash.substring(0, 10)}...${txHash.substring(txHash.length - 6)}`
+          : txHash
+
+      blockchainInfo = {
+        registered: true,
+        verified: blockchainVerified,
+        integrityStatus,
+        network: txBlockchain.red,
+        txHashMasked,
+        registeredAt: txBlockchain.confirmado_en,
+      }
+    }
+
     return sendSuccess(
       res,
       {
@@ -478,16 +511,7 @@ const verificarCertificado = async (req, res) => {
         ),
         tipo_certificado: cert.plantilla?.nombre ?? null,
         institucion: cert.institucion?.nombre ?? null,
-        blockchain: txBlockchain
-          ? {
-              tx_hash: txBlockchain.tx_hash,
-              red: txBlockchain.red,
-              confirmado_en: txBlockchain.confirmado_en,
-              explorador_url: txBlockchain.tx_hash
-                ? `https://polygonscan.com/tx/${txBlockchain.tx_hash}`
-                : null,
-            }
-          : null,
+        blockchain: blockchainInfo,
       },
       mensaje,
       200,

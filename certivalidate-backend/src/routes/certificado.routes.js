@@ -17,6 +17,8 @@ const {
 const {
   registerCertificateOnBlockchain,
   verifyCertificateBlockchain,
+  getBlockchainStatus,
+  getBlockchainReceipt,
 } = require('../controllers/blockchain.controller')
 const {
   validateCertificado,
@@ -144,6 +146,28 @@ router.get(
   validateUUIDParam('id'),
   handleValidationErrors,
   verifyCertificateBlockchain,
+)
+
+router.get(
+  '/:id/blockchain/status',
+  verificarToken,
+  requireEmailVerified,
+  cargarInstitucionesUsuario,
+  requirePermission('certificado', 'ver'),
+  validateUUIDParam('id'),
+  handleValidationErrors,
+  getBlockchainStatus,
+)
+
+router.get(
+  '/:id/blockchain/receipt',
+  verificarToken,
+  requireEmailVerified,
+  cargarInstitucionesUsuario,
+  requirePermission('certificado', 'ver'),
+  validateUUIDParam('id'),
+  handleValidationErrors,
+  getBlockchainReceipt,
 )
 
 router.post('/verificar', validateVerificarCertificado, handleValidationErrors, verificarCertificado)
