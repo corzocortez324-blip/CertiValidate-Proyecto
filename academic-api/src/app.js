@@ -27,6 +27,7 @@ app.get('/health', (req, res) => {
     status: 'ok',
     service: 'academic-api',
     timestamp: new Date().toISOString(),
+    version: require('../package.json').version,
   })
 })
 

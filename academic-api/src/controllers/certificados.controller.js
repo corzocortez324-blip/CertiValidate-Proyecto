@@ -2,20 +2,28 @@ const prisma = require('../utils/prisma')
 const { CERTIFICADOS } = require('../data/demo-data')
 
 function mapCertificado(c) {
+  const docEstudiante = c.estudiante?.documento ?? c.estudiante_documento ?? null
+  const cursoRef = c.cursoId ?? c.curso_id ?? null
+
   return {
-    codigo: c.id,
-    estudiante_documento: c.estudiante?.documento ?? null,
+    codigo: c.codigo ?? c.id,
+    certificate_source_id: c.certificate_source_id ?? c.codigo ?? c.id,
+    enrollment_id: c.enrollment_id ?? (docEstudiante && cursoRef ? `ENR-${docEstudiante}-${cursoRef}` : null),
+    academic_record_id: c.academic_record_id ?? (docEstudiante ? `AR-${docEstudiante}` : null),
+    estudiante_documento: docEstudiante,
     estudiante_nombre: c.estudiante
       ? `${c.estudiante.nombre} ${c.estudiante.apellido}`
-      : null,
-    curso_id: c.cursoId ?? null,
-    curso: c.titulo,
-    fecha_emision: c.fechaEmision,
-    fecha_expiracion: c.fechaExpiracion ?? null,
+      : c.estudiante_nombre ?? null,
+    curso_id: cursoRef,
+    curso: c.titulo ?? c.curso,
+    fecha_emision: c.fechaEmision ?? c.fecha_emision,
+    fecha_expiracion: c.fechaExpiracion ?? c.fecha_expiracion ?? null,
     estado: c.estado,
-    plantilla_id: c.plantillaId ?? null,
-    intensidad_horaria: c.horas ?? null,
+    plantilla_id: c.plantillaId ?? c.plantilla_id ?? null,
+    intensidad_horaria: c.horas ?? c.intensidad_horaria ?? null,
     promedio: c.promedio ?? null,
+    updated_at: c.updated_at ?? (c.updatedAt ? new Date(c.updatedAt).toISOString() : null),
+    data_version: c.data_version ?? 1,
   }
 }
 

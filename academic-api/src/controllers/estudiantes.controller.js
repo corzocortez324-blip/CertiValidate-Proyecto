@@ -3,6 +3,8 @@ const { ESTUDIANTES } = require('../data/demo-data')
 
 function mapEstudiante(e) {
   return {
+    student_external_id: e.student_external_id ?? ('EST-' + e.documento),
+    academic_record_id: e.academic_record_id ?? ('AR-' + e.documento),
     documento: e.documento,
     tipo_documento: e.tipo_documento ?? 'CC',
     nombres: e.nombres ?? e.nombre,
@@ -11,6 +13,8 @@ function mapEstudiante(e) {
     programa: e.programa,
     estado: e.estadoAcademico ?? e.estado,
     fecha_registro: e.fecha_registro ?? e.createdAt ?? null,
+    updated_at: e.updated_at ?? (e.updatedAt ? new Date(e.updatedAt).toISOString() : null),
+    data_version: e.data_version ?? 1,
   }
 }
 

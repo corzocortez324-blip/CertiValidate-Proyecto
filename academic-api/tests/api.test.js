@@ -19,8 +19,16 @@ const prisma = require('../src/utils/prisma')
 
 const TEST_API_KEY = 'test-key'
 
+let originalNodeEnv
+
 beforeAll(() => {
-  process.env.API_KEY = TEST_API_KEY
+  originalNodeEnv = process.env.NODE_ENV
+  process.env.NODE_ENV = 'production'
+  process.env.ACADEMIC_API_KEY = TEST_API_KEY
+})
+
+afterAll(() => {
+  process.env.NODE_ENV = originalNodeEnv
 })
 
 afterEach(() => {
@@ -73,6 +81,12 @@ describe('GET /health', () => {
     expect(() => new Date(res.body.timestamp)).not.toThrow()
     expect(new Date(res.body.timestamp).toISOString()).toBe(res.body.timestamp)
   })
+
+  it('returns version field', async () => {
+    const res = await request(app).get('/health')
+    expect(res.body.version).toBeDefined()
+    expect(typeof res.body.version).toBe('string')
+  })
 })
 
 // ── GET /api/estudiantes ──────────────────────────────────────────────────────
@@ -102,6 +116,8 @@ describe('GET /api/estudiantes', () => {
     expect(Array.isArray(res.body.data)).toBe(true)
     expect(res.body.data).toHaveLength(1)
     expect(res.body.data[0].documento).toBe('1002003000')
+    expect(res.body.data[0].student_external_id).toBe('EST-1002003000')
+    expect(res.body.data[0].academic_record_id).toBe('AR-1002003000')
   })
 })
 
@@ -123,7 +139,10 @@ describe('GET /api/estudiantes/:documento', () => {
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
     expect(res.body.data.documento).toBe('1002003000')
-    expect(res.body.data.nombre).toBe('Juan')
+    expect(res.body.data.nombres).toBe('Juan')
+    expect(res.body.data.student_external_id).toBe('EST-1002003000')
+    expect(res.body.data.academic_record_id).toBe('AR-1002003000')
+    expect(res.body.data.data_version).toBe(1)
   })
 
   it('returns 404 when estudiante is not found', async () => {
@@ -156,7 +175,9 @@ describe('GET /api/certificados', () => {
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
     expect(Array.isArray(res.body.data)).toBe(true)
-    expect(res.body.data[0].tipo).toBe('DIPLOMA')
+    expect(res.body.data[0].codigo).toBe('uuid-cert-1')
+    expect(res.body.data[0].certificate_source_id).toBe('uuid-cert-1')
+    expect(res.body.data[0].academic_record_id).toBe('AR-1002003000')
   })
 })
 
@@ -172,7 +193,9 @@ describe('GET /api/certificados/:codigo', () => {
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(true)
-    expect(res.body.data.id).toBe('uuid-cert-1')
+    expect(res.body.data.codigo).toBe('uuid-cert-1')
+    expect(res.body.data.certificate_source_id).toBe('uuid-cert-1')
+    expect(res.body.data.data_version).toBe(1)
   })
 
   it('returns 404 when certificado is not found', async () => {
