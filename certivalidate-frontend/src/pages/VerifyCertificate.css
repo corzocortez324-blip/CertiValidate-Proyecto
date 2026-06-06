@@ -599,6 +599,83 @@
 }
 .btn-result-secondary:hover { color: var(--color-text-main); border-color: rgba(255,255,255,0.25); }
 
+/* ── Encabezado de sección blockchain en página pública ────────────── */
+.bc-public-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+/* Badge de integridad comprometida (pública) */
+.bc-compromised-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  font-size: 0.78rem;
+  font-weight: 600;
+  align-self: flex-start;
+}
+
+/* Aviso de modo simulado (pública) */
+.bc-mock-notice-public {
+  font-size: 0.72rem;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.07);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.65rem;
+  width: fit-content;
+  margin-top: 0.15rem;
+}
+
+/* Badge de modo (Simulación / Red principal) en página pública */
+.bc-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  align-self: flex-start;
+}
+.bc-mode-mock {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.28);
+}
+.bc-mode-real {
+  background: rgba(16, 185, 129, 0.08);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+/* Badge "No disponible" en página pública */
+.bc-unavailable-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(107, 114, 128, 0.1);
+  border: 1px solid rgba(107, 114, 128, 0.28);
+  color: #9ca3af;
+  font-size: 0.78rem;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .result-data-grid { grid-template-columns: 1fr; }

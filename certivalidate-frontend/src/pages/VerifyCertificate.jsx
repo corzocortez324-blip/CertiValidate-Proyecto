@@ -5,6 +5,7 @@ import {
   ShieldCheck, Search, CheckCircle2, XCircle, AlertTriangle,
   Link2, Fingerprint, Globe, Lock, KeyRound, Hash, Upload,
   RotateCcw, Share2, FileText, Ban, HelpCircle, ChevronDown, ChevronUp,
+  Blocks, AlertCircle,
 } from 'lucide-react';
 import { formatDate } from '../utils/helpers';
 import './VerifyCertificate.css';
@@ -62,14 +63,22 @@ function EstadoValido({ result, onReset }) {
         </div>
       </div>
 
-      {/* Sección Blockchain */}
+      {/* ── Integridad Blockchain ── */}
       <div className="result-blockchain-section">
+        <div className="bc-public-header">
+          <Blocks size={14} />
+          Integridad Blockchain
+        </div>
+
         {result.tx_hash ? (
           <>
             <div className="blockchain-verified-badge">
-              <Link2 size={13} />
+              <ShieldCheck size={13} />
               Verificado en Blockchain
             </div>
+            <span className={`bc-mode-badge ${result.red_blockchain?.toLowerCase().includes('mock') ? 'bc-mode-mock' : 'bc-mode-real'}`}>
+              {result.red_blockchain?.toLowerCase().includes('mock') ? 'Modo simulación' : 'Red principal'}
+            </span>
             <div className="blockchain-details">
               <div className="rd-tech-row">
                 <span className="rd-label">TX Hash</span>
@@ -90,11 +99,21 @@ function EstadoValido({ result, onReset }) {
                 </div>
               )}
             </div>
+            {result.red_blockchain?.toLowerCase().includes('mock') && (
+              <div className="bc-mock-notice-public">
+                Registro simulado para entorno de pruebas.
+              </div>
+            )}
           </>
-        ) : (
+        ) : result.hash_sha256 ? (
           <div className="blockchain-pending-badge">
             <Lock size={13} />
             Registro en blockchain pendiente
+          </div>
+        ) : (
+          <div className="bc-unavailable-badge">
+            <HelpCircle size={13} />
+            No disponible
           </div>
         )}
       </div>
@@ -179,6 +198,18 @@ function EstadoAlterado({ result, onReset }) {
       <p className="result-info-note">
         El hash del archivo no coincide con el hash registrado en el sistema. El documento puede haber sido editado o corrompido. No confíes en él como documento oficial.
       </p>
+
+      {/* ── Integridad Blockchain ── */}
+      <div className="result-blockchain-section">
+        <div className="bc-public-header">
+          <Blocks size={14} />
+          Integridad Blockchain
+        </div>
+        <div className="bc-compromised-badge">
+          <AlertCircle size={13} />
+          Integridad comprometida — El documento ha sido alterado.
+        </div>
+      </div>
 
       {hasTech && (
         <>

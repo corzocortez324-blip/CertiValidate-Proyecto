@@ -790,3 +790,317 @@ tr.row-revoked td {
   font-size: 0.75rem;
   padding: 0.3rem 0.75rem;
 }
+
+/* ── Título de sección blockchain ─────────────────────────────────── */
+.cert-blockchain-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-muted);
+  margin-bottom: 0.1rem;
+}
+
+/* Fila de badges de estado e integridad */
+.cert-blockchain-status-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Botón comprobante */
+.btn-blockchain-receipt {
+  background: rgba(99, 102, 241, 0.07);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #c4b5fd;
+}
+.btn-blockchain-receipt:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.16);
+  border-color: rgba(99, 102, 241, 0.55);
+  color: #ddd6fe;
+}
+
+/* ── Badge blockchain en tabla ────────────────────────────────────── */
+.cert-estado-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  align-items: flex-start;
+}
+
+.bc-table-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.bc-table-badge--registered {
+  background: rgba(16, 185, 129, 0.1);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.bc-table-badge--pending {
+  background: rgba(245, 158, 11, 0.08);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  opacity: 0.75;
+}
+
+/* ── Timeline visual Blockchain ───────────────────────────────────── */
+.bc-timeline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin-top: 0.35rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+}
+
+.bc-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 72px;
+  flex-shrink: 0;
+}
+
+.bc-step-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.bc-step--done .bc-step-dot {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1.5px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+.bc-step--pending .bc-step-dot {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  color: var(--color-text-muted);
+  opacity: 0.55;
+}
+
+.bc-step-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  text-align: center;
+}
+
+.bc-step-label {
+  font-size: 0.67rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  line-height: 1.3;
+}
+
+.bc-step--pending .bc-step-label {
+  color: var(--color-text-muted);
+  opacity: 0.65;
+}
+
+.bc-step-sub {
+  font-size: 0.6rem;
+  color: var(--color-text-muted);
+  font-family: monospace;
+  line-height: 1.3;
+}
+
+.bc-connector {
+  flex: 1;
+  min-width: 12px;
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-top: 12px;
+  align-self: flex-start;
+  flex-shrink: 1;
+}
+
+.bc-connector--done {
+  background: rgba(16, 185, 129, 0.4);
+}
+
+/* ── Modo blockchain badge ─────────────────────────────────────────── */
+.cert-blockchain-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.cert-blockchain-mode-badge.mode-mock {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.cert-blockchain-mode-badge.mode-real {
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* ── Enlace al explorador en comprobante ──────────────────────────── */
+.bc-explorer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 240, 255, 0.06);
+  transition: all 0.15s;
+  width: fit-content;
+}
+.bc-explorer-link:hover {
+  background: rgba(0, 240, 255, 0.12);
+  border-color: rgba(0, 240, 255, 0.5);
+  color: var(--color-primary-hover);
+}
+
+/* ── Card profesional Seguridad Blockchain ────────────────────────── */
+.cert-blockchain-card {
+  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+}
+
+.cert-blockchain-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a5b4fc;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.18);
+}
+
+.cert-blockchain-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  padding: 0.25rem 0;
+}
+
+.cert-blockchain-status-error {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: #fca5a5;
+  padding: 0.25rem 0;
+}
+
+/* Fila de badges de la card */
+.cert-bc-badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.bc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.22rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.bc-badge--registered {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.bc-badge--pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.bc-badge--integrity-ok {
+  background: rgba(16, 185, 129, 0.1);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.bc-badge--integrity-fail {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.bc-badge--mock {
+  background: rgba(245, 158, 11, 0.08);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  opacity: 0.85;
+}
+
+/* Grid de datos blockchain */
+.cert-bc-data {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cert-bc-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.cert-bc-label {
+  font-size: 0.71rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.cert-bc-value {
+  font-size: 0.84rem;
+  color: var(--color-text-main);
+  line-height: 1.4;
+}

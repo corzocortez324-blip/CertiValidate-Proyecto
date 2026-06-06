@@ -1,6 +1,37 @@
 import { request, API_BASE, getToken } from './_client';
 import { qs } from '../utils/queryString';
 
+/**
+ * @typedef {Object} BlockchainStatus
+ * @property {boolean} registrado
+ * @property {string|null} tx_hash
+ * @property {string|null} block_number
+ * @property {string|null} network
+ * @property {string|null} registered_at
+ * @property {string} estado - 'pendiente' | 'confirmado' | 'fallido'
+ */
+
+/**
+ * @typedef {Object} BlockchainVerificationResult
+ * @property {boolean} valido
+ * @property {boolean} en_blockchain
+ * @property {string|null} tx_hash
+ * @property {string|null} network
+ * @property {string|null} timestamp
+ * @property {string} mensaje
+ */
+
+/**
+ * @typedef {Object} BlockchainReceipt
+ * @property {string} tx_hash
+ * @property {string} block_number
+ * @property {string} network
+ * @property {string} from
+ * @property {string} to
+ * @property {string} gas_used
+ * @property {string} registered_at
+ */
+
 export const certificadosApi = {
   listar: async ({ page = 1, limit = 10, search = '', estado = '', institucion_id = '', estudiante_id = '' } = {}) => {
     const res = await request(`/certificados/listar${qs({ page, limit, search: search || undefined, estado: estado || undefined, institucion_id: institucion_id || undefined, estudiante_id: estudiante_id || undefined })}`);
@@ -72,4 +103,36 @@ export const certificadosApi = {
     const res = await request(`/certificados/${id}/blockchain/verify`);
     return res.data;
   },
+
+  /** @returns {Promise<BlockchainStatus>} */
+  getBlockchainStatus: async (id) => {
+    const res = await request(`/certificados/${id}/blockchain/status`);
+    return res.data;
+  },
+
+  /** @returns {Promise<BlockchainReceipt>} */
+  getBlockchainReceipt: async (id) => {
+    const res = await request(`/certificados/${id}/blockchain/receipt`);
+    return res.data;
+  },
 };
+
+// ── Blockchain standalone exports ──────────────────────────────────────────
+// Wrappers con nombres explícitos para uso directo en componentes.
+// Los errores propagan como ApiError (ver _client.js) de forma consistente.
+
+/** POST /certificados/:id/blockchain/register */
+export const registerCertificateBlockchain = (certificadoId) =>
+  certificadosApi.registrarBlockchain(certificadoId);
+
+/** GET /certificados/:id/blockchain/verify — @returns {Promise<BlockchainVerificationResult>} */
+export const verifyCertificateBlockchain = (certificadoId) =>
+  certificadosApi.verificarBlockchain(certificadoId);
+
+/** GET /certificados/:id/blockchain/status — @returns {Promise<BlockchainStatus>} */
+export const getCertificateBlockchainStatus = (certificadoId) =>
+  certificadosApi.getBlockchainStatus(certificadoId);
+
+/** GET /certificados/:id/blockchain/receipt — @returns {Promise<BlockchainReceipt>} */
+export const getCertificateBlockchainReceipt = (certificadoId) =>
+  certificadosApi.getBlockchainReceipt(certificadoId);
