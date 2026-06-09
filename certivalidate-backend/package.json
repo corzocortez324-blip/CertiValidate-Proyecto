@@ -7,6 +7,7 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "seed": "node prisma/seed.js",
+    "setup:dev": "npm run migrate && npm run seed",
     "cleanup:test-users": "node scripts/cleanup-test-users.js",
     "cleanup:test-users:confirm": "node scripts/cleanup-test-users.js --confirm",
     "postinstall": "prisma generate",

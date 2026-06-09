@@ -68,13 +68,34 @@ npm run migrate
 npx prisma generate
 ```
 
-**6. Poblar datos iniciales**
+**6. Poblar datos**
 
 ```bash
 npm run seed
 ```
 
-Crea los roles (admin, editor, lector) y los 18 permisos del sistema. Debe ejecutarse al menos una vez antes de crear usuarios.
+Crea en un solo paso todo lo necesario para trabajar con el frontend:
+
+| Qué se crea | Detalle |
+|---|---|
+| Roles y permisos | admin, editor, lector con 26 permisos granulares |
+| Usuarios demo | `admin@certivalidate.com`, `emisor@certivalidate.com`, `lector@certivalidate.com` |
+| Instituciones | Universidad Popular del Cesar, Instituto Técnico Demo, Corporación Académica Demo |
+| Integraciones | 1 por institución — tipo REST, api_key cifrada con AES-256-GCM |
+| Estudiantes | 13 en total distribuidos por institución |
+| Plantillas | 3 por institución (Diploma de Pregrado, Certificado de Diplomado, Constancia de Asistencia) |
+| Certificados | 15 con estados variados: `vigente`, `expirado`, `revocado` |
+| Blockchain | 7 con `BlockchainTransaccion` confirmada (mock) · 8 sin registro (_Pendiente BC_) |
+
+> El seed es **idempotente** — se puede ejecutar varias veces sin duplicar datos.
+
+**Atajo — setup completo de desarrollo**
+
+```bash
+npm run setup:dev
+```
+
+Equivale a: `migrate` → `seed`.
 
 **7. Iniciar el servidor**
 
@@ -108,7 +129,7 @@ Esto ejecuta en orden:
 - `migrate` — aplica `prisma migrate deploy` y termina
 - `api` — servidor Node.js en `localhost:3000` (arranca solo cuando `migrate` finaliza correctamente)
 
-**3. Poblar datos iniciales** _(primera vez)_
+**3. Poblar datos** _(primera vez)_
 
 ```bash
 docker compose run --rm api node prisma/seed.js
