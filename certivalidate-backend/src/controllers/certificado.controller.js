@@ -9,6 +9,7 @@ const logger = require('../utils/logger')
 const academicProvider = require('../services/academic-provider.service')
 const integrationConfig = require('../services/integration-config.service')
 const { generateCertificateHash } = require('../services/blockchain.service')
+const { computeCertificateHash } = require('../services/certificate-hash.service')
 
 const ofuscarNombre = (nombre, apellido) => {
   const n = (nombre ?? '').trim()
@@ -258,13 +259,12 @@ const emitirCertificado = async (req, res) => {
         estudianteLocalId = estudianteLocal?.id
       }
 
-      // PASO 2: Calcular hash CON el estudiante local definitivo (CRÍTICO)
-      const contenidoReal = `${estudianteLocalId}|${estudianteLocal?.nombre || estudiante.nombre}|${estudianteLocal?.apellido || estudiante.apellido}|${estudianteLocal?.email || estudiante.email || ''}|${institucion.id}|${institucion.nombre}|${plantilla.id}|${plantilla.nombre}|${codigo_unico}|${fechaEmision.toISOString()}`
-
-      const hash_sha256 = crypto
-        .createHash('sha256')
-        .update(contenidoReal)
-        .digest('hex')
+      // PASO 2: Capturar snapshot del titular (datos congelados en el momento de la emisión)
+      const snapshotNombre = estudianteLocal?.nombre || estudiante.nombre
+      const snapshotApellido = estudianteLocal?.apellido || estudiante.apellido
+      const snapshotEmail = estudianteLocal?.email || estudiante.email || null
+      const snapshotDocumento =
+        estudianteLocal?.documento || estudiante.documento || documento_estudiante || null
 
       // PASO 3: Validar unicidad estudiante+plantilla
       const certificadoExistente = await tx.certificado.findFirst({
@@ -284,7 +284,7 @@ const emitirCertificado = async (req, res) => {
         throw err
       }
 
-      // PASO 4: Crear certificado con hash ya calculado
+      // PASO 4: Crear certificado con snapshot (hash_sha256 se actualiza en PASO 5)
       const cert = await tx.certificado.create({
         data: {
           estudiante_id: estudianteLocalId,
@@ -293,8 +293,34 @@ const emitirCertificado = async (req, res) => {
           codigo_unico,
           estado: 'valido',
           fecha_emision: fechaEmision,
-          hash_sha256,
+          snapshot_nombre: snapshotNombre,
+          snapshot_apellido: snapshotApellido,
+          snapshot_email: snapshotEmail,
+          snapshot_documento: snapshotDocumento,
+          snapshot_institucion_nombre: institucion.nombre,
+          snapshot_plantilla_nombre: plantilla.nombre,
         },
+      })
+
+      // PASO 5: Calcular hash canónico con el ID real del certificado y actualizar
+      const hash_sha256 = computeCertificateHash({
+        certificado_id: cert.id,
+        codigo_unico,
+        estudiante_id: estudianteLocalId,
+        fecha_emision: fechaEmision,
+        institucion_id,
+        plantilla_id,
+        snapshot_apellido: snapshotApellido,
+        snapshot_documento: snapshotDocumento,
+        snapshot_email: snapshotEmail,
+        snapshot_institucion_nombre: institucion.nombre,
+        snapshot_nombre: snapshotNombre,
+        snapshot_plantilla_nombre: plantilla.nombre,
+      })
+
+      const certFinal = await tx.certificado.update({
+        where: { id: cert.id },
+        data: { hash_sha256 },
       })
 
       // Guardar metadata de origen
@@ -338,7 +364,7 @@ const emitirCertificado = async (req, res) => {
         },
       })
 
-      return cert
+      return certFinal
     })
 
     logger.info(
@@ -418,14 +444,30 @@ const verificarCertificado = async (req, res) => {
       )
     }
 
-    const contenidoVerificacion = `${cert.estudiante.id}|${cert.estudiante.nombre}|${cert.estudiante.apellido}|${cert.estudiante.email || ''}|${cert.institucion.id}|${cert.institucion.nombre}|${cert.plantilla.id}|${cert.plantilla.nombre}|${cert.codigo_unico}|${cert.fecha_emision.toISOString()}`
-
-    const hashRecomputado = crypto
-      .createHash('sha256')
-      .update(contenidoVerificacion)
-      .digest('hex')
-
-    const hashVerificado = hashRecomputado === cert.hash_sha256
+    let hashVerificado
+    if (cert.snapshot_nombre !== null && cert.snapshot_nombre !== undefined) {
+      // New path: verify using frozen snapshot — editing the student cannot break this
+      const hashRecomputado = computeCertificateHash({
+        certificado_id: cert.id,
+        codigo_unico: cert.codigo_unico,
+        estudiante_id: cert.estudiante_id,
+        fecha_emision: cert.fecha_emision,
+        institucion_id: cert.institucion_id,
+        plantilla_id: cert.plantilla_id,
+        snapshot_apellido: cert.snapshot_apellido,
+        snapshot_documento: cert.snapshot_documento,
+        snapshot_email: cert.snapshot_email,
+        snapshot_institucion_nombre: cert.snapshot_institucion_nombre,
+        snapshot_nombre: cert.snapshot_nombre,
+        snapshot_plantilla_nombre: cert.snapshot_plantilla_nombre,
+      })
+      hashVerificado = hashRecomputado === cert.hash_sha256
+    } else {
+      // Legacy path: certificates issued before snapshot migration — use live student data
+      const contenidoVerificacion = `${cert.estudiante.id}|${cert.estudiante.nombre}|${cert.estudiante.apellido}|${cert.estudiante.email || ''}|${cert.institucion.id}|${cert.institucion.nombre}|${cert.plantilla.id}|${cert.plantilla.nombre}|${cert.codigo_unico}|${cert.fecha_emision.toISOString()}`
+      const hashLegacy = crypto.createHash('sha256').update(contenidoVerificacion).digest('hex')
+      hashVerificado = hashLegacy === cert.hash_sha256
+    }
 
     const ip = getClientIp(req)
     const userAgent = req.headers['user-agent'] || null
@@ -492,6 +534,10 @@ const verificarCertificado = async (req, res) => {
       }
     }
 
+    // Prefer frozen snapshot for display; fall back to live data for legacy certs
+    const nombreDisplay = cert.snapshot_nombre ?? cert.estudiante?.nombre
+    const apellidoDisplay = cert.snapshot_apellido ?? cert.estudiante?.apellido
+
     return sendSuccess(
       res,
       {
@@ -502,15 +548,12 @@ const verificarCertificado = async (req, res) => {
         fecha_emision: cert.fecha_emision,
         fecha_expiracion: cert.fecha_expiracion,
         estudiante: {
-          nombre: cert.estudiante?.nombre,
-          apellido: cert.estudiante?.apellido,
+          nombre: nombreDisplay,
+          apellido: apellidoDisplay,
         },
-        titular: ofuscarNombre(
-          cert.estudiante?.nombre,
-          cert.estudiante?.apellido,
-        ),
-        tipo_certificado: cert.plantilla?.nombre ?? null,
-        institucion: cert.institucion?.nombre ?? null,
+        titular: ofuscarNombre(nombreDisplay, apellidoDisplay),
+        tipo_certificado: cert.snapshot_plantilla_nombre ?? cert.plantilla?.nombre ?? null,
+        institucion: cert.snapshot_institucion_nombre ?? cert.institucion?.nombre ?? null,
         blockchain: blockchainInfo,
       },
       mensaje,

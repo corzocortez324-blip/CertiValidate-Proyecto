@@ -418,7 +418,7 @@ const cambiarPassword = async (req, res) => {
       return sendError(res, 'Contraseña actual incorrecta', 401)
     }
 
-    const nuevoHash = await bcrypt.hash(newPassword, 10)
+    const nuevoHash = await bcrypt.hash(newPassword, 12)
 
     await prisma.usuario.update({
       where: { id: usuarioId },

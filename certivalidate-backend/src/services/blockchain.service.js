@@ -29,10 +29,35 @@ const getExplorerUrl = (txHash) => {
 }
 
 /**
- * Genera un hash SHA-256 estable del certificado usando JSON ordenado.
- * Incluye certificado_id (disponible post-creación) para anclaje blockchain.
+ * Returns the canonical SHA-256 hash for a certificate.
+ *
+ * New path  (snapshot_nombre present): delegates to computeCertificateHash using the
+ *   frozen snapshot fields — produces the same value as cert.hash_sha256.
+ * Legacy path (snapshot_nombre null):  falls back to the original JSON-with-IDs format
+ *   so that certificates issued before the snapshot migration still match their stored
+ *   BlockchainTransaccion.hash without being marked as tampered.
  */
 const generateCertificateHash = (certificado) => {
+  const { computeCertificateHash } = require('./certificate-hash.service')
+
+  if (certificado.snapshot_nombre !== null && certificado.snapshot_nombre !== undefined) {
+    return computeCertificateHash({
+      certificado_id: certificado.id,
+      codigo_unico: certificado.codigo_unico,
+      estudiante_id: certificado.estudiante_id,
+      fecha_emision: certificado.fecha_emision,
+      institucion_id: certificado.institucion_id,
+      plantilla_id: certificado.plantilla_id,
+      snapshot_apellido: certificado.snapshot_apellido,
+      snapshot_documento: certificado.snapshot_documento,
+      snapshot_email: certificado.snapshot_email,
+      snapshot_institucion_nombre: certificado.snapshot_institucion_nombre,
+      snapshot_nombre: certificado.snapshot_nombre,
+      snapshot_plantilla_nombre: certificado.snapshot_plantilla_nombre,
+    })
+  }
+
+  // Legacy path: certificates issued before snapshot migration
   const data = {
     certificado_id: certificado.id,
     codigo_unico: certificado.codigo_unico,
