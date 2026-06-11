@@ -8,7 +8,7 @@
   gap: 0.5rem;
   padding: 0.6rem 1.2rem;
   background: var(--color-primary);
-  color: #030712;
+  color: var(--color-text-on-primary);
   border: none;
   border-radius: var(--radius-sm);
   font-size: 0.88rem;
@@ -50,8 +50,8 @@
   border-radius: 4px;
 }
 
-.trend-up   { color: #10b981; background: rgba(16, 185, 129, 0.12); }
-.trend-down { color: #ef4444; background: rgba(239,  68,  68, 0.12); }
+.trend-up   { color: var(--color-success); background: var(--success-tint); }
+.trend-down { color: var(--color-error);   background: var(--error-tint); }
 
 .dash-stat-icon { margin-bottom: 0.35rem; }
 
@@ -174,7 +174,7 @@
   align-items: center;
   gap: 0.9rem;
   padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .activity-item:last-child { border-bottom: none; }
@@ -229,7 +229,7 @@
 .period-tab {
   padding: 0.15rem 0.55rem;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-text-muted);
   font-size: 0.72rem;
@@ -237,9 +237,9 @@
   white-space: nowrap;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.period-tab:hover { color: var(--color-text-main); border-color: rgba(255,255,255,0.2); }
+.period-tab:hover { color: var(--color-text-main); border-color: var(--color-border); }
 .period-tab.active {
-  background: rgba(0, 240, 255, 0.12);
+  background: var(--primary-tint-12);
   border-color: var(--color-primary);
   color: var(--color-primary);
   font-weight: 600;
@@ -290,7 +290,7 @@
   align-items: center;
   gap: 0.65rem;
   padding: 0.45rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--color-border);
 }
 .top-emisor-row:last-child { border-bottom: none; }
 
@@ -323,7 +323,7 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.45rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--color-border);
 }
 .revoc-row:last-child { border-bottom: none; }
 
@@ -345,7 +345,7 @@
 }
 .revoc-motivo {
   font-size: 0.72rem;
-  color: #ef4444;
+  color: var(--color-error);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -368,9 +368,9 @@
   border-radius: var(--radius-sm, 8px);
   background: linear-gradient(
     90deg,
-    rgba(255,255,255,0.04) 25%,
-    rgba(255,255,255,0.10) 50%,
-    rgba(255,255,255,0.04) 75%
+    var(--overlay-subtle) 25%,
+    var(--overlay-medium) 50%,
+    var(--overlay-subtle) 75%
   );
   background-size: 600px 100%;
   animation: shimmer 1.4s infinite linear;
@@ -391,7 +391,7 @@
   gap: 0.2rem;
   padding: 0.15rem 0.45rem;
   border-radius: var(--radius-sm, 6px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-text-muted);
   font-size: 0.7rem;
@@ -402,11 +402,11 @@
 
 .chart-type-tab:hover {
   color: var(--color-text-main);
-  border-color: rgba(255,255,255,0.18);
+  border-color: var(--color-border);
 }
 
 .chart-type-tab.active {
-  background: rgba(0, 240, 255, 0.10);
+  background: var(--primary-tint-08);
   border-color: var(--color-primary);
   color: var(--color-primary);
   font-weight: 600;
@@ -440,7 +440,7 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.5rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm, 6px);
   background: transparent;
   color: var(--color-text-muted);
@@ -452,9 +452,9 @@
 }
 
 .export-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--overlay-hover);
   color: var(--color-text-main);
-  border-color: rgba(255, 255, 255, 0.28);
+  border-color: var(--color-border);
 }
 
 .export-modal-overlay {
@@ -501,7 +501,7 @@
 
 .export-radio-card {
   padding: 0.4rem 0.85rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm, 6px);
   background: transparent;
   color: var(--color-text-muted);
@@ -512,29 +512,29 @@
 }
 
 .export-radio-card:hover:not(.disabled):not(:disabled) {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--overlay-hover);
   color: var(--color-text-main);
-  border-color: rgba(255, 255, 255, 0.22);
+  border-color: var(--color-border);
 }
 
 .export-radio-card.selected {
-  background: rgba(13, 122, 122, 0.18);
-  border-color: var(--color-primary, #0d7a7a);
-  color: var(--color-primary, #0d7a7a);
+  background: var(--primary-tint-15);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
   font-weight: 600;
 }
 
 .export-progress-bar {
   height: 6px;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-border);
   overflow: hidden;
 }
 
 .export-progress-inner {
   height: 100%;
   border-radius: 3px;
-  background: var(--color-primary, #0d7a7a);
+  background: var(--color-primary);
   transition: width 0.12s ease;
 }
 

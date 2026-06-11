@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { can, isAdminUser, getRoleName } from '../../utils/permissions';
+import { ThemeToggle } from '../ui/ThemeToggle';
 import './Sidebar.css';
 
 const allNavItems = [
@@ -33,13 +34,13 @@ const allNavItems = [
 ];
 
 const ROLE_META = {
-  admin: { label: 'Administrador', color: '#00f0ff' },
-  administrador: { label: 'Administrador', color: '#00f0ff' },
-  editor: { label: 'Emisor', color: '#b026ff' },
-  lector: { label: 'Lector', color: '#38bdf8' },
+  admin:         { label: 'Administrador', color: '#1a4f8a' },
+  administrador: { label: 'Administrador', color: '#1a4f8a' },
+  editor:        { label: 'Emisor',        color: '#0891b2' },
+  lector:        { label: 'Lector',        color: '#64748b' },
 };
 
-const ROLE_FALLBACK = { label: 'Usuario', color: '#94a3b8' };
+const ROLE_FALLBACK = { label: 'Usuario', color: '#64748b' };
 
 export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -99,7 +100,7 @@ export const Sidebar = () => {
               className="user-avatar"
               style={{
                 borderColor: meta.color,
-                background: `${meta.color}15`,
+                background: `${meta.color}18`,
                 color: meta.color,
               }}
               title={`${user?.nombre || ''} ${user?.apellido || ''} — ${meta.label}`}
@@ -120,19 +121,24 @@ export const Sidebar = () => {
           </div>
         )}
 
-        <NavLink
-          to="/admin/perfil"
-          className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-          title="Mi Perfil"
-        >
-          <User size={20} />
-          {!collapsed && <span>Mi Perfil</span>}
-        </NavLink>
+        <div className={`sidebar-footer-actions ${collapsed ? 'collapsed' : ''}`}>
+          <NavLink
+            to="/admin/perfil"
+            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            title="Mi Perfil"
+          >
+            <User size={20} />
+            {!collapsed && <span>Mi Perfil</span>}
+          </NavLink>
 
-        <button className="sidebar-link logout-btn" onClick={logout} title="Cerrar sesión">
-          <LogOut size={20} />
-          {!collapsed && <span>Salir</span>}
-        </button>
+          <div className="sidebar-bottom-row">
+            <button className="sidebar-link logout-btn" onClick={logout} title="Cerrar sesión">
+              <LogOut size={20} />
+              {!collapsed && <span>Salir</span>}
+            </button>
+            <ThemeToggle />
+          </div>
+        </div>
       </div>
     </aside>
   );

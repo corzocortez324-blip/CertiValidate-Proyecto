@@ -22,7 +22,7 @@
 /* Primary Variant */
 .btn-primary {
   background: var(--color-primary);
-  color: #030712;
+  color: var(--color-text-on-primary);
   font-weight: 700;
 }
 
@@ -34,17 +34,16 @@
   transform: translateY(0);
 }
 
-/* Secondary Variant (Glass Outline) */
+/* Secondary Variant */
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-surface);
   color: var(--color-text-main);
   border: 1px solid var(--color-border);
-  backdrop-filter: blur(4px);
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--color-surface-hover);
+  border-color: var(--color-text-muted);
 }
 
 /* Ghost Variant */
@@ -55,5 +54,24 @@
 
 .btn-ghost:hover {
   color: var(--color-text-main);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--overlay-hover);
+}
+
+/* ── Theme Toggle Button ───────────────────────────────────────── */
+.theme-toggle-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.theme-toggle-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--primary-tint-08);
 }

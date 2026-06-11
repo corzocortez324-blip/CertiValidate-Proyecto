@@ -9,13 +9,13 @@
   transform: translateY(-4px);
 }
 
-/* Inner highlight for premium feel */
+/* Línea superior sutil al hacer hover */
 .card::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, var(--color-border), transparent);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -25,6 +25,6 @@
 }
 
 .card-glow:hover {
-  box-shadow: 0 8px 30px rgba(0, 240, 255, 0.15);
-  border-color: rgba(0, 240, 255, 0.3);
+  box-shadow: 0 8px 24px var(--primary-tint-15);
+  border-color: var(--primary-ring);
 }

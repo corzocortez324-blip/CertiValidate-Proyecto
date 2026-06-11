@@ -44,8 +44,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 1.25rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
 }
 
@@ -73,8 +73,8 @@
 
 /* Fila revocada en tabla */
 tr.row-revoked td {
-  background: rgba(239, 68, 68, 0.06);
-  color: rgba(249, 250, 251, 0.65);
+  background: var(--error-tint);
+  color: var(--color-text-muted);
 }
 
 /* Banner de revocado en modal */
@@ -83,10 +83,10 @@ tr.row-revoked td {
   align-items: center;
   gap: 0.6rem;
   padding: 0.85rem 1rem;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: var(--error-tint);
+  border: 1px solid var(--error-ring);
   border-radius: var(--radius-sm);
-  color: #fca5a5;
+  color: var(--color-error);
   font-size: 0.9rem;
   margin-bottom: 0.25rem;
 }
@@ -107,8 +107,8 @@ tr.row-revoked td {
 .revoc-detail-card {
   padding: 0.85rem 1rem;
   border-radius: var(--radius-sm);
-  background: rgba(239,68,68,0.06);
-  border: 1px solid rgba(239,68,68,0.2);
+  background: var(--error-tint);
+  border: 1px solid var(--error-ring);
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
@@ -138,7 +138,7 @@ tr.row-revoked td {
 
 .revoc-motivo {
   font-weight: 600;
-  color: #fca5a5;
+  color: var(--color-error);
   text-transform: capitalize;
 }
 
@@ -201,7 +201,7 @@ tr.row-revoked td {
 
 /* Sección técnica */
 .tech-info-section {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-surface-hover);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   padding: 0.9rem 1rem;
@@ -236,8 +236,8 @@ tr.row-revoked td {
 .cert-blockchain-section {
   padding: 0.85rem 1rem;
   border-radius: var(--radius-sm);
-  background: rgba(0,0,0,0.18);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -251,9 +251,9 @@ tr.row-revoked td {
   font-weight: 600;
   padding: 0.25rem 0.7rem;
   border-radius: 999px;
-  background: rgba(16,185,129,0.15);
-  color: #34d399;
-  border: 1px solid rgba(16,185,129,0.3);
+  background: var(--success-tint);
+  color: var(--color-success);
+  border: 1px solid var(--success-ring);
   width: fit-content;
 }
 
@@ -265,9 +265,9 @@ tr.row-revoked td {
   font-weight: 500;
   padding: 0.25rem 0.7rem;
   border-radius: 999px;
-  background: rgba(245,158,11,0.1);
-  color: #fbbf24;
-  border: 1px solid rgba(245,158,11,0.25);
+  background: var(--warning-tint);
+  color: var(--color-warning);
+  border: 1px solid var(--warning-ring);
   width: fit-content;
 }
 
@@ -342,21 +342,21 @@ tr.row-revoked td {
 }
 
 .timeline-dot--emision {
-  background: rgba(0, 240, 255, 0.12);
+  background: var(--primary-tint-12);
   color: var(--color-primary);
-  border: 1.5px solid rgba(0, 240, 255, 0.25);
+  border: 1.5px solid var(--primary-ring);
 }
 
 .timeline-dot--verificacion {
-  background: rgba(16, 185, 129, 0.12);
-  color: #34d399;
-  border: 1.5px solid rgba(16, 185, 129, 0.25);
+  background: var(--success-tint);
+  color: var(--color-success);
+  border: 1.5px solid var(--success-ring);
 }
 
 .timeline-dot--revocacion {
-  background: rgba(239, 68, 68, 0.12);
-  color: #fca5a5;
-  border: 1.5px solid rgba(239, 68, 68, 0.25);
+  background: var(--error-tint);
+  color: var(--color-error);
+  border: 1.5px solid var(--error-ring);
 }
 
 /* ── Modal de previsualización y confirmación (T-29) ─────────────── */
@@ -364,8 +364,7 @@ tr.row-revoked td {
   position: fixed;
   inset: 0;
   z-index: 1200;
-  background: rgba(3, 7, 18, 0.82);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -415,7 +414,7 @@ tr.row-revoked td {
 .pcm-body {
   flex: 1;
   overflow: auto;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--color-surface-hover);
   min-height: 320px;
   display: flex;
   flex-direction: column;
@@ -453,7 +452,7 @@ tr.row-revoked td {
 .pcm-skeleton-bar {
   height: 14px;
   border-radius: 6px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 75%);
+  background: linear-gradient(90deg, var(--overlay-subtle) 25%, var(--overlay-medium) 50%, var(--overlay-subtle) 75%);
   background-size: 200% 100%;
   animation: pcm-shimmer 1.4s infinite;
 }
@@ -461,7 +460,7 @@ tr.row-revoked td {
 .pcm-skeleton-rect {
   height: 220px;
   border-radius: var(--radius-sm);
-  background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 75%);
+  background: linear-gradient(90deg, var(--overlay-subtle) 25%, var(--overlay-medium) 50%, var(--overlay-subtle) 75%);
   background-size: 200% 100%;
   animation: pcm-shimmer 1.4s infinite;
   margin-top: 0.5rem;
@@ -478,9 +477,9 @@ tr.row-revoked td {
   align-items: flex-start;
   gap: 0.6rem;
   padding: 0.75rem 1.25rem;
-  background: rgba(245, 158, 11, 0.08);
-  border-top: 1px solid rgba(245, 158, 11, 0.25);
-  color: #fbbf24;
+  background: var(--warning-tint);
+  border-top: 1px solid var(--warning-ring);
+  color: var(--color-warning);
   font-size: 0.82rem;
   line-height: 1.5;
 }
@@ -518,7 +517,7 @@ tr.row-revoked td {
   font-size: 0.75rem;
   padding: 0.3rem 0.7rem;
   border-radius: var(--radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
@@ -526,7 +525,7 @@ tr.row-revoked td {
   transition: all 0.15s;
   flex-shrink: 0;
 }
-.revoc-print-btn:hover { color: var(--color-text-main); border-color: rgba(255,255,255,0.28); }
+.revoc-print-btn:hover { color: var(--color-text-main); border-color: var(--color-text-muted); }
 
 .revoc-user-row { align-items: flex-start; }
 
@@ -540,9 +539,9 @@ tr.row-revoked td {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: rgba(99, 102, 241, 0.18);
-  border: 1.5px solid rgba(99, 102, 241, 0.4);
-  color: #818cf8;
+  background: var(--primary-tint-15);
+  border: 1.5px solid var(--primary-ring);
+  color: var(--color-primary);
   font-size: 0.72rem;
   font-weight: 700;
   display: flex;
@@ -602,7 +601,7 @@ tr.row-revoked td {
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 1rem;
-  background: rgba(255,255,255,0.04);
+  background: var(--color-surface-hover);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -650,7 +649,7 @@ tr.row-revoked td {
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(0,240,255,0.2);
+  border: 3px solid var(--primary-ring);
   border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -695,33 +694,30 @@ tr.row-revoked td {
 }
 
 .btn-blockchain-register {
-  background: rgba(99, 102, 241, 0.1);
-  border-color: rgba(99, 102, 241, 0.4);
-  color: #a5b4fc;
+  background: var(--primary-tint-08);
+  border-color: var(--primary-ring);
+  color: var(--color-primary);
 }
 .btn-blockchain-register:hover:not(:disabled) {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: rgba(99, 102, 241, 0.7);
-  color: #c7d2fe;
+  background: var(--primary-tint-15);
+  border-color: var(--color-primary);
 }
 
 .btn-blockchain-verify {
-  background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(16, 185, 129, 0.35);
-  color: #6ee7b7;
+  background: var(--success-tint);
+  border-color: var(--success-ring);
+  color: var(--color-success);
 }
 .btn-blockchain-verify:hover:not(:disabled) {
-  background: rgba(16, 185, 129, 0.18);
-  border-color: rgba(16, 185, 129, 0.6);
-  color: #a7f3d0;
+  opacity: 0.85;
 }
 
 /* Panel de resultado de verificación blockchain */
 .cert-blockchain-verify-panel {
   margin-top: 0.5rem;
   padding: 0.85rem 1rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
@@ -741,7 +737,7 @@ tr.row-revoked td {
   align-items: center;
   gap: 0.45rem;
   font-size: 0.82rem;
-  color: #fca5a5;
+  color: var(--color-error);
   padding: 0.4rem 0;
 }
 
@@ -757,14 +753,14 @@ tr.row-revoked td {
   width: fit-content;
 }
 .blockchain-integrity-badge.valid {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: var(--success-tint);
+  color: var(--color-success);
+  border: 1px solid var(--success-ring);
 }
 .blockchain-integrity-badge.invalid {
-  background: rgba(239, 68, 68, 0.12);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: var(--error-tint);
+  color: var(--color-error);
+  border: 1px solid var(--error-ring);
 }
 
 .blockchain-verify-message {
@@ -777,9 +773,9 @@ tr.row-revoked td {
 /* Aviso de modo simulado */
 .blockchain-mock-notice {
   font-size: 0.75rem;
-  color: #fbbf24;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: var(--color-warning);
+  background: var(--warning-tint);
+  border: 1px solid var(--warning-ring);
   border-radius: var(--radius-sm);
   padding: 0.35rem 0.7rem;
   width: fit-content;
@@ -814,14 +810,13 @@ tr.row-revoked td {
 
 /* Botón comprobante */
 .btn-blockchain-receipt {
-  background: rgba(99, 102, 241, 0.07);
-  border-color: rgba(99, 102, 241, 0.3);
-  color: #c4b5fd;
+  background: var(--primary-tint-06);
+  border-color: var(--primary-ring);
+  color: var(--color-primary);
 }
 .btn-blockchain-receipt:hover:not(:disabled) {
-  background: rgba(99, 102, 241, 0.16);
-  border-color: rgba(99, 102, 241, 0.55);
-  color: #ddd6fe;
+  background: var(--primary-tint-15);
+  border-color: var(--color-primary);
 }
 
 /* ── Badge blockchain en tabla ────────────────────────────────────── */
@@ -845,15 +840,15 @@ tr.row-revoked td {
 }
 
 .bc-table-badge--registered {
-  background: rgba(16, 185, 129, 0.1);
-  color: #6ee7b7;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: var(--success-tint);
+  color: var(--color-success);
+  border: 1px solid var(--success-ring);
 }
 
 .bc-table-badge--pending {
-  background: rgba(245, 158, 11, 0.08);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  background: var(--warning-tint);
+  color: var(--color-warning);
+  border: 1px solid var(--warning-ring);
   opacity: 0.75;
 }
 
@@ -888,14 +883,14 @@ tr.row-revoked td {
 }
 
 .bc-step--done .bc-step-dot {
-  background: rgba(16, 185, 129, 0.15);
-  border: 1.5px solid rgba(16, 185, 129, 0.4);
-  color: #34d399;
+  background: var(--success-tint);
+  border: 1.5px solid var(--success-ring);
+  color: var(--color-success);
 }
 
 .bc-step--pending .bc-step-dot {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  background: var(--overlay-subtle);
+  border: 1.5px solid var(--color-border);
   color: var(--color-text-muted);
   opacity: 0.55;
 }
@@ -931,14 +926,15 @@ tr.row-revoked td {
   flex: 1;
   min-width: 12px;
   height: 1.5px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-border);
   margin-top: 12px;
   align-self: flex-start;
   flex-shrink: 1;
 }
 
 .bc-connector--done {
-  background: rgba(16, 185, 129, 0.4);
+  background: var(--color-success);
+  opacity: 0.5;
 }
 
 /* ── Modo blockchain badge ─────────────────────────────────────────── */
@@ -953,14 +949,14 @@ tr.row-revoked td {
   white-space: nowrap;
 }
 .cert-blockchain-mode-badge.mode-mock {
-  background: rgba(245, 158, 11, 0.1);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: var(--warning-tint);
+  color: var(--color-warning);
+  border: 1px solid var(--warning-ring);
 }
 .cert-blockchain-mode-badge.mode-real {
-  background: rgba(16, 185, 129, 0.1);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--success-tint);
+  color: var(--color-success);
+  border: 1px solid var(--success-ring);
 }
 
 /* ── Enlace al explorador en comprobante ──────────────────────────── */
@@ -972,23 +968,22 @@ tr.row-revoked td {
   color: var(--color-primary);
   text-decoration: none;
   padding: 0.4rem 0.9rem;
-  border: 1px solid rgba(0, 240, 255, 0.25);
+  border: 1px solid var(--primary-ring);
   border-radius: var(--radius-sm);
-  background: rgba(0, 240, 255, 0.06);
+  background: var(--primary-tint-06);
   transition: all 0.15s;
   width: fit-content;
 }
 .bc-explorer-link:hover {
-  background: rgba(0, 240, 255, 0.12);
-  border-color: rgba(0, 240, 255, 0.5);
-  color: var(--color-primary-hover);
+  background: var(--primary-tint-12);
+  border-color: var(--color-primary);
 }
 
 /* ── Card profesional Seguridad Blockchain ────────────────────────── */
 .cert-blockchain-card {
   border-radius: var(--radius-md);
-  background: rgba(0, 0, 0, 0.22);
-  border: 1px solid rgba(99, 102, 241, 0.22);
+  background: var(--color-surface-hover);
+  border: 1px solid var(--primary-ring);
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
@@ -1003,9 +998,9 @@ tr.row-revoked td {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #a5b4fc;
+  color: var(--color-primary);
   padding-bottom: 0.6rem;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.18);
+  border-bottom: 1px solid var(--primary-ring);
 }
 
 .cert-blockchain-loading {
@@ -1022,7 +1017,7 @@ tr.row-revoked td {
   align-items: center;
   gap: 0.45rem;
   font-size: 0.82rem;
-  color: #fca5a5;
+  color: var(--color-error);
   padding: 0.25rem 0;
 }
 
@@ -1047,33 +1042,33 @@ tr.row-revoked td {
 }
 
 .bc-badge--registered {
-  background: rgba(16, 185, 129, 0.12);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--success-tint);
+  color: var(--color-success);
+  border: 1px solid var(--success-ring);
 }
 
 .bc-badge--pending {
-  background: rgba(245, 158, 11, 0.1);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  background: var(--warning-tint);
+  color: var(--color-warning);
+  border: 1px solid var(--warning-ring);
 }
 
 .bc-badge--integrity-ok {
-  background: rgba(16, 185, 129, 0.1);
-  color: #6ee7b7;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: var(--success-tint);
+  color: var(--color-success);
+  border: 1px solid var(--success-ring);
 }
 
 .bc-badge--integrity-fail {
-  background: rgba(239, 68, 68, 0.1);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: var(--error-tint);
+  color: var(--color-error);
+  border: 1px solid var(--error-ring);
 }
 
 .bc-badge--mock {
-  background: rgba(245, 158, 11, 0.08);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  background: var(--warning-tint);
+  color: var(--color-warning);
+  border: 1px solid var(--warning-ring);
   opacity: 0.85;
 }
 

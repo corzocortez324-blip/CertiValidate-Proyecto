@@ -37,7 +37,9 @@ function buildCertificateHtml(templateHtml, cert, qrUrl) {
   const fechaExp = cert.fecha_expiracion
     ? new Date(cert.fecha_expiracion).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })
     : 'Sin expiración';
-  const nombre = `${cert.estudiante?.nombre || ''} ${cert.estudiante?.apellido || ''}`.trim();
+  const snNombre   = cert.snapshot_nombre   != null ? cert.snapshot_nombre   : (cert.estudiante?.nombre   || '');
+  const snApellido = cert.snapshot_apellido != null ? cert.snapshot_apellido : (cert.estudiante?.apellido || '');
+  const nombre = `${snNombre} ${snApellido}`.trim();
   const qrSrc  = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&color=111827&bgcolor=ffffff&data=${encodeURIComponent(qrUrl)}`;
   const qrImg  = `<img src="${qrSrc}" width="130" height="130" alt="QR verificación" style="border-radius:4px;display:block;"/>`;
 
@@ -46,15 +48,15 @@ function buildCertificateHtml(templateHtml, cert, qrUrl) {
 
   const filled = templateHtml
     .replace(/\{\{nombre\}\}/gi,           nombre)
-    .replace(/\{\{apellido\}\}/gi,          cert.estudiante?.apellido || '')
-    .replace(/\{\{institucion\}\}/gi,       cert.institucion?.nombre || '')
-    .replace(/\{\{curso\}\}/gi,             cert.plantilla?.nombre || '')
-    .replace(/\{\{programa\}\}/gi,          cert.plantilla?.nombre || '')
+    .replace(/\{\{apellido\}\}/gi,          snApellido)
+    .replace(/\{\{institucion\}\}/gi,       cert.snapshot_institucion_nombre ?? cert.institucion?.nombre ?? '')
+    .replace(/\{\{curso\}\}/gi,             cert.snapshot_plantilla_nombre   ?? cert.plantilla?.nombre   ?? '')
+    .replace(/\{\{programa\}\}/gi,          cert.snapshot_plantilla_nombre   ?? cert.plantilla?.nombre   ?? '')
     .replace(/\{\{fecha_emision\}\}/gi,     fecha)
     .replace(/\{\{fecha_expiracion\}\}/gi,  fechaExp)
     .replace(/\{\{codigo_unico\}\}/gi,      cert.codigo_unico || '')
     .replace(/\{\{codigo\}\}/gi,            cert.codigo_unico || '')
-    .replace(/\{\{documento\}\}/gi,         cert.estudiante?.documento || '')
+    .replace(/\{\{documento\}\}/gi,         cert.snapshot_documento ?? cert.estudiante?.documento ?? '')
     .replace(/\{\{hash\}\}/gi,              cert.hash_sha256?.slice(0, 16) + '…' || '')
     .replace(/\{\{qr\}\}/gi,               qrImg);
 
