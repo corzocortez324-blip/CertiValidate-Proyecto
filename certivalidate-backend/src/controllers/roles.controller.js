@@ -1,6 +1,8 @@
 const prisma = require('../utils/prisma')
 const { sendSuccess, sendError } = require('../utils/response.utils')
 const logger = require('../utils/logger')
+const { registrarAuditoria } = require('../utils/auditoria')
+const { getClientIp } = require('../utils/validators')
 
 // GET /api/admin/roles
 // Devuelve todos los roles con sus permisos actuales y todos los permisos disponibles
@@ -57,7 +59,10 @@ const actualizarRolPermisos = async (req, res) => {
       return sendError(res, 'permisoIds debe ser un array', 400)
     }
 
-    const rol = await prisma.rol.findUnique({ where: { id: rolId } })
+    const rol = await prisma.rol.findUnique({
+      where: { id: rolId },
+      include: { permisos: { select: { permiso_id: true } } },
+    })
     if (!rol) return sendError(res, 'Rol no encontrado', 404)
 
     // Verificar que no se estén quitando todos los permisos del rol admin
@@ -83,6 +88,13 @@ const actualizarRolPermisos = async (req, res) => {
           })]
         : []),
     ])
+
+    await registrarAuditoria(
+      prisma, req.usuario?.id, 'ACTUALIZAR_ROL_PERMISOS', 'Rol', rolId,
+      JSON.stringify({ rol: rol.nombre, permisoIds: rol.permisos.map((rp) => rp.permiso_id) }),
+      JSON.stringify({ rol: rol.nombre, permisoIds }),
+      getClientIp(req),
+    )
 
     // Devolver el rol actualizado
     const rolActualizado = await prisma.rol.findUnique({

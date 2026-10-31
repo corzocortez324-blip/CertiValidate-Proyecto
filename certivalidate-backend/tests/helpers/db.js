@@ -266,6 +266,12 @@ const cleanupTestData = async () => {
       where: { institucion_id: { in: testInstIds } },
     })
 
+    // Vínculos de usuarios sin prefijo de test con instituciones de test
+    // (p. ej. usuarios creados por la API dentro de una institución de prueba)
+    await prisma.usuarioInstitucion.deleteMany({
+      where: { institucion_id: { in: testInstIds } },
+    })
+
     // 14. Institucion (solo las que ya no tienen Estudiante ni Plantilla referenciando)
     let blockedInstIds = []
     if (blockedCertIds.size > 0) {

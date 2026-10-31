@@ -60,10 +60,10 @@ export const RegisterPage = () => {
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-row">
             <div className="form-group">
-              <label>Nombre <span className="required-star">*</span></label>
+              <label htmlFor="register-nombre">Nombre <span className="required-star">*</span></label>
               <div className="input-wrapper has-icon">
                 <User size={18} className="input-icon" />
-                <input
+                <input id="register-nombre"
                   type="text"
                   className="form-input"
                   placeholder="Juan"
@@ -78,8 +78,8 @@ export const RegisterPage = () => {
               )}
             </div>
             <div className="form-group">
-              <label>Apellido</label>
-              <input
+              <label htmlFor="register-apellido">Apellido</label>
+              <input id="register-apellido"
                 type="text"
                 className="form-input"
                 placeholder="Pérez"
@@ -90,10 +90,10 @@ export const RegisterPage = () => {
           </div>
 
           <div className="form-group">
-            <label>Correo Electrónico <span className="required-star">*</span></label>
+            <label htmlFor="register-correo-electronico">Correo Electrónico <span className="required-star">*</span></label>
             <div className="input-wrapper has-icon">
               <Mail size={18} className="input-icon" />
-              <input
+              <input id="register-correo-electronico"
                 type="email"
                 className="form-input"
                 placeholder="tu@email.com"
@@ -105,10 +105,10 @@ export const RegisterPage = () => {
           </div>
 
           <div className="form-group">
-            <label>Contraseña <span className="required-star">*</span></label>
+            <label htmlFor="register-contrasena">Contraseña <span className="required-star">*</span></label>
             <div className="input-wrapper has-icon">
               <Lock size={18} className="input-icon" />
-              <input
+              <input id="register-contrasena"
                 type="password"
                 className="form-input"
                 placeholder="Mín. 8 caracteres"
@@ -134,10 +134,10 @@ export const RegisterPage = () => {
           </div>
 
           <div className="form-group">
-            <label>Confirmar Contraseña <span className="required-star">*</span></label>
+            <label htmlFor="register-confirmar-contrasena">Confirmar Contraseña <span className="required-star">*</span></label>
             <div className="input-wrapper has-icon">
               <Lock size={18} className="input-icon" />
-              <input
+              <input id="register-confirmar-contrasena"
                 type="password"
                 className={`form-input ${confirm && !confirmMatch ? 'input-error' : ''}`}
                 placeholder="Repite tu contraseña"

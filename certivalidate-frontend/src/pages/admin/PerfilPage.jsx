@@ -4,7 +4,7 @@ import { authApi } from '../../api/auth.api';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { User, Lock, Save, Check, X, ShieldAlert, Pencil, Eye, Smartphone, ShieldCheck, ShieldOff, Monitor, Globe, Trash2, LogOut } from 'lucide-react';
-import { formatDateTime } from '../../utils/helpers';
+import { formatDateTime, focusOnMount } from '../../utils/helpers';
 import './PerfilPage.css';
 
 const PW_RULES = [
@@ -73,7 +73,7 @@ export const PerfilPage = () => {
     finally  { setSesionesLoading(false); }
   }, []);
 
-  useEffect(() => { loadSesiones(); }, [loadSesiones]);
+  useEffect(() => { void loadSesiones(); }, [loadSesiones]);
 
   const handleRevocarSesion = async (id) => {
     setRevocando(id); setSesionMsg(''); setSesionError('');
@@ -207,8 +207,8 @@ export const PerfilPage = () => {
             <form onSubmit={handleProfile} className="perfil-form">
               <div className="form-row-2">
                 <div className="form-group">
-                  <label className="form-label">Nombre <span className="required-star">*</span></label>
-                  <input
+                  <label className="form-label" htmlFor="perfil-nombre">Nombre <span className="required-star">*</span></label>
+                  <input id="perfil-nombre"
                     className="form-input"
                     value={form.nombre}
                     onChange={e => setForm({ ...form, nombre: e.target.value })}
@@ -217,8 +217,8 @@ export const PerfilPage = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Apellido</label>
-                  <input
+                  <label className="form-label" htmlFor="perfil-apellido">Apellido</label>
+                  <input id="perfil-apellido"
                     className="form-input"
                     value={form.apellido}
                     onChange={e => setForm({ ...form, apellido: e.target.value })}
@@ -226,8 +226,8 @@ export const PerfilPage = () => {
                 </div>
               </div>
               <div className="form-group">
-                <label className="form-label">Email <span className="required-star">*</span></label>
-                <input
+                <label className="form-label" htmlFor="perfil-email">Email <span className="required-star">*</span></label>
+                <input id="perfil-email"
                   className="form-input"
                   type="email"
                   value={form.email}
@@ -250,8 +250,8 @@ export const PerfilPage = () => {
             {pwError && <div className="alert alert-error">{pwError}</div>}
             <form onSubmit={handlePassword} className="perfil-form">
               <div className="form-group">
-                <label className="form-label">Contraseña Actual <span className="required-star">*</span></label>
-                <input
+                <label className="form-label" htmlFor="perfil-contrasena-actual">Contraseña Actual <span className="required-star">*</span></label>
+                <input id="perfil-contrasena-actual"
                   className="form-input"
                   type="password"
                   value={pwForm.currentPassword}
@@ -260,8 +260,8 @@ export const PerfilPage = () => {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Nueva Contraseña <span className="required-star">*</span></label>
-                <input
+                <label className="form-label" htmlFor="perfil-nueva-contrasena">Nueva Contraseña <span className="required-star">*</span></label>
+                <input id="perfil-nueva-contrasena"
                   className="form-input"
                   type="password"
                   value={pwForm.newPassword}
@@ -284,8 +284,8 @@ export const PerfilPage = () => {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label">Confirmar Nueva Contraseña <span className="required-star">*</span></label>
-                <input
+                <label className="form-label" htmlFor="perfil-confirmar-nueva-contrasena">Confirmar Nueva Contraseña <span className="required-star">*</span></label>
+                <input id="perfil-confirmar-nueva-contrasena"
                   className={`form-input ${pwForm.confirmPassword && !confirmMatch ? 'input-error-field' : ''}`}
                   type="password"
                   value={pwForm.confirmPassword}
@@ -357,8 +357,8 @@ export const PerfilPage = () => {
                   </div>
                 )}
                 <div className="form-group">
-                  <label className="form-label">Código de verificación <span className="required-star">*</span></label>
-                  <input
+                  <label className="form-label" htmlFor="perfil-codigo-de-verificacion">Código de verificación <span className="required-star">*</span></label>
+                  <input id="perfil-codigo-de-verificacion"
                     type="text"
                     inputMode="numeric"
                     maxLength={7}
@@ -368,7 +368,7 @@ export const PerfilPage = () => {
                     value={twoFaCode}
                     onChange={e => setTwoFaCode(e.target.value)}
                     required
-                    autoFocus
+                    ref={focusOnMount}
                   />
                 </div>
                 <div className="form-actions" style={{ gap: '0.5rem', justifyContent: 'space-between' }}>
@@ -383,8 +383,8 @@ export const PerfilPage = () => {
             {twoFaStep === 'disable' && (
               <form onSubmit={handleDisable2FA} className="form-col">
                 <div className="form-group">
-                  <label className="form-label">Contraseña actual <span className="required-star">*</span></label>
-                  <input
+                  <label className="form-label" htmlFor="perfil-contrasena-actual-2">Contraseña actual <span className="required-star">*</span></label>
+                  <input id="perfil-contrasena-actual-2"
                     type="password"
                     className="form-input"
                     value={disablePw}
@@ -393,8 +393,8 @@ export const PerfilPage = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Código TOTP <span className="required-star">*</span></label>
-                  <input
+                  <label className="form-label" htmlFor="perfil-codigo-totp">Código TOTP <span className="required-star">*</span></label>
+                  <input id="perfil-codigo-totp"
                     type="text"
                     inputMode="numeric"
                     maxLength={7}

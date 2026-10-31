@@ -9,9 +9,9 @@ const integrationConfig = require('../services/integration-config.service')
 // Listar estudiantes con paginación
 const listarEstudiantes = async (req, res) => {
   try {
-    const page = Math.max(parseInt(req.query.page, 10) || 1, 1)
+    const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1)
     const limit = Math.min(
-      Math.max(parseInt(req.query.limit, 10) || 10, 1),
+      Math.max(Number.parseInt(req.query.limit, 10) || 10, 1),
       100,
     )
 
@@ -159,7 +159,7 @@ const crearEstudiante = async (req, res) => {
       },
     })
 
-    registrarAuditoria(prisma, req.usuario.id, 'CREAR_ESTUDIANTE', 'Estudiante', nuevoEstudiante.id,
+    await registrarAuditoria(prisma, req.usuario.id, 'CREAR_ESTUDIANTE', 'Estudiante', nuevoEstudiante.id,
       null, JSON.stringify({ nombre, apellido, documento, email: email || null }), getClientIp(req), institucion_id)
 
     return sendSuccess(
@@ -169,6 +169,9 @@ const crearEstudiante = async (req, res) => {
       201,
     )
   } catch (error) {
+    if (error.code === 'P2002') {
+      return sendError(res, 'Ya existe un estudiante con ese documento en la institución', 409)
+    }
     logger.error(
       { err: error, requestId: req.requestId },
       'Error en crearEstudiante',
@@ -242,7 +245,7 @@ const actualizarEstudiante = async (req, res) => {
       },
     })
 
-    registrarAuditoria(prisma, req.usuario.id, 'ACTUALIZAR_ESTUDIANTE', 'Estudiante', id,
+    await registrarAuditoria(prisma, req.usuario.id, 'ACTUALIZAR_ESTUDIANTE', 'Estudiante', id,
       JSON.stringify(estudianteExistente), JSON.stringify(estudianteActualizado),
       getClientIp(req), estudianteActualizado.institucion_id)
 
@@ -253,6 +256,9 @@ const actualizarEstudiante = async (req, res) => {
       200,
     )
   } catch (error) {
+    if (error.code === 'P2002') {
+      return sendError(res, 'Ya existe un estudiante con ese documento en la institución', 409)
+    }
     logger.error(
       { err: error, requestId: req.requestId },
       'Error en actualizarEstudiante',
@@ -302,7 +308,7 @@ const eliminarEstudiante = async (req, res) => {
 
     await prisma.estudiante.delete({ where: { id } })
 
-    registrarAuditoria(prisma, req.usuario.id, 'ELIMINAR_ESTUDIANTE', 'Estudiante', id,
+    await registrarAuditoria(prisma, req.usuario.id, 'ELIMINAR_ESTUDIANTE', 'Estudiante', id,
       JSON.stringify(estudianteExistente), null, getClientIp(req), estudianteExistente.institucion_id)
 
     return sendSuccess(res, null, 'Estudiante eliminado correctamente', 200)

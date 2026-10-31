@@ -291,6 +291,7 @@
 .ut-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
 .ut-date { font-size: 0.8rem; color: var(--color-text-muted); white-space: nowrap; }
+.ut-inst { font-size: 0.8rem; color: var(--color-text-muted); max-width: 220px; }
 
 .ut-actions { display: flex; gap: 0.35rem; align-items: center; }
 

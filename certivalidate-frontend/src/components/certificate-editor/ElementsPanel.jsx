@@ -174,9 +174,9 @@ export function ElementsPanel({ onAdd, canvas, setCanvas }) {
       {/* Canvas */}
       <div className="ced-section">
         <p className="ced-section-title">Canvas</p>
-        <label className="ced-label">Color de fondo</label>
+        <label className="ced-label" htmlFor="elements-color-de-fondo">Color de fondo</label>
         <div className="ced-row">
-          <input
+          <input id="elements-color-de-fondo"
             type="color"
             className="ced-color"
             value={canvas.background.startsWith('#') ? canvas.background : '#ffffff'}
@@ -190,8 +190,8 @@ export function ElementsPanel({ onAdd, canvas, setCanvas }) {
             placeholder="#ffffff"
           />
         </div>
-        <label className="ced-label" style={{ marginTop: 8 }}>Orientación</label>
-        <select
+        <label className="ced-label" style={{ marginTop: 8 }} htmlFor="elements-orientacion">Orientación</label>
+        <select id="elements-orientacion"
           className="ced-select"
           value={canvas.width >= canvas.height ? 'landscape' : 'portrait'}
           onChange={e => {
@@ -202,8 +202,8 @@ export function ElementsPanel({ onAdd, canvas, setCanvas }) {
           <option value="landscape">Horizontal (A4)</option>
           <option value="portrait">Vertical (A4)</option>
         </select>
-        <label className="ced-label" style={{ marginTop: 8 }}>Imagen de fondo (URL)</label>
-        <input
+        <label className="ced-label" style={{ marginTop: 8 }} htmlFor="elements-imagen-de-fondo-url">Imagen de fondo (URL)</label>
+        <input id="elements-imagen-de-fondo-url"
           type="text"
           className="ced-input"
           placeholder="https://..."

@@ -3,12 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ShieldCheck, Mail, Lock, Eye, EyeOff, ShieldAlert, Pencil, Smartphone } from 'lucide-react';
 import './Auth.css';
+import { focusOnMount } from '../utils/helpers';
 
-const DEMO_USERS = [
-  { email: 'admin@certivalidate.com', password: 'Adm!n#2026$Cv', label: 'Admin', icon: ShieldAlert, color: '#00f0ff' },
-  { email: 'emisor@certivalidate.com', password: 'Em!s0r#2026$Cv', label: 'Emisor', icon: Pencil, color: '#b026ff' },
-  { email: 'lector@certivalidate.com', password: 'L3ct0r#2026$Cv', label: 'Lector', icon: Eye, color: '#38bdf8' },
-];
+// Solo en desarrollo (`npm run dev`) y si las contraseñas están en .env.development.local
+// (VITE_DEMO_*_PASSWORD). En producción import.meta.env.DEV es false y el bloque se elimina.
+const DEMO_USERS = import.meta.env.DEV ? [
+  { email: 'admin@certivalidate.com', password: import.meta.env.VITE_DEMO_ADMIN_PASSWORD, label: 'Admin', icon: ShieldAlert, color: '#00f0ff' },
+  { email: 'emisor@certivalidate.com', password: import.meta.env.VITE_DEMO_EMISOR_PASSWORD, label: 'Emisor', icon: Pencil, color: '#b026ff' },
+  { email: 'lector@certivalidate.com', password: import.meta.env.VITE_DEMO_LECTOR_PASSWORD, label: 'Lector', icon: Eye, color: '#38bdf8' },
+].filter((u) => u.password) : [];
 
 const MAX_ATTEMPTS = 5;
 
@@ -80,7 +83,7 @@ export const LoginPage = () => {
       }
 
       setAttempts(0);
-      navigate(getRoleRedirect(result));
+      void navigate(getRoleRedirect(result));
     } catch (err) {
       const parsed = parseLoginError(err);
       const newAttempts = parsed.type === 'invalid' ? attempts + 1 : attempts;
@@ -105,7 +108,7 @@ export const LoginPage = () => {
 
     try {
       const user = await completeLogin2FA(partialToken, totpCode.replace(/\s/g, ''));
-      navigate(getRoleRedirect(user));
+      void navigate(getRoleRedirect(user));
     } catch (err) {
       setError({ type: 'invalid', text: err?.message || 'Código 2FA incorrecto.' });
     } finally {
@@ -115,11 +118,11 @@ export const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    doLogin(email, password);
+    void doLogin(email, password);
   };
 
   const loginAs = (demoEmail, demoPassword) => {
-    doLogin(demoEmail, demoPassword);
+    void doLogin(demoEmail, demoPassword);
   };
 
   const isBlocked = error?.type === 'blocked' || attempts >= MAX_ATTEMPTS;
@@ -176,12 +179,12 @@ export const LoginPage = () => {
 
             <form onSubmit={doVerifyTotp} className="auth-form">
               <div className="form-group">
-                <label>Código de verificación</label>
+                <label htmlFor="login-codigo-de-verificacion">Código de verificación</label>
 
                 <div className="input-wrapper">
                   <Lock size={16} className="input-icon-left" />
 
-                  <input
+                  <input id="login-codigo-de-verificacion"
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9 ]*"
@@ -190,7 +193,7 @@ export const LoginPage = () => {
                     placeholder="000 000"
                     value={totpCode}
                     onChange={(e) => setTotpCode(e.target.value)}
-                    autoFocus
+                    ref={focusOnMount}
                     required
                   />
                 </div>
@@ -235,12 +238,12 @@ export const LoginPage = () => {
 
             <form onSubmit={handleSubmit} className="auth-form">
               <div className="form-group">
-                <label>Correo electrónico</label>
+                <label htmlFor="login-correo-electronico">Correo electrónico</label>
 
                 <div className="input-wrapper">
                   <Mail size={16} className="input-icon-left" />
 
-                  <input
+                  <input id="login-correo-electronico"
                     type="email"
                     className="form-input has-icon-left"
                     placeholder="usuario@unicesar.edu.co"
@@ -253,12 +256,12 @@ export const LoginPage = () => {
               </div>
 
               <div className="form-group">
-                <label>Contraseña</label>
+                <label htmlFor="login-contrasena">Contraseña</label>
 
                 <div className="input-wrapper has-icon-right">
                   <Lock size={16} className="input-icon-left" />
 
-                  <input
+                  <input id="login-contrasena"
                     type={showPass ? 'text' : 'password'}
                     className="form-input has-icon-left"
                     placeholder="••••••••"
@@ -302,6 +305,7 @@ export const LoginPage = () => {
               <Link to="/register">Crear cuenta</Link>
             </div>
 
+            {import.meta.env.DEV && DEMO_USERS.length > 0 && (
             <div className="auth-demo-section">
               <p className="demo-label">Acceso rápido (demo)</p>
 
@@ -320,6 +324,7 @@ export const LoginPage = () => {
                 ))}
               </div>
             </div>
+            )}
 
             <p className="auth-back-link">
               <Link to="/">← Volver al inicio</Link>

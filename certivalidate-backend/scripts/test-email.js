@@ -1,3 +1,4 @@
+const crypto = require('crypto')
 require('dotenv').config()
 const { enviarEmailVerificacion, enviarEmailBienvenida, enviarEmailCertificado } = require('../src/utils/mailer')
 
@@ -16,7 +17,7 @@ async function main() {
   await enviarEmailBienvenida({
     email: 'keimpor@gmail.com',
     nombre: 'Usuario Prueba',
-    password: 'Temporal#2026',
+    password: crypto.randomBytes(6).toString('hex'), // solo para la plantilla del correo
     rol: 'admin',
   })
   console.log('✅ Email de bienvenida enviado')

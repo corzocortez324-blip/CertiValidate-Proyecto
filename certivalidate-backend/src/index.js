@@ -1,7 +1,4 @@
 require('./utils/load-env')
-BigInt.prototype.toJSON = function () {
-  return this.toString()
-}
 
 const { validateRequiredEnv } = require('./utils/env')
 const logger = require('./utils/logger')

@@ -1104,3 +1104,5 @@ tr.row-revoked td {
   color: var(--color-text-main);
   line-height: 1.4;
 }
+
+.cert-revocacion-info { font-size: 0.7rem; color: #fca5a5; white-space: nowrap; }

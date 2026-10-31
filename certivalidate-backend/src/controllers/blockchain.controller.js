@@ -9,6 +9,10 @@ const {
   getExplorerUrl,
 } = require('../services/blockchain.service')
 
+// Tras este número de intentos fallidos la transacción pasa a 'fallido' y
+// solo puede reintentarse creando un registro nuevo (CU-28).
+const MAX_INTENTOS_BLOCKCHAIN = 3
+
 /**
  * POST /api/certificados/:id/blockchain/register
  * Registra el hash SHA-256 del certificado en blockchain.
@@ -39,9 +43,12 @@ const registerCertificateOnBlockchain = async (req, res) => {
         certificado_id: id,
         estado: { not: 'fallido' },
       },
+      orderBy: { created_at: 'desc' },
     })
 
-    if (existente) {
+    // Una transacción 'pendiente' es un intento previo que falló y aún tiene
+    // reintentos disponibles: se reutiliza en lugar de bloquear con 409.
+    if (existente && existente.estado !== 'pendiente') {
       return sendError(
         res,
         'El certificado ya fue registrado en blockchain',
@@ -50,16 +57,48 @@ const registerCertificateOnBlockchain = async (req, res) => {
     }
 
     const hash = generateCertificateHash(cert)
-    const resultado = await registerHashOnBlockchain(hash)
 
-    const transaccion = await prisma.blockchainTransaccion.create({
+    // Se persiste el intento ANTES de enviarlo para que un fallo de red quede trazado
+    const pendiente = existente
+      ? await prisma.blockchainTransaccion.update({
+          where: { id: existente.id },
+          data: { hash },
+        })
+      : await prisma.blockchainTransaccion.create({
+          data: {
+            certificado_id: id,
+            hash,
+            red: process.env.BLOCKCHAIN_NETWORK || (getBlockchainMode() === 'real' ? 'polygon-amoy' : 'mock'),
+            estado: 'pendiente',
+            intentos: 0,
+          },
+        })
+
+    let resultado
+    try {
+      resultado = await registerHashOnBlockchain(hash)
+    } catch (err) {
+      const intentos = pendiente.intentos + 1
+      const estado = intentos >= MAX_INTENTOS_BLOCKCHAIN ? 'fallido' : 'pendiente'
+      await prisma.blockchainTransaccion.update({
+        where: { id: pendiente.id },
+        data: { intentos, estado, error_mensaje: String(err.message || err).slice(0, 500) },
+      })
+      logger.warn(
+        { certificado_id: id, intentos, estado, requestId: req.requestId },
+        '[BlockchainController] Intento de registro blockchain fallido',
+      )
+      throw err
+    }
+
+    const transaccion = await prisma.blockchainTransaccion.update({
+      where: { id: pendiente.id },
       data: {
-        certificado_id: id,
-        hash,
         tx_hash: resultado.txHash,
         red: resultado.network,
         estado: resultado.status,
         confirmado_en: resultado.registeredAt,
+        error_mensaje: null,
       },
     })
 

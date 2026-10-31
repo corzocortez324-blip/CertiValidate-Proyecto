@@ -26,7 +26,7 @@ ChartJS.register(
 const MESES_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const formatMesLabel = (ym) => {
   const [y, m] = ym.split('-');
-  return `${MESES_ES[parseInt(m, 10) - 1]} ${y.slice(2)}`;
+  return `${MESES_ES[Number.parseInt(m, 10) - 1]} ${y.slice(2)}`;
 };
 
 const formatDiaLabel = (dia) => {
@@ -137,7 +137,7 @@ const DOUGHNUT_OPTIONS = {
 
 /* ─── Export Modal ─────────────────────────────────────────────────────────── */
 
-const PERIODO_LABEL = { '7d': '7 días', '30d': '30 días', '90d': '90 días', '1a': '1 año' };
+const PERIODO_LABEL = { '7d': '7 días', '30d': '30 días', '90d': '90 días', '1y': '1 año' };
 const TIPO_LABEL    = { ejecutivo: 'Ejecutivo', completo: 'Completo', operativo: 'Operativo' };
 
 async function buildXlsx(tipo, period, stats) {
@@ -431,12 +431,17 @@ function ExportModal({ stats, period, onClose, showToast }) {
     }, 100);
 
     try {
+      // Los datos del dashboard corresponden a su período; si en el modal se eligió
+      // otro, se consultan los de ese período para que el reporte sea coherente.
+      const datos = exportPeriod === period ? stats : await adminApi.getStats(exportPeriod);
       if (exportFormato === 'pdf') {
         await new Promise(r => setTimeout(r, 600));
-        buildPDF(exportTipo, exportPeriod, stats, showToast);
+        buildPDF(exportTipo, exportPeriod, datos, showToast);
       } else {
-        await buildXlsx(exportTipo, exportPeriod, stats);
+        await buildXlsx(exportTipo, exportPeriod, datos);
       }
+    } catch (err) {
+      showToast?.(err?.message || 'No se pudo generar el reporte.', 'error');
     } finally {
       clearInterval(intervalRef.current);
       setExportProgress(100);
@@ -461,12 +466,12 @@ function ExportModal({ stats, period, onClose, showToast }) {
     { key: '7d',  label: '7d' },
     { key: '30d', label: '30d' },
     { key: '90d', label: '90d' },
-    { key: '1a',  label: '1a' },
+    { key: '1y',  label: '1a' },
   ];
 
   return (
-    <div className="export-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="export-modal glass-panel" onClick={(e) => e.stopPropagation()}>
+    <div className="export-modal-overlay" role="presentation" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }} onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
+      <div className="export-modal glass-panel" role="dialog" aria-modal="true" aria-label="Exportar reporte" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="export-modal-header">
           <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>Exportar Reporte</h3>
@@ -597,7 +602,7 @@ export const AdminDashboard = () => {
 
   useEffect(() => {
     setLoading(true);
-    loadStats(period);
+    void loadStats(period);
 
     clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => loadStats(period), 60_000);
@@ -677,7 +682,7 @@ export const AdminDashboard = () => {
   const allDays = Array.from(new Set([
     ...emisionesData.map(e => String(e.dia).slice(0, 10)),
     ...verifPorDia.map(v => String(v.dia).slice(0, 10)),
-  ])).sort();
+  ])).sort((a, b) => a.localeCompare(b));
 
   const emisionMap = Object.fromEntries(emisionesData.map(e => [String(e.dia).slice(0, 10), Number(e.total_emitidos)]));
   const verifMap   = Object.fromEntries(verifPorDia.map(v => [String(v.dia).slice(0, 10), Number(v.total)]));

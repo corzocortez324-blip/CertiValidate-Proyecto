@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import DOMPurify from 'dompurify';
+import { stripCodeFences } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import { plantillasApi } from '../../api/plantillas.api';
 import { institucionesApi } from '../../api/instituciones.api';
@@ -65,8 +66,7 @@ export const PlantillasPage = () => {
   const previewSource = useMemo(() => {
     if (!previewPlantilla) return '';
     // Elimina markdown code fences que puedan estar en el HTML almacenado
-    const clean = (previewPlantilla.template_html || '')
-      .replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    const clean = stripCodeFences(previewPlantilla.template_html || '');
     const filled = clean
       .replace(/\{\{nombre\}\}/g, 'Ana Martínez')
       .replace(/\{\{institucion\}\}/g, 'Universidad Central')
@@ -125,7 +125,7 @@ export const PlantillasPage = () => {
       _new:           true,
       nombre:         newForm.nombre.trim(),
       institucion_id: newForm.institucion_id,
-      version:        parseInt(newForm.version, 10) || 1,
+      version:        Number.parseInt(newForm.version, 10) || 1,
       template_html:  '',
     });
   };
@@ -234,19 +234,19 @@ export const PlantillasPage = () => {
         <form onSubmit={handleNewFormSubmit} className="form-col">
           {newError && <div className="alert alert-error">{newError}</div>}
           <div className="form-group">
-            <label className="form-label">Institución <span className="required-star">*</span></label>
-            <select className="form-input form-select" value={newForm.institucion_id} onChange={setNew('institucion_id')} required>
+            <label className="form-label" htmlFor="plantillas-institucion">Institución <span className="required-star">*</span></label>
+            <select id="plantillas-institucion" className="form-input form-select" value={newForm.institucion_id} onChange={setNew('institucion_id')} required>
               {instituciones.map(i => <option key={i.id} value={i.id}>{i.nombre}</option>)}
             </select>
           </div>
           <div className="form-row-2-1">
             <div className="form-group">
-              <label className="form-label">Nombre <span className="required-star">*</span></label>
-              <input className="form-input" value={newForm.nombre} onChange={setNew('nombre')} required placeholder="Ej. Certificado de Finalización" />
+              <label className="form-label" htmlFor="plantillas-nombre">Nombre <span className="required-star">*</span></label>
+              <input id="plantillas-nombre" className="form-input" value={newForm.nombre} onChange={setNew('nombre')} required placeholder="Ej. Certificado de Finalización" />
             </div>
             <div className="form-group">
-              <label className="form-label">Versión</label>
-              <input className="form-input" type="number" min={1} value={newForm.version} onChange={setNew('version')} />
+              <label className="form-label" htmlFor="plantillas-version">Versión</label>
+              <input id="plantillas-version" className="form-input" type="number" min={1} value={newForm.version} onChange={setNew('version')} />
             </div>
           </div>
           <div className="form-actions">

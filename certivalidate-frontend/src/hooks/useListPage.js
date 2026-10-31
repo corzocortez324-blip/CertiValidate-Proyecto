@@ -78,7 +78,7 @@ export const useListPage = (
   }, [api, page, limit, debSearch, filters, dataKey])
 
   useEffect(() => {
-    load()
+    void load()
   }, [load])
 
   const openCreate = (overrideForm) => {
@@ -113,7 +113,7 @@ export const useListPage = (
       }
       setShowForm(false)
       setPage(1)
-      load()
+      void load()
     } catch (err) {
       setFormError(err.message)
     }

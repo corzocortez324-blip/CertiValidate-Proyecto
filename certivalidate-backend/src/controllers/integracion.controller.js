@@ -5,6 +5,8 @@ const integrationConfigService = require('../services/integration-config.service
 const academicApiService = require('../services/academic-api.service')
 const integracionService = require('../services/integracion.service')
 const { encrypt } = require('../utils/crypto')
+const { registrarAuditoria } = require('../utils/auditoria')
+const { getClientIp } = require('../utils/validators')
 
 /**
  * POST /api/instituciones/:id/probar-conexion
@@ -37,20 +39,22 @@ const probarConexion = async (req, res) => {
 
       return res.status(200).json({
         success: false,
-        message: 'Integración pendiente o no disponible',
+        message: 'La institución no tiene una integración configurada',
         data: {
           institucion_id: id,
-          estado: 'pendiente',
+          estado: 'sin_configurar',
           disponible: false,
         },
       })
     }
 
     // Probar health check contra la URL real de la institución
-    const disponible = await academicApiService.verificarDisponibilidad({
-      url_base: config.url_base,
-      api_key: config.api_key,
-    })
+    const resultado = await academicApiService.verificarDisponibilidad(
+      { url_base: config.url_base, api_key: config.api_key },
+      { conDetalle: true },
+    )
+    const disponible = typeof resultado === 'object' ? resultado.disponible : Boolean(resultado)
+    const errorDetalle = typeof resultado === 'object' ? resultado.error : null
 
     // Actualizar ultima_verificacion en BD (tanto éxito como fallo)
     if (config.id) {
@@ -72,8 +76,9 @@ const probarConexion = async (req, res) => {
         message: 'Integración pendiente o no disponible',
         data: {
           institucion_id: id,
-          estado: 'pendiente',
+          estado: 'sin_conexion',
           disponible: false,
+          error: errorDetalle,
         },
       })
     }
@@ -287,7 +292,18 @@ const postSincronizar = async (req, res) => {
 
   try {
     const resultado = await integracionService.sincronizar(institucionId, entidades, requestId)
-    return sendSuccess(res, resultado, 'Sincronización finalizada')
+
+    await registrarAuditoria(
+      prisma, req.usuario?.id, 'SINCRONIZAR_DATOS', 'Integracion', institucionId,
+      null, JSON.stringify({ entidades, resultado }), getClientIp(req), institucionId,
+    )
+
+    const conErrores = Object.values(resultado).some((r) => r?.error)
+    return sendSuccess(
+      res,
+      resultado,
+      conErrores ? 'Sincronización finalizada con errores parciales' : 'Sincronización finalizada',
+    )
   } catch (error) {
     if (error.statusCode === 404) {
       return sendError(res, error.message, 404)
@@ -319,6 +335,14 @@ const crearIntegracion = async (req, res) => {
     logger.info(
       { institucionId: institucion_id, tipo, id: integracion.id, requestId },
       '[Integracion] Integración creada',
+    )
+
+    // La api_key nunca se registra en claro en la auditoría
+    await registrarAuditoria(
+      prisma, req.usuario?.id, 'CREAR_INTEGRACION', 'Integracion', integracion.id,
+      null,
+      JSON.stringify({ tipo, url_base, activa: integracion.activa, api_key: api_key ? '[CIFRADA]' : null }),
+      getClientIp(req), institucion_id,
     )
 
     return sendSuccess(

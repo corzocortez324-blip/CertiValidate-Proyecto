@@ -8,8 +8,8 @@ export const InstitucionForm = ({ form, setForm, onSubmit, onCancel, editing, er
     <form onSubmit={onSubmit} className="form-col">
       {error && <div className="alert alert-error">{error}</div>}
       <div className="form-group">
-        <label className="form-label">Nombre <span className="required-star">*</span></label>
-        <input
+        <label className="form-label" htmlFor="institucion-nombre">Nombre <span className="required-star">*</span></label>
+        <input id="institucion-nombre"
           className="form-input"
           value={form.nombre}
           onChange={set('nombre')}
@@ -18,8 +18,8 @@ export const InstitucionForm = ({ form, setForm, onSubmit, onCancel, editing, er
         />
       </div>
       <div className="form-group">
-        <label className="form-label">Dominio <span className="label-optional">(opcional)</span></label>
-        <input
+        <label className="form-label" htmlFor="institucion-dominio-opcional">Dominio <span className="label-optional">(opcional)</span></label>
+        <input id="institucion-dominio-opcional"
           className="form-input"
           value={form.dominio}
           onChange={set('dominio')}
@@ -27,8 +27,8 @@ export const InstitucionForm = ({ form, setForm, onSubmit, onCancel, editing, er
         />
       </div>
       <div className="form-group">
-        <label className="form-label">Logo URL <span className="label-optional">(opcional)</span></label>
-        <input
+        <label className="form-label" htmlFor="institucion-logo-url-opcional">Logo URL <span className="label-optional">(opcional)</span></label>
+        <input id="institucion-logo-url-opcional"
           className="form-input"
           value={form.logo_url}
           onChange={set('logo_url')}

@@ -84,13 +84,13 @@ export const UsuariosPage = () => {
           newRol: form.rol,
           onConfirm: () => {
             setRolConfirm(null);
-            handleSubmit({ preventDefault: () => {} });
+            void handleSubmit({ preventDefault: () => {} });
           },
         });
         return;
       }
     }
-    handleSubmit(e);
+    void handleSubmit(e);
   };
 
   const handleToggleEstado = async (u) => {
@@ -101,7 +101,7 @@ export const UsuariosPage = () => {
     setToggling(u.id);
     try {
       await usuariosApi.actualizar(u.id, { activo: nuevoEstado });
-      reload();
+      void reload();
     } catch (err) {
       alert(err.message || 'Error al cambiar estado');
     } finally {
@@ -176,6 +176,7 @@ export const UsuariosPage = () => {
               <tr>
                 <th>Usuario</th>
                 <th>Rol</th>
+                <th>Institución</th>
                 <th>Estado</th>
                 <th>Creado</th>
                 <th>Acciones</th>
@@ -183,9 +184,9 @@ export const UsuariosPage = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={5} className="empty-state">Cargando...</td></tr>
+                <tr><td colSpan={6} className="empty-state">Cargando...</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={5} className="empty-state">No se encontraron usuarios.</td></tr>
+                <tr><td colSpan={6} className="empty-state">No se encontraron usuarios.</td></tr>
               ) : filtered.map((u, uIdx) => {
                 const style = getRoleStyle(u.rol, uIdx);
                 return (
@@ -198,6 +199,9 @@ export const UsuariosPage = () => {
                       <span className="ut-role-badge" style={{ color: style.color, background: style.bg }}>
                         {getRoleLabel(u.rol, rolesList)}
                       </span>
+                    </td>
+                    <td className="ut-inst">
+                      {(u.instituciones || []).map(ui => ui.institucion?.nombre).filter(Boolean).join(', ') || '—'}
                     </td>
                     <td>
                       <div className="ut-status">
@@ -265,8 +269,8 @@ export const UsuariosPage = () => {
 
       {/* Modal de confirmación de cambio de rol */}
       {rolConfirm && (
-        <div className="rol-confirm-overlay" onClick={() => setRolConfirm(null)}>
-          <div className="rol-confirm-dialog glass-panel animate-fade-in" onClick={e => e.stopPropagation()}>
+        <div className="rol-confirm-overlay" role="presentation" onClick={() => setRolConfirm(null)} onKeyDown={(e) => { if (e.key === 'Escape') setRolConfirm(null); }}>
+          <div className="rol-confirm-dialog glass-panel animate-fade-in" role="alertdialog" aria-modal="true" aria-label="Confirmar cambio de rol" onClick={e => e.stopPropagation()}>
             <div className="rol-confirm-icon">
               <ShieldAlert size={28} style={{ color: '#f59e0b' }} />
             </div>

@@ -97,20 +97,21 @@ describe('POST /api/instituciones/:id/probar-conexion', () => {
     // Debe haber llamado a verificarDisponibilidad con la url_base correcta
     expect(academicApiService.verificarDisponibilidad).toHaveBeenCalledWith(
       expect.objectContaining({ url_base: 'http://localhost:4000' }),
+      { conDetalle: true },
     )
   })
 
-  it('retorna estado pendiente cuando la institución no tiene integración configurada', async () => {
+  it('retorna estado sin_configurar cuando la institución no tiene integración configurada', async () => {
     const res = await request(app)
       .post(`${BASE}/${instSinIntegracion.id}/probar-conexion`)
       .set('Authorization', `Bearer ${token}`)
 
     expect(res.status).toBe(200)
     expect(res.body.success).toBe(false)
-    expect(res.body.message).toBe('Integración pendiente o no disponible')
+    expect(res.body.message).toBe('La institución no tiene una integración configurada')
     expect(res.body.data).toMatchObject({
       institucion_id: instSinIntegracion.id,
-      estado: 'pendiente',
+      estado: 'sin_configurar',
       disponible: false,
     })
 
@@ -127,7 +128,7 @@ describe('POST /api/instituciones/:id/probar-conexion', () => {
     expect(res.body.success).toBe(false)
   })
 
-  it('retorna estado pendiente cuando la API académica está caída', async () => {
+  it('retorna estado sin_conexion cuando la API académica está caída', async () => {
     academicApiService.verificarDisponibilidad.mockResolvedValue(false)
 
     const res = await request(app)
@@ -139,7 +140,7 @@ describe('POST /api/instituciones/:id/probar-conexion', () => {
     expect(res.body.message).toBe('Integración pendiente o no disponible')
     expect(res.body.data).toMatchObject({
       institucion_id: instConIntegracion.id,
-      estado: 'pendiente',
+      estado: 'sin_conexion',
       disponible: false,
     })
   })

@@ -13,15 +13,16 @@ function PropRow({ label, children }) {
   );
 }
 
-function NumInput({ value, min = 0, max, onChange }) {
+function NumInput({ id, value, min = 0, max, onChange }) {
   return (
     <input
+      id={id}
       type="number"
       className="ced-input ced-input--sm"
       value={Math.round(value)}
       min={min}
       max={max}
-      onChange={e => onChange(parseFloat(e.target.value) || 0)}
+      onChange={e => onChange(Number.parseFloat(e.target.value) || 0)}
     />
   );
 }
@@ -77,7 +78,7 @@ export function PropertiesPanel({ element, onUpdate, onDelete, onMoveUp, onMoveD
               </select>
             </PropRow>
             <PropRow label="Tamaño">
-              <select className="ced-select" value={element.style.fontSize} onChange={e => updS('fontSize', parseInt(e.target.value))}>
+              <select className="ced-select" value={element.style.fontSize} onChange={e => updS('fontSize', Number.parseInt(e.target.value))}>
                 {SIZES.map(s => <option key={s} value={s}>{s}px</option>)}
               </select>
             </PropRow>
@@ -126,7 +127,7 @@ export function PropertiesPanel({ element, onUpdate, onDelete, onMoveUp, onMoveD
           <p className="ced-section-title">Imagen</p>
 
           {/* File upload */}
-          <label className="ced-label">Subir desde archivo</label>
+          <p className="ced-label">Subir desde archivo</p>
           <label className="ced-upload-btn">
             {element.src ? 'Cambiar imagen…' : 'Seleccionar imagen…'}
             <input
@@ -151,8 +152,8 @@ export function PropertiesPanel({ element, onUpdate, onDelete, onMoveUp, onMoveD
           )}
 
           {/* URL fallback */}
-          <label className="ced-label" style={{ marginTop: 10 }}>o pegar URL externa</label>
-          <input
+          <label className="ced-label" style={{ marginTop: 10 }} htmlFor="properties-o-pegar-url-externa">o pegar URL externa</label>
+          <input id="properties-o-pegar-url-externa"
             type="text"
             className="ced-input"
             placeholder="https://..."
@@ -201,20 +202,20 @@ export function PropertiesPanel({ element, onUpdate, onDelete, onMoveUp, onMoveD
         <p className="ced-section-title">Posición y tamaño</p>
         <div className="ced-grid-2">
           <div>
-            <label className="ced-label">X</label>
-            <NumInput value={element.x} onChange={v => upd('x', v)} />
+            <label className="ced-label" htmlFor="ced-pos-x">X</label>
+            <NumInput id="ced-pos-x" value={element.x} onChange={v => upd('x', v)} />
           </div>
           <div>
-            <label className="ced-label">Y</label>
-            <NumInput value={element.y} onChange={v => upd('y', v)} />
+            <label className="ced-label" htmlFor="ced-pos-y">Y</label>
+            <NumInput id="ced-pos-y" value={element.y} onChange={v => upd('y', v)} />
           </div>
           <div>
-            <label className="ced-label">Ancho</label>
-            <NumInput value={element.width} min={4} onChange={v => upd('width', v)} />
+            <label className="ced-label" htmlFor="ced-size-w">Ancho</label>
+            <NumInput id="ced-size-w" value={element.width} min={4} onChange={v => upd('width', v)} />
           </div>
           <div>
-            <label className="ced-label">Alto</label>
-            <NumInput value={element.height} min={2} onChange={v => upd('height', v)} />
+            <label className="ced-label" htmlFor="ced-size-h">Alto</label>
+            <NumInput id="ced-size-h" value={element.height} min={2} onChange={v => upd('height', v)} />
           </div>
         </div>
       </div>

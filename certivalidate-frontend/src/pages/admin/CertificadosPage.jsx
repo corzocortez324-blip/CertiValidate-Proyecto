@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import { downloadCertificatePdf, certificatePdfToBase64 } from '../../utils/downloadCertificatePdf';
 import { useAuth } from '../../context/AuthContext';
@@ -39,7 +40,9 @@ function buildCertificateHtml(templateHtml, cert, qrUrl) {
     : 'Sin expiración';
   const nombre = `${cert.estudiante?.nombre || ''} ${cert.estudiante?.apellido || ''}`.trim();
   const qrSrc  = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&color=111827&bgcolor=ffffff&data=${encodeURIComponent(qrUrl)}`;
-  const qrImg  = `<img src="${qrSrc}" width="130" height="130" alt="QR verificación" style="border-radius:4px;display:block;"/>`;
+  // Se ajusta al contenedor del editor (p. ej. 110×110): con tamaño fijo el QR
+  // se desbordaba sobre el texto inferior y dejaba de ser legible.
+  const qrImg  = `<img src="${qrSrc}" width="130" height="130" alt="QR verificación" style="border-radius:4px;display:block;width:100%;height:100%;max-width:130px;max-height:130px;object-fit:contain;"/>`;
 
   // Detectar si el template ya tiene {{qr}} antes de sustituir
   const tieneQr = /\{\{qr\}\}/i.test(templateHtml);
@@ -95,7 +98,7 @@ function CopyBtn({ text, title = 'Copiar' }) {
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
-    });
+    }).catch(() => setCopied(false));
   };
   return (
     <button className={`copy-btn ${copied ? 'copied' : ''}`} onClick={handle} title={title} type="button">
@@ -179,7 +182,8 @@ export const CertificadosPage = () => {
 
   const [search, setSearch]         = useState('');
   const [debSearch, setDebSearch]   = useState('');
-  const [filter, setFilter]         = useState('');
+  const [searchParams] = useSearchParams();
+  const [filter, setFilter]         = useState(searchParams.get('estado') || '');
   const [filterInst, setFilterInst] = useState('');
 
   const [instituciones, setInstituciones] = useState([]);
@@ -225,7 +229,7 @@ export const CertificadosPage = () => {
     }
   }, [page, debSearch, filter, filterInst]);
 
-  useEffect(() => { loadCerts(); }, [loadCerts]);
+  useEffect(() => { void loadCerts(); }, [loadCerts]);
 
   useEffect(() => {
     Promise.all([
@@ -246,6 +250,15 @@ export const CertificadosPage = () => {
     setShowEmit(true);
   };
 
+  // /certificados/emitir llega como ?emitir=1: abre el formulario cuando hay instituciones
+  const emitirSolicitado = useRef(searchParams.get('emitir') === '1');
+  useEffect(() => {
+    if (emitirSolicitado.current && instituciones.length > 0 && hasPermission('certificado:emitir')) {
+      emitirSolicitado.current = false;
+      openEmit();
+    }
+  }, [instituciones]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleEmit = async (e) => {
     e.preventDefault();
     setEmitLoading(true);
@@ -258,7 +271,7 @@ export const CertificadosPage = () => {
       });
       setShowEmit(false);
       setPage(1);
-      loadCerts();
+      void loadCerts();
 
       // Enviar el email con el PDF del template en segundo plano
       if (cert?.id) {
@@ -523,6 +536,11 @@ export const CertificadosPage = () => {
                   <td>
                     <div className="cert-estado-col">
                       <Badge variant={getStatusClass(c.estado).replace('badge-', '')}>{getStatusLabel(c.estado)}</Badge>
+                      {c.estado === 'revocado' && c.revocaciones?.[0] && (
+                        <span className="cert-revocacion-info">
+                          {c.revocaciones[0].motivo_codigo.replace(/_/g, ' ')} · {formatDate(c.revocaciones[0].fecha_revocacion)}
+                        </span>
+                      )}
                       {c.tx_hash
                         ? <span className="bc-table-badge bc-table-badge--registered"><Link2 size={10} /> Registrado</span>
                         : <span className="bc-table-badge bc-table-badge--pending"><Lock size={10} /> Pendiente BC</span>
@@ -957,7 +975,7 @@ export const CertificadosPage = () => {
                         sub: r.motivo_codigo?.replace(/_/g, ' ') || '',
                       })),
                     ]
-                      .filter(item => !isNaN(item.date.getTime()))
+                      .filter(item => !Number.isNaN(item.date.getTime()))
                       .sort((a, b) => b.date - a.date);
 
                     if (items.length === 0) return <p className="revoc-loading">Sin eventos registrados.</p>;

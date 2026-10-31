@@ -135,7 +135,7 @@ function IntegModal({ open, mode, inst, integracion, onClose, onSaved, showToast
   if (!open) return null;
 
   return (
-    <div className="integ-modal-overlay" onClick={onClose}>
+    <div className="integ-modal-overlay" role="presentation" onClick={onClose} onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
       <div
         className="integ-modal"
         onClick={(e) => e.stopPropagation()}
@@ -162,8 +162,9 @@ function IntegModal({ open, mode, inst, integracion, onClose, onSaved, showToast
 
         <form onSubmit={handleSubmit} className="integ-modal-form" noValidate>
           <div className="integ-field">
-            <label className="integ-label">Tipo de integración</label>
+            <label className="integ-label" htmlFor="integ-tipo">Tipo de integración</label>
             <select
+              id="integ-tipo"
               className="integ-select"
               value={form.tipo}
               onChange={(e) => set('tipo', e.target.value)}
@@ -173,10 +174,10 @@ function IntegModal({ open, mode, inst, integracion, onClose, onSaved, showToast
           </div>
 
           <div className="integ-field">
-            <label className="integ-label">
+            <label className="integ-label" htmlFor="integraciones-url-base-de-la">
               URL base de la API <span className="integ-req">*</span>
             </label>
-            <input
+            <input id="integraciones-url-base-de-la"
               ref={firstInputRef}
               type="url"
               className="integ-input"
@@ -188,13 +189,13 @@ function IntegModal({ open, mode, inst, integracion, onClose, onSaved, showToast
           </div>
 
           <div className="integ-field">
-            <label className="integ-label">
+            <label className="integ-label" htmlFor="integraciones-api-key">
               API Key
               {mode === 'editar' && (
                 <span className="integ-hint"> — deja en blanco para no cambiarla</span>
               )}
             </label>
-            <input
+            <input id="integraciones-api-key"
               type="password"
               className="integ-input"
               placeholder={mode === 'editar' ? '••••••••••••' : 'sk-...'}
@@ -205,9 +206,10 @@ function IntegModal({ open, mode, inst, integracion, onClose, onSaved, showToast
           </div>
 
           <div className="integ-field integ-field--row">
-            <label className="integ-label">Activa</label>
+            <span className="integ-label" id="integ-activa-label">Activa</span>
             <button
               type="button"
+              aria-labelledby="integ-activa-label"
               className={`integ-toggle${form.activa ? ' integ-toggle--on' : ''}`}
               onClick={() => set('activa', !form.activa)}
               aria-pressed={form.activa}
@@ -243,7 +245,7 @@ function IntegModal({ open, mode, inst, integracion, onClose, onSaved, showToast
 function DeleteModal({ open, inst, onClose, onConfirm, deleting }) {
   if (!open) return null;
   return (
-    <div className="integ-modal-overlay" onClick={onClose}>
+    <div className="integ-modal-overlay" role="presentation" onClick={onClose} onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
       <div
         className="integ-modal integ-modal--sm"
         onClick={(e) => e.stopPropagation()}

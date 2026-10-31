@@ -47,6 +47,8 @@ const listarSesiones = async (usuarioId) =>
   prisma.sesionActiva.findMany({
     where:   { usuario_id: usuarioId, expires_at: { gt: new Date() } },
     orderBy: { created_at: 'desc' },
+    // token_hash identifica el refresh token: nunca se devuelve al cliente
+    select:  { id: true, ip: true, user_agent: true, created_at: true, expires_at: true },
   })
 
 const revocarSesionPorId = async (id, usuarioId) => {

@@ -170,17 +170,20 @@ async function sincronizar(institucionId, entidades = [], requestId) {
     certificados: { recibidos: 0, creados: 0, actualizados: 0, errores: 0 },
   }
 
-  if (sincronizarEstuds) {
-    resultado.estudiantes = await _sincronizarEstudiantes(institucionId, config, requestId)
+  // Cada entidad se aísla: si una falla, las demás conservan su resumen
+  // y la entidad fallida se reporta como { error } en lugar de abortar todo.
+  const ejecutar = async (entidad, fn) => {
+    try {
+      resultado[entidad] = await fn(institucionId, config, requestId)
+    } catch (err) {
+      logger.error({ err, institucionId, entidad, requestId }, '[Sincronizar] Error en entidad')
+      resultado[entidad] = { error: err.message || 'Error al sincronizar' }
+    }
   }
 
-  if (sincronizarPlants) {
-    resultado.plantillas = await _sincronizarPlantillas(institucionId, config, requestId)
-  }
-
-  if (sincronizarCerts) {
-    resultado.certificados = await _sincronizarCertificados(institucionId, config, requestId)
-  }
+  if (sincronizarEstuds) await ejecutar('estudiantes', _sincronizarEstudiantes)
+  if (sincronizarPlants) await ejecutar('plantillas', _sincronizarPlantillas)
+  if (sincronizarCerts) await ejecutar('certificados', _sincronizarCertificados)
 
   const duracion = Date.now() - inicio
   logger.info(

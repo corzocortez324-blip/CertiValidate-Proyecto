@@ -47,8 +47,10 @@ const generateCertificateHash = (certificado) => {
   }
 
   const sorted = Object.fromEntries(
+    // Orden por código de carácter (el mismo de sort() sin comparador). No usar
+    // localeCompare: cambiaría el orden y con él los hashes ya anclados en blockchain.
     Object.keys(data)
-      .sort()
+      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
       .map((k) => [k, data[k]]),
   )
 

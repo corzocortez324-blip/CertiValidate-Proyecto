@@ -50,7 +50,7 @@ function EstadoValido({ result, onReset }) {
 
       <div className="result-data-grid">
         <div><span className="rd-label">Código único</span><strong className="rd-mono">{result.codigo_unico}</strong></div>
-        {result.estudiante && <div><span className="rd-label">Titular</span><strong>{result.estudiante.nombre} {result.estudiante.apellido}</strong></div>}
+        {result.titular && <div><span className="rd-label">Titular</span><strong>{result.titular}</strong></div>}
         {result.institucion && <div><span className="rd-label">Institución</span><strong>{result.institucion}</strong></div>}
         {result.tipo_certificado && <div><span className="rd-label">Acreditación</span><strong>{result.tipo_certificado}</strong></div>}
         <div><span className="rd-label">Fecha de emisión</span><strong>{formatDate(result.fecha_emision)}</strong></div>
@@ -152,10 +152,11 @@ function EstadoRevocado({ result, onReset }) {
       {result.codigo_unico && (
         <div className="result-data-grid">
           <div><span className="rd-label">Código único</span><strong className="rd-mono">{result.codigo_unico}</strong></div>
-          {result.estudiante && <div><span className="rd-label">Titular</span><strong>{result.estudiante.nombre} {result.estudiante.apellido}</strong></div>}
+          {result.titular && <div><span className="rd-label">Titular</span><strong>{result.titular}</strong></div>}
           {result.institucion && <div><span className="rd-label">Institución</span><strong>{result.institucion}</strong></div>}
           <div><span className="rd-label">Fecha de emisión</span><strong>{formatDate(result.fecha_emision)}</strong></div>
-          {result.fecha_revocacion && <div><span className="rd-label">Fecha de revocación</span><strong style={{ color: '#fca5a5' }}>{formatDate(result.fecha_revocacion)}</strong></div>}
+          {(result.fecha_revocacion || result.revocacion?.fecha) && <div><span className="rd-label">Fecha de revocación</span><strong style={{ color: '#fca5a5' }}>{formatDate(result.fecha_revocacion || result.revocacion.fecha)}</strong></div>}
+          {result.revocacion?.motivo && <div><span className="rd-label">Motivo</span><strong>{result.revocacion.motivo.replace(/_/g, ' ')}</strong></div>}
         </div>
       )}
       <p className="result-info-note">Si tienes dudas sobre esta revocación, contacta directamente a la institución emisora.</p>
@@ -233,6 +234,32 @@ function EstadoAlterado({ result, onReset }) {
   );
 }
 
+function EstadoExpirado({ result, onReset }) {
+  return (
+    <div className="result-card result-alterado glass-panel animate-fade-in" role="alert" aria-live="assertive">
+      <div className="result-header">
+        <AlertCircle size={44} className="result-icon" />
+        <div>
+          <h3 className="result-title">Certificado Expirado</h3>
+          <p className="result-subtitle">El certificado es auténtico, pero su vigencia terminó.</p>
+        </div>
+      </div>
+      {result.codigo_unico && (
+        <div className="result-data-grid">
+          <div><span className="rd-label">Código único</span><strong className="rd-mono">{result.codigo_unico}</strong></div>
+          {result.titular && <div><span className="rd-label">Titular</span><strong>{result.titular}</strong></div>}
+          {result.institucion && <div><span className="rd-label">Institución</span><strong>{result.institucion}</strong></div>}
+          <div><span className="rd-label">Fecha de emisión</span><strong>{formatDate(result.fecha_emision)}</strong></div>
+          {result.fecha_expiracion && <div><span className="rd-label">Expiró</span><strong>{formatDate(result.fecha_expiracion)}</strong></div>}
+        </div>
+      )}
+      <div className="result-actions">
+        <button className="btn-result-secondary" onClick={onReset}><RotateCcw size={14} />Verificar otro</button>
+      </div>
+    </div>
+  );
+}
+
 function EstadoInexistente({ result, onReset }) {
   const [showTech, setShowTech] = useState(false);
   const consultado = result?.uuid_consultado || result?.codigo_consultado || result?.hash_consultado;
@@ -271,10 +298,11 @@ function EstadoInexistente({ result, onReset }) {
 }
 
 function ResultCard({ result, onReset }) {
-  const estado = result.estado || 'no_encontrado';
-  if (estado === 'valido')        return <EstadoValido result={result} onReset={onReset} />;
-  if (estado === 'revocado')      return <EstadoRevocado result={result} onReset={onReset} />;
-  if (estado === 'alterado')      return <EstadoAlterado result={result} onReset={onReset} />;
+  const estado = String(result.estado || 'no_encontrado').toLowerCase();
+  if (estado === 'valido' || estado === 'vigente') return <EstadoValido result={result} onReset={onReset} />;
+  if (estado === 'revocado')                       return <EstadoRevocado result={result} onReset={onReset} />;
+  if (estado === 'alterado' || estado === 'invalido') return <EstadoAlterado result={result} onReset={onReset} />;
+  if (estado === 'expirado')                       return <EstadoExpirado result={result} onReset={onReset} />;
   return <EstadoInexistente result={result} onReset={onReset} />;
 }
 
@@ -307,7 +335,7 @@ export const VerifyCertificate = () => {
     if (codigo) {
       setTab('codigo');
       setQuery(codigo);
-      verify({ codigo: codigo.trim() });
+      void verify({ codigo: codigo.trim() });
       setTimeout(() => document.getElementById('verificar')?.scrollIntoView({ behavior: 'smooth' }), 100);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -319,7 +347,7 @@ export const VerifyCertificate = () => {
     const payload = tab === 'hash'
       ? { hash: query.trim() }
       : { codigo: query.trim() };
-    verify(payload);
+    void verify(payload);
   };
 
   const processFile = async (file) => {
@@ -347,14 +375,14 @@ export const VerifyCertificate = () => {
 
   const handleFileInput = (e) => {
     const file = e.target.files?.[0];
-    if (file) processFile(file);
+    if (file) void processFile(file);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) processFile(file);
+    if (file) void processFile(file);
   };
 
   const reset = () => {
@@ -468,6 +496,10 @@ export const VerifyCertificate = () => {
                 onDragLeave={() => setDragOver(false)}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
+                role="button"
+                tabIndex={0}
+                aria-label="Seleccionar o arrastrar el PDF del certificado"
               >
                 <input ref={fileInputRef} type="file" accept="application/pdf" onChange={handleFileInput} hidden />
                 <FileText size={40} className="dropzone-icon" />

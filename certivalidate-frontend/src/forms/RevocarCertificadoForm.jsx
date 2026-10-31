@@ -23,8 +23,8 @@ export const RevocarCertificadoForm = ({ form, setForm, onSubmit, onCancel }) =>
         <strong>⚠ Esta acción es irreversible.</strong> El certificado quedará marcado como revocado permanentemente y no podrá ser rehabilitado.
       </div>
       <div className="form-group">
-        <label className="form-label">Motivo de revocación <span className="required-star">*</span></label>
-        <select
+        <label className="form-label" htmlFor="revocarcertificado-motivo-de-revocacion">Motivo de revocación <span className="required-star">*</span></label>
+        <select id="revocarcertificado-motivo-de-revocacion"
           className="form-input form-select"
           value={form.motivo_codigo}
           onChange={e => setForm(f => ({ ...f, motivo_codigo: e.target.value, motivo_detalle: '' }))}
@@ -35,14 +35,14 @@ export const RevocarCertificadoForm = ({ form, setForm, onSubmit, onCancel }) =>
         </select>
       </div>
       <div className="form-group">
-        <label className="form-label">
+        <label className="form-label" htmlFor="revocarcertificado-detalle">
           Detalle{' '}
           {detalleRequerido
             ? <span className="required-star">*</span>
             : <span className="label-optional">(opcional, máx. 500 caracteres)</span>
           }
         </label>
-        <textarea
+        <textarea id="revocarcertificado-detalle"
           className="form-input form-textarea"
           value={form.motivo_detalle}
           onChange={e => setForm(f => ({ ...f, motivo_detalle: e.target.value }))}

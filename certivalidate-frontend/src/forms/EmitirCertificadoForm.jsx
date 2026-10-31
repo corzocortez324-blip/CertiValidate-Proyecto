@@ -31,7 +31,7 @@ function fillPreview(html, data = {}) {
     '{{institucion}}':      data.institucion || 'Institución',
     '{{version}}':          data.version     || '1',
     '{{hash}}':             'a1b2c3d4e5f6g7h8…',
-    '{{qr}}':               `<img src="${qrSrc}" width="120" height="120" alt="QR" style="border-radius:4px;display:block;"/>`,
+    '{{qr}}':               `<img src="${qrSrc}" width="120" height="120" alt="QR" style="border-radius:4px;display:block;width:100%;height:100%;max-width:120px;max-height:120px;object-fit:contain;"/>`,
   };
   let filled = html;
   for (const [key, val] of Object.entries(replacements)) {
@@ -43,8 +43,8 @@ function fillPreview(html, data = {}) {
 /* ── Modal de confirmación con vista previa ─────────────────────── */
 function PreviewConfirmModal({ previewHtml, loading, onCancel, onConfirm }) {
   return (
-    <div className="pcm-overlay" onClick={onCancel}>
-      <div className="pcm-dialog glass-panel animate-fade-in" onClick={e => e.stopPropagation()}>
+    <div className="pcm-overlay" role="presentation" onClick={onCancel} onKeyDown={(e) => { if (e.key === 'Escape') onCancel(); }}>
+      <div className="pcm-dialog glass-panel animate-fade-in" role="dialog" aria-modal="true" aria-label="Vista previa del certificado" onClick={e => e.stopPropagation()}>
         <div className="pcm-header">
           <div className="pcm-header-title">
             <Eye size={16} />
@@ -246,8 +246,8 @@ export const EmitirCertificadoForm = ({
     <>
       <form onSubmit={e => { e.preventDefault(); handlePreviewClick(); }} className="form-col">
         <div className="form-group">
-          <label className="form-label">Institución <span className="required-star">*</span></label>
-          <select
+          <label className="form-label" htmlFor="emitircertificado-institucion">Institución <span className="required-star">*</span></label>
+          <select id="emitircertificado-institucion"
             className="form-input form-select"
             value={form.institucion_id}
             onChange={handleInstChange}
@@ -261,10 +261,10 @@ export const EmitirCertificadoForm = ({
         </div>
 
         <div className="form-group" ref={dropRef} style={{ position: 'relative' }}>
-          <label className="form-label">Estudiante <span className="required-star">*</span></label>
+          <label className="form-label" htmlFor="emitircertificado-estudiante">Estudiante <span className="required-star">*</span></label>
           <div className="autocomplete-wrap">
             <Search size={15} className="autocomplete-icon" />
-            <input
+            <input id="emitircertificado-estudiante"
               type="text"
               className="form-input autocomplete-input"
               placeholder={form.institucion_id ? 'Buscar por nombre o documento...' : 'Selecciona primero una institución'}
@@ -328,8 +328,8 @@ export const EmitirCertificadoForm = ({
         </div>
 
         <div className="form-group">
-          <label className="form-label">Plantilla <span className="required-star">*</span></label>
-          <select
+          <label className="form-label" htmlFor="emitircertificado-plantilla">Plantilla <span className="required-star">*</span></label>
+          <select id="emitircertificado-plantilla"
             className="form-input form-select"
             value={form.plantilla_id}
             onChange={e => setForm(f => ({ ...f, plantilla_id: e.target.value }))}

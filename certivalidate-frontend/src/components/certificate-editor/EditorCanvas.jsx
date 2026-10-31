@@ -1,5 +1,6 @@
 import React, { useRef, useCallback } from 'react';
 import { applyPreviews } from './editorUtils';
+import { focusOnMount } from '../../utils/helpers';
 
 const HANDLE = 8;
 
@@ -27,7 +28,7 @@ function ResizeHandles({ onStart }) {
   return (
     <>
       {handles.map(h => (
-        <div
+        <div role="presentation"
           key={h.k}
           style={{
             position: 'absolute', width: HANDLE, height: HANDLE,
@@ -79,7 +80,7 @@ function ElementView({ el, selected, isEditing, onSelect, onMouseDown, onDoubleC
     };
     inner = isEditing ? (
       <textarea
-        autoFocus
+        ref={focusOnMount}
         style={{ ...ts, border: 'none', outline: 'none', background: 'transparent', resize: 'none', padding: 0, boxSizing: 'border-box' }}
         value={content}
         onChange={e => onContentChange(el.id, e.target.value)}
@@ -132,7 +133,7 @@ function ElementView({ el, selected, isEditing, onSelect, onMouseDown, onDoubleC
   }
 
   return (
-    <div
+    <div role="presentation"
       style={wrapStyle}
       onMouseDown={e => { e.stopPropagation(); onSelect(el.id); onMouseDown(e, el); }}
       onDoubleClick={type === 'text' ? e => { e.stopPropagation(); onDoubleClick(el.id); } : undefined}
@@ -195,7 +196,7 @@ export function EditorCanvas({ canvas, elements, selectedId, editingId, scale, o
     : {};
 
   return (
-    <div
+    <div role="presentation"
       style={{
         position: 'relative',
         width: canvas.width, height: canvas.height,

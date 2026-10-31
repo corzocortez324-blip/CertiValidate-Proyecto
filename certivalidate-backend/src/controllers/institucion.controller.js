@@ -22,8 +22,8 @@ const assertNoForbiddenFields = (req, res, fields) => {
 // Listar instituciones
 const listarInstituciones = async (req, res) => {
   try {
-    const page = Math.max(parseInt(req.query.page, 10) || 1, 1)
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 100)
+    const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1)
+    const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 10, 1), 100)
     const institucionIds = req.institucionIds
 
     if (institucionIds.length === 0) {
@@ -143,7 +143,7 @@ const crearInstitucion = async (req, res) => {
       return inst
     })
 
-    registrarAuditoria(prisma, req.usuario.id, 'CREAR_INSTITUCION', 'Institucion', nuevaInstitucion.id,
+    await registrarAuditoria(prisma, req.usuario.id, 'CREAR_INSTITUCION', 'Institucion', nuevaInstitucion.id,
       null, JSON.stringify({ nombre, dominio: dominio || null }), getClientIp(req), nuevaInstitucion.id)
 
     return sendSuccess(
@@ -231,7 +231,7 @@ const actualizarInstitucion = async (req, res) => {
         },
       })
 
-    registrarAuditoria(prisma, req.usuario.id, 'ACTUALIZAR_INSTITUCION', 'Institucion', id,
+    await registrarAuditoria(prisma, req.usuario.id, 'ACTUALIZAR_INSTITUCION', 'Institucion', id,
       JSON.stringify(institucionExistente), JSON.stringify(institucionActualizada), getClientIp(req), id)
 
     return sendSuccess(
@@ -333,6 +333,7 @@ const obtenerEstadisticasInstitucion = async (req, res) => {
       return sendError(res, 'Institución no encontrada', 404)
     }
 
+    const ahora = new Date()
     const [
       estudiantesCount,
       plantillasCount,
@@ -347,11 +348,13 @@ const obtenerEstadisticasInstitucion = async (req, res) => {
       prisma.certificado.count({
         where: { institucion_id: id, deleted_at: null },
       }),
+      // Válidos, revocados y expirados son disjuntos: válidos + revocados + expirados = total
       prisma.certificado.count({
         where: {
           institucion_id: id,
           estado: 'valido',
           deleted_at: null,
+          OR: [{ fecha_expiracion: null }, { fecha_expiracion: { gte: ahora } }],
         },
       }),
       prisma.certificado.count({
@@ -364,7 +367,8 @@ const obtenerEstadisticasInstitucion = async (req, res) => {
       prisma.certificado.count({
         where: {
           institucion_id: id,
-          fecha_expiracion: { lt: new Date() },
+          estado: { not: 'revocado' },
+          fecha_expiracion: { lt: ahora },
           deleted_at: null,
         },
       }),

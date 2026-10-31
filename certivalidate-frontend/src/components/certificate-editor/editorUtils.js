@@ -1,4 +1,5 @@
 // ─── Constantes ───────────────────────────────────────────────────────────────
+import { stripCodeFences } from '../../utils/helpers';
 export const CANVAS_DEFAULTS = {
   width: 800,
   height: 566,
@@ -227,18 +228,18 @@ export function serializeToHtml(canvas, elements) {
 
 function parseCedV2(root) {
   const canvas = {
-    width:           parseInt(root.getAttribute('data-ced-w'))  || 800,
-    height:          parseInt(root.getAttribute('data-ced-h'))  || 566,
+    width:           Number.parseInt(root.getAttribute('data-ced-w'))  || 800,
+    height:          Number.parseInt(root.getAttribute('data-ced-h'))  || 566,
     background:      root.getAttribute('data-ced-bg')           || '#ffffff',
     backgroundImage: root.getAttribute('data-ced-bgimg')        || '',
   };
 
   const elements = [...root.querySelectorAll('[data-ced-id]')].map(el => {
     const style = el.getAttribute('style') || '';
-    const x = parseFloat(style.match(/left:\s*([\d.]+)px/)?.[1]   ?? '0');
-    const y = parseFloat(style.match(/top:\s*([\d.]+)px/)?.[1]    ?? '0');
-    const w = parseFloat(style.match(/width:\s*([\d.]+)px/)?.[1]  ?? '100');
-    const h = parseFloat(style.match(/height:\s*([\d.]+)px/)?.[1] ?? '50');
+    const x = Number.parseFloat(style.match(/left:\s*([\d.]+)px/)?.[1]   ?? '0');
+    const y = Number.parseFloat(style.match(/top:\s*([\d.]+)px/)?.[1]    ?? '0');
+    const w = Number.parseFloat(style.match(/width:\s*([\d.]+)px/)?.[1]  ?? '100');
+    const h = Number.parseFloat(style.match(/height:\s*([\d.]+)px/)?.[1] ?? '50');
     const id   = el.getAttribute('data-ced-id');
     const type = el.getAttribute('data-ced-type');
 
@@ -248,7 +249,7 @@ function parseCedV2(root) {
           id, type, x, y, width: w, height: h,
           content: el.getAttribute('data-ced-content') ?? el.textContent.trim(),
           style: {
-            fontSize:   parseInt(el.getAttribute('data-ced-fs'))  || 16,
+            fontSize:   Number.parseInt(el.getAttribute('data-ced-fs'))  || 16,
             fontFamily: el.getAttribute('data-ced-ff')            || 'Arial',
             color:      el.getAttribute('data-ced-fc')            || '#000000',
             fontWeight: el.getAttribute('data-ced-fw')            || 'normal',
@@ -262,8 +263,8 @@ function parseCedV2(root) {
           shapeKind: el.getAttribute('data-ced-sk') || 'rect',
           style: {
             background:   el.getAttribute('data-ced-bg')  || '#e8f4f8',
-            borderRadius: parseInt(el.getAttribute('data-ced-br')) || 0,
-            borderWidth:  parseInt(el.getAttribute('data-ced-bw')) || 0,
+            borderRadius: Number.parseInt(el.getAttribute('data-ced-br')) || 0,
+            borderWidth:  Number.parseInt(el.getAttribute('data-ced-bw')) || 0,
             borderColor:  el.getAttribute('data-ced-bc')  || '#cccccc',
           },
         };
@@ -291,7 +292,7 @@ function parseCedV2(root) {
 export function parseHtmlToEditorState(html) {
   if (!html?.trim()) return null;
   // Normaliza: elimina markdown code fences si el template fue guardado con ellas
-  html = html.replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+  html = stripCodeFences(html);
 
   // 1. Formato OVERLAY_V1: elementos visuales sobre HTML legacy guardados en comentario
   const OV1 = '<!-- CERTIVALIDATE_OVERLAY_V1: ';
@@ -379,7 +380,7 @@ ${fitLegacy}
 // ─── Preview (reemplaza variables y QR con datos de ejemplo) ──────────────────
 export function buildPreviewHtml(html) {
   // Elimina markdown code fences que puedan estar en el HTML almacenado
-  let out = html.replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+  let out = stripCodeFences(html);
   for (const [variable, value] of Object.entries(PREVIEW_VALUES)) {
     out = out.replace(new RegExp(variable.replace(/[[\]{}]/g, '\\$&'), 'gi'), value);
   }

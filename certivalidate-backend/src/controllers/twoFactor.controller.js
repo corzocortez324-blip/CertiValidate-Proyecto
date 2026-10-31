@@ -17,8 +17,15 @@ const { getClientIp } = require('../utils/validators')
 const ISSUER = 'CertiValidate'
 
 const verifyTotp = (token, secret) => {
-  const result = verifySync({ secret, token })
-  return result?.valid === true
+  // otplib lanza excepción con secretos de menos de 128 bits (cuentas antiguas):
+  // se trata como código inválido en lugar de responder 500.
+  try {
+    const result = verifySync({ secret, token })
+    return result?.valid === true
+  } catch (error) {
+    logger.warn({ err: error }, 'Secreto TOTP no válido para verificación')
+    return false
+  }
 }
 
 const getTotpSecret = (usuario) => {
@@ -56,9 +63,10 @@ const setup2FA = async (req, res) => {
       data: { totp_secret: encrypt(secret) },
     })
 
+    // El secreto se entrega una sola vez para ingresarlo a mano si no se puede escanear el QR
     return sendSuccess(
       res,
-      { qrDataUrl },
+      { qrDataUrl, secret, otpauth_url: uri },
       '2FA configurado. Escanea el QR y verifica con tu app autenticadora.',
       200,
     )
