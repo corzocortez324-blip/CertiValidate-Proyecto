@@ -41,7 +41,9 @@ function generateCertHash(cert) {
     plantilla_id: cert.plantilla_id,
   }
   const stable = JSON.stringify(
-    Object.fromEntries(Object.keys(payload).sort().map((k) => [k, payload[k]])),
+    // Orden por código de carácter (igual que sort() sin comparador y que
+    // blockchain.service): localeCompare cambiaría el orden y el hash resultante.
+    Object.fromEntries(Object.keys(payload).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)).map((k) => [k, payload[k]])),
   )
   return nodeCrypto.createHash('sha256').update(stable).digest('hex')
 }
