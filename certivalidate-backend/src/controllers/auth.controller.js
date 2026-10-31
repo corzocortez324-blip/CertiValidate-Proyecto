@@ -78,13 +78,11 @@ const register = async (req, res) => {
       },
     })
 
-    if (process.env.NODE_ENV !== 'test') {
-      await enviarEmailVerificacion({
-        email: nuevoUsuario.email,
-        nombre: nuevoUsuario.nombre,
-        token: tokenVerificacion,
-      })
-    }
+    await enviarEmailVerificacion({
+      email: nuevoUsuario.email,
+      nombre: nuevoUsuario.nombre,
+      token: tokenVerificacion,
+    })
 
     await registrarAuditoria(
       prisma,
@@ -109,6 +107,17 @@ const register = async (req, res) => {
   }
 }
 
+/**
+ * Registra el intento fallido y, si con él se alcanza el límite (5 en 15 min),
+ * responde ya 423: el quinto intento fallido bloquea la cuenta.
+ */
+const responderIntentoFallido = async (res, { email, ip }) => {
+  await registrarIntento({ email, ip, exitoso: false })
+  const bloqueo = await verificarBloqueo({ email, ip })
+  if (bloqueo.bloqueado) return sendError(res, bloqueo.message, bloqueo.status)
+  return sendError(res, 'Credenciales inválidas', 401)
+}
+
 const login = async (req, res) => {
   try {
     const { email, password } = req.body
@@ -128,8 +137,7 @@ const login = async (req, res) => {
     const usuario = await prisma.usuario.findUnique({ where: { email } })
 
     if (!usuario || usuario.deleted_at) {
-      await registrarIntento({ email, ip, exitoso: false })
-      return sendError(res, 'Credenciales inválidas', 401)
+      return responderIntentoFallido(res, { email, ip })
     }
 
     if (usuario.activo === false) {
@@ -139,8 +147,7 @@ const login = async (req, res) => {
     const passwordValida = await bcrypt.compare(password, usuario.password_hash)
 
     if (!passwordValida) {
-      await registrarIntento({ email, ip, exitoso: false })
-      return sendError(res, 'Credenciales inválidas', 401)
+      return responderIntentoFallido(res, { email, ip })
     }
 
     // Registrar intento exitoso (limpia el conteo de fallidos implícitamente)
@@ -352,13 +359,11 @@ const actualizarPerfil = async (req, res) => {
       await revokeAllUserRefreshTokens(usuarioId)
       await eliminarTodasSesiones(usuarioId)
 
-      if (process.env.NODE_ENV !== 'test') {
-        await enviarEmailVerificacion({
-          email: usuarioActualizado.email,
-          nombre: usuarioActualizado.nombre,
-          token: tokenVerificacion,
-        })
-      }
+      await enviarEmailVerificacion({
+        email: usuarioActualizado.email,
+        nombre: usuarioActualizado.nombre,
+        token: tokenVerificacion,
+      })
     }
 
     await registrarAuditoria(
@@ -415,7 +420,7 @@ const cambiarPassword = async (req, res) => {
     )
 
     if (!passwordValida) {
-      return sendError(res, 'Contraseña actual incorrecta', 401)
+      return sendError(res, 'Contraseña actual incorrecta', 400)
     }
 
     if (await bcrypt.compare(newPassword, usuario.password_hash)) {
@@ -429,6 +434,8 @@ const cambiarPassword = async (req, res) => {
       data: {
         password_hash: nuevoHash,
         updated_at: new Date(),
+        // Invalida los access tokens emitidos antes del cambio (ver verificarToken)
+        password_changed_at: new Date(),
       },
     })
 
@@ -495,15 +502,14 @@ const verificarEmail = async (req, res) => {
     if (!token) return sendError(res, 'Token de verificación requerido', 400)
 
     const usuario = await prisma.usuario.findFirst({
-      where: {
-        token_verificacion: token,
-        token_verificacion_expira: { gt: new Date() },
-        email_verificado: false,
-      },
+      where: { token_verificacion: token, email_verificado: false },
     })
 
     if (!usuario) {
-      return sendError(res, 'Token de verificación inválido o expirado', 400)
+      return sendError(res, 'Token de verificación inválido', 400)
+    }
+    if (!usuario.token_verificacion_expira || usuario.token_verificacion_expira <= new Date()) {
+      return sendError(res, 'Token de verificación expirado', 400)
     }
 
     await prisma.usuario.update({
@@ -559,7 +565,12 @@ const listarSesionesActivas = async (req, res) => {
 const revocarSesionActiva = async (req, res) => {
   try {
     const sesion = await revocarSesionPorId(req.params.id, req.usuario.id)
-    if (!sesion) return sendError(res, 'Sesión no encontrada', 404)
+    if (!sesion) {
+      const ajena = await prisma.sesionActiva.findUnique({ where: { id: req.params.id }, select: { id: true } })
+      return ajena
+        ? sendError(res, 'No autorizado para cerrar esta sesión', 403)
+        : sendError(res, 'Sesión no encontrada', 404)
+    }
 
     // También revocar el refresh token asociado
     await prisma.refreshToken.updateMany({
