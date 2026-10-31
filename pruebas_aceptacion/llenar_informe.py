@@ -132,12 +132,27 @@ def texto_resultado(caso, fecha):
     return lineas
 
 
+BASE = pathlib.Path(__file__).resolve().parent.parent  # raíz del proyecto
+
+
+def ruta_segura(valor):
+    """Resuelve una ruta recibida por la línea de comandos y exige que esté dentro del proyecto."""
+    ruta = (pathlib.Path.cwd() / valor).resolve()
+    if not ruta.is_relative_to(BASE):
+        sys.exit(f"Ruta fuera del proyecto: {valor}")
+    return ruta
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("docx", help="Documento 4.2 original")
     ap.add_argument("--evidencias", default="evidencias")
     ap.add_argument("--salida", default=None)
     a = ap.parse_args()
+    a.docx = str(ruta_segura(a.docx))
+    a.evidencias = str(ruta_segura(a.evidencias))
+    if a.salida:
+        a.salida = str(ruta_segura(a.salida))
 
     ruta_json = pathlib.Path(a.evidencias) / "resultados.json"
     if not ruta_json.exists():

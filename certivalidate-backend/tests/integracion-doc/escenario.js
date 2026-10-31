@@ -4,6 +4,7 @@
  * que simula la API académica externa (E1). La red blockchain (E2) va en
  * BLOCKCHAIN_MODE = mock, igual que en la ejecución documentada.
  */
+const crypto = require('crypto')
 const http = require('http')
 const request = require('supertest')
 const app = require('../../src/app')
@@ -87,7 +88,7 @@ const crearEscenario = async (tagOriginal) => {
   /** Emite un certificado (por defecto con el admin) y devuelve la respuesta. */
   ctx.emitir = async ({ token = usuarios.admin.token, estudianteId, plantillaId } = {}) => {
     let est = estudianteId
-    if (!est) est = (await createTestEstudiante(inst.id, `DOC_${tag}_${Date.now()}_${Math.random().toString(16).slice(2, 6)}`)).id
+    if (!est) est = (await createTestEstudiante(inst.id, `DOC_${tag}_${Date.now()}_${crypto.randomBytes(2).toString('hex')}`)).id
     return request(app).post('/api/certificados/emitir').set(auth(token))
       .send({ estudiante_id: est, institucion_id: inst.id, plantilla_id: plantillaId || plantilla.id })
   }

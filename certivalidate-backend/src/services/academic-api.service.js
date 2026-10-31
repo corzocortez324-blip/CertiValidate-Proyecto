@@ -72,7 +72,8 @@ async function buscarEstudiantePorDocumento(documento, opciones = {}) {
   for (let intento = 0; intento <= maxRetries; intento++) {
     try {
       const data = await fetchConTimeout(
-        `${apiBase}/estudiantes/${documento}`,
+        // encodeURIComponent: un documento con «../» no puede cambiar la ruta de la API
+        `${apiBase}/estudiantes/${encodeURIComponent(documento)}`,
         {
           method: 'GET',
           headers: {

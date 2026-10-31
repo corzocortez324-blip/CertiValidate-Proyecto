@@ -1,3 +1,4 @@
+const { limpiarLog } = require('../utils/limpiarLog')
 const prisma = require('../utils/prisma')
 const { CERTIFICADOS } = require('../data/demo-data')
 
@@ -40,7 +41,7 @@ async function listar(req, res) {
 
 async function buscarPorCodigo(req, res) {
   const { codigo } = req.params
-  console.log(`[academic-api] GET /api/certificados/${codigo} — ${new Date().toISOString()}`)
+  console.log(`[academic-api] GET /api/certificados/${limpiarLog(codigo)} — ${new Date().toISOString()}`)
 
   try {
     const row = await prisma.certificado.findFirst({

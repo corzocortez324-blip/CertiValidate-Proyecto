@@ -276,3 +276,38 @@ describe('Alcance de /api/usuarios', () => {
     expect(intacto).toMatchObject({ activo: true, deleted_at: null })
   })
 })
+
+// ── Hallazgos de SonarQube Cloud ─────────────────────────────────────────────
+describe('Reporte de motivos de revocación (sin SQL directo)', () => {
+  const h = () => ({ Authorization: `Bearer ${token}` })
+
+  it('agrupa por motivo solo las revocaciones de la institución propia', async () => {
+    const res = await request(app).get(`/api/admin/revocaciones/motivos?institucion_id=${inst.id}`).set(h())
+    expect(res.status).toBe(200)
+    const total = await prisma.revocacion.count({ where: { certificado: { institucion_id: inst.id } } })
+    expect(res.body.data.total_revocaciones).toBe(total)
+    const suma = res.body.data.reporte.reduce((s, r) => s + r.total, 0)
+    expect(suma).toBe(total)
+  })
+
+  it('rechaza una institución ajena y fechas inválidas', async () => {
+    const otra = await createTestInstitucion(`REG_MOT_${UNIQUE}`)
+    expect((await request(app).get(`/api/admin/revocaciones/motivos?institucion_id=${otra.id}`).set(h())).status).toBe(403)
+    expect((await request(app).get('/api/admin/revocaciones/motivos?fecha_desde=no-es-fecha').set(h())).status).toBe(400)
+  })
+})
+
+describe('Documento del estudiante en la URL de la API académica', () => {
+  it('se codifica: un «../» no cambia la ruta consultada', async () => {
+    const academicApi = jest.requireActual('../src/services/academic-api.service')
+    const original = global.fetch
+    let urlPedida
+    global.fetch = jest.fn(async (url) => { urlPedida = String(url); return new Response(JSON.stringify({ documento: 'x', nombre: 'A' }), { status: 200 }) })
+    try {
+      await academicApi.buscarEstudiantePorDocumento('../admin', { url_base: 'http://academica.test', api_key: 'k', maxRetries: 0 })
+    } finally {
+      global.fetch = original
+    }
+    expect(urlPedida).toBe('http://academica.test/api/estudiantes/..%2Fadmin')
+  })
+})

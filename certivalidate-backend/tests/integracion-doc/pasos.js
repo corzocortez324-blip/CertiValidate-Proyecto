@@ -19,6 +19,8 @@ const { computeCertificateHash } = require('../../src/services/certificate-hash.
 
 const BACKEND = path.resolve(__dirname, '../..')
 let contador = 0
+// Contraseña generada por ejecución que cumple la política (mayúscula, minúscula, número)
+const CLAVE_USUARIO_NUEVO = `Aa1${crypto.randomBytes(6).toString('hex')}`
 const unico = () => `${Date.now()}${++contador}`
 
 /** Hash canónico: datos del certificado congelados (snapshot) al emitir. */
@@ -49,7 +51,7 @@ const configurarIntegracion = async (ctx, api, apiKey = 'clave-sandbox') => {
 
 const crearUsuarioEditor = async (ctx) => {
   const res = await request(app).post('/api/usuarios').set(auth(ctx.usuarios.admin.token))
-    .send({ nombre: 'Emisor', apellido: 'Driver', email: emailDe(`n2_${ctx.tag}_${unico()}`), password: 'Clave1234', rol: 'editor' })
+    .send({ nombre: 'Emisor', apellido: 'Driver', email: emailDe(`n2_${ctx.tag}_${unico()}`), password: CLAVE_USUARIO_NUEVO, rol: 'editor' })
   expect(res.status).toBe(201)
   const vinculo = await prisma.usuarioInstitucion.findFirst({ where: { usuario_id: res.body.data.id }, include: { rol: true } })
   expect(vinculo.rol.nombre).toBe('editor')
@@ -88,7 +90,7 @@ const espiarLogEmision = async (ctx) => {
 
 /** Arranca `node src/index.js` con la BD de pruebas y consulta /health. */
 const arrancarSistema = () => new Promise((resolve, reject) => {
-  const port = 39000 + Math.floor(Math.random() * 900)
+  const port = 39000 + crypto.randomInt(900)
   const hijo = spawn(process.execPath, ['src/index.js'], {
     cwd: BACKEND, env: { ...process.env, NODE_ENV: 'test', PORT: String(port), LOG_LEVEL: 'info' },
   })
