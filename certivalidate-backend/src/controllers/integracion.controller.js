@@ -327,6 +327,8 @@ const crearIntegracion = async (req, res) => {
   }
 
   try {
+    // CP6: la segunda configuración de una institución actualiza la existente (upsert)
+    const anterior = await prisma.integracion.findUnique({ where: { institucion_id } })
     const integracion = await integrationConfigService.crearOActualizarIntegracion(
       institucion_id,
       { tipo, url_base, api_key, activa: activa !== undefined ? Boolean(activa) : true },
@@ -334,14 +336,15 @@ const crearIntegracion = async (req, res) => {
 
     logger.info(
       { institucionId: institucion_id, tipo, id: integracion.id, requestId },
-      '[Integracion] Integración creada',
+      anterior ? '[Integracion] Integración actualizada' : '[Integracion] Integración creada',
     )
 
     // La api_key nunca se registra en claro en la auditoría
+    const resumen = (i, key) => JSON.stringify({ tipo: i.tipo, url_base: i.url_base, activa: i.activa, api_key: key ? '[CIFRADA]' : null })
     await registrarAuditoria(
-      prisma, req.usuario?.id, 'CREAR_INTEGRACION', 'Integracion', integracion.id,
-      null,
-      JSON.stringify({ tipo, url_base, activa: integracion.activa, api_key: api_key ? '[CIFRADA]' : null }),
+      prisma, req.usuario?.id, anterior ? 'ACTUALIZAR_INTEGRACION' : 'CREAR_INTEGRACION', 'Integracion', integracion.id,
+      anterior ? resumen(anterior, anterior.api_key) : null,
+      resumen(integracion, integracion.api_key),
       getClientIp(req), institucion_id,
     )
 
@@ -354,8 +357,9 @@ const crearIntegracion = async (req, res) => {
         url_base: integracion.url_base,
         activa: integracion.activa,
         ultima_verificacion: integracion.ultima_verificacion,
+        actualizada: Boolean(anterior),
       },
-      'Integración creada correctamente',
+      anterior ? 'Integración actualizada correctamente' : 'Integración creada correctamente',
       201,
     )
   } catch (error) {

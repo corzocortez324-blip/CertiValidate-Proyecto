@@ -236,10 +236,11 @@ async function crearOActualizarIntegracion(institucionId, datos) {
       api_key: apiKeyEncriptada,
       activa,
     },
+    // Reconfigurar sin api_key conserva la clave ya guardada
     update: {
       tipo,
       url_base,
-      api_key: apiKeyEncriptada,
+      ...(apiKeyEncriptada ? { api_key: apiKeyEncriptada } : {}),
       activa,
     },
   })
