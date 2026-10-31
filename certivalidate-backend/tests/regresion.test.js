@@ -32,6 +32,7 @@ const prisma = require('../src/utils/prisma')
 const blockchainService = require('../src/services/blockchain.service')
 const mailer = require('../src/utils/mailer')
 const academicApiService = require('../src/services/academic-api.service')
+const { decrypt } = require('../src/utils/crypto')
 const {
   cleanupTestData,
   createTestUser,
@@ -245,6 +246,41 @@ describe('Hallazgos unitarios', () => {
       .send({ currentPassword: 'TestPass123', newPassword: 'TestPass123' })
 
     expect(res.status).toBe(400)
+  })
+
+  it('crear plantilla sin template_html usa la plantilla base', async () => {
+    const res = await request(app)
+      .post('/api/plantillas')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ institucion_id: inst.id, nombre: `__test__Base ${UNIQUE}` })
+
+    expect(res.status).toBe(201)
+    expect(res.body.data.version).toBe(1)
+    expect(res.body.data.template_html).toContain('{{nombre_completo}}')
+  })
+
+  it('reconfigurar la integración la actualiza, conserva la api_key y lo audita (CP6)', async () => {
+    const otra = await createTestInstitucion(`CP6_${UNIQUE}`)
+    await linkUserToInstitucion(usuario.id, otra.id, 'admin')
+    const configurar = (body) => request(app).post('/api/integraciones').set('Authorization', `Bearer ${token}`)
+      .send({ institucion_id: otra.id, tipo: 'REST', ...body })
+
+    const primera = await configurar({ url_base: 'http://academic.test/v1', api_key: 'sk-original' })
+    expect(primera.status).toBe(201)
+    expect(primera.body.data.actualizada).toBe(false)
+
+    const segunda = await configurar({ url_base: 'http://academic.test/v2' })
+    expect(segunda.status).toBe(201)
+    expect(segunda.body.message).toBe('Integración actualizada correctamente')
+    expect(segunda.body.data).toMatchObject({ id: primera.body.data.id, url_base: 'http://academic.test/v2', actualizada: true })
+    expect(await prisma.integracion.count({ where: { institucion_id: otra.id } })).toBe(1)
+
+    const guardada = await prisma.integracion.findUnique({ where: { institucion_id: otra.id } })
+    expect(decrypt(guardada.api_key)).toBe('sk-original')
+    const audit = await buscarAuditoria('ACTUALIZAR_INTEGRACION', primera.body.data.id)
+    expect(audit.valores_antes).toContain('http://academic.test/v1')
+    expect(audit.valores_despues).toContain('http://academic.test/v2')
+    expect(audit.valores_despues).not.toContain('sk-original')
   })
 })
 
