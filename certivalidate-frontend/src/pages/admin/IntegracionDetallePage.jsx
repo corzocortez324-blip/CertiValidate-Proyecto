@@ -32,6 +32,13 @@ const STATUS_CONFIG = {
     border: 'rgba(239,68,68,0.30)',
     Icon: XCircle,
   },
+  sin_conexion: {
+    label: 'Sin conexión',
+    color: '#ef4444',
+    bg: 'rgba(239,68,68,0.10)',
+    border: 'rgba(239,68,68,0.30)',
+    Icon: XCircle,
+  },
   sin_configurar: {
     label: 'Sin configurar',
     color: '#6b7280',
@@ -260,7 +267,7 @@ export function IntegracionDetallePage() {
   );
 
   useEffect(() => {
-    loadTab(activeTab);
+    void loadTab(activeTab);
   }, [activeTab, loadTab]);
 
   const probarConexion = async () => {
@@ -298,7 +305,7 @@ export function IntegracionDetallePage() {
       showToast(`Sincronización completada. ${detalle || 'Sin cambios.'}`, 'success');
       loadedTabs.current.clear();
       setTabData({ estudiantes: null, certificados: null, plantillas: null });
-      loadTab(activeTab);
+      void loadTab(activeTab);
     } catch (err) {
       showToast(err?.message || 'Error al sincronizar.', 'error');
     } finally {

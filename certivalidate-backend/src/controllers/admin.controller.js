@@ -4,8 +4,31 @@ const prisma = require('../utils/prisma')
 
 const PERIOD_MONTHS = { '7d': 1, '30d': 3, '90d': 6, '1y': 12 }
 
+/**
+ * Alcance de las estadísticas: el administrador de plataforma ve todo; cualquier
+ * otro usuario solo los datos de sus instituciones (evita fuga entre instituciones).
+ */
+const resolverAlcance = async (req) => {
+  const usuario = await prisma.usuario.findUnique({
+    where: { id: req.usuario.id },
+    select: { es_platform_admin: true },
+  })
+  if (usuario?.es_platform_admin) return null
+  const ids = req.institucionIds?.length ? req.institucionIds : ['00000000-0000-0000-0000-000000000000']
+  return ids
+}
+
 const getStats = async (req, res) => {
   try {
+    const alcance = await resolverAlcance(req)
+    const certWhere = alcance ? { institucion_id: { in: alcance } } : {}
+    const verifWhere = alcance ? { certificado: { institucion_id: { in: alcance } } } : {}
+    const sqlCert = alcance ? Prisma.sql`AND institucion_id IN (${Prisma.join(alcance)})` : Prisma.empty
+    const sqlVerif = alcance
+      ? Prisma.sql`AND certificado_id IN (SELECT id FROM "Certificado" WHERE institucion_id IN (${Prisma.join(alcance)}))`
+      : Prisma.empty
+    const sqlAudit = alcance ? Prisma.sql`AND a.institucion_id IN (${Prisma.join(alcance)})` : Prisma.empty
+
     const period = req.query.period || '30d'
     const monthsBack = PERIOD_MONTHS[period] || 3
 
@@ -38,16 +61,16 @@ const getStats = async (req, res) => {
       emisionesDiarias,
       verificacionesDiarias,
     ] = await Promise.all([
-      prisma.certificado.count({ where: { deleted_at: null } }),
-      prisma.certificado.count({ where: { deleted_at: null, estado: 'revocado' } }),
-      prisma.verificacionPublica.count({ where: { fecha: { gte: startOfToday } } }),
-      prisma.verificacionPublica.count({ where: { fecha: { gte: startOfWeek } } }),
-      prisma.verificacionPublica.count({ where: { fecha: { gte: startOfMonth } } }),
+      prisma.certificado.count({ where: { deleted_at: null, ...certWhere } }),
+      prisma.certificado.count({ where: { deleted_at: null, estado: 'revocado', ...certWhere } }),
+      prisma.verificacionPublica.count({ where: { fecha: { gte: startOfToday }, ...verifWhere } }),
+      prisma.verificacionPublica.count({ where: { fecha: { gte: startOfWeek }, ...verifWhere } }),
+      prisma.verificacionPublica.count({ where: { fecha: { gte: startOfMonth }, ...verifWhere } }),
       prisma.$queryRaw`
         SELECT TO_CHAR(DATE_TRUNC('month', fecha_emision), 'YYYY-MM') AS mes,
                COUNT(*)::int AS total
         FROM "Certificado"
-        WHERE fecha_emision >= ${trendStart} AND deleted_at IS NULL
+        WHERE fecha_emision >= ${trendStart} AND deleted_at IS NULL ${sqlCert}
         GROUP BY DATE_TRUNC('month', fecha_emision)
         ORDER BY DATE_TRUNC('month', fecha_emision)
       `,
@@ -55,7 +78,7 @@ const getStats = async (req, res) => {
         SELECT TO_CHAR(DATE_TRUNC('month', fecha), 'YYYY-MM') AS mes,
                COUNT(*)::int AS total
         FROM "VerificacionPublica"
-        WHERE fecha >= ${trendStart}
+        WHERE fecha >= ${trendStart} ${sqlVerif}
         GROUP BY DATE_TRUNC('month', fecha)
         ORDER BY DATE_TRUNC('month', fecha)
       `,
@@ -63,13 +86,14 @@ const getStats = async (req, res) => {
         SELECT u.nombre || ' ' || u.apellido AS nombre, COUNT(a.id)::int AS total
         FROM "Auditoria" a
         JOIN "Usuario" u ON a.usuario_id = u.id
-        WHERE a.accion = 'EMITIR_CERTIFICADO'
+        WHERE a.accion = 'EMITIR_CERTIFICADO' ${sqlAudit}
         GROUP BY u.id, u.nombre, u.apellido
         ORDER BY COUNT(a.id) DESC
         LIMIT 5
       `,
       prisma.revocacion.findMany({
         take: 5,
+        where: alcance ? { certificado: { institucion_id: { in: alcance } } } : {},
         orderBy: { fecha_revocacion: 'desc' },
         include: {
           certificado: {
@@ -86,14 +110,14 @@ const getStats = async (req, res) => {
                COUNT(*) FILTER (WHERE estado = 'revocado')::int AS total_revocados
         FROM "Certificado"
         WHERE deleted_at IS NULL
-          AND fecha_emision >= NOW() - INTERVAL '90 days'
+          AND fecha_emision >= NOW() - INTERVAL '90 days' ${sqlCert}
         GROUP BY 1 ORDER BY 1
       `,
       prisma.$queryRaw`
         SELECT DATE_TRUNC('day', fecha)::date AS dia,
                COUNT(*)::int AS total
         FROM "VerificacionPublica"
-        WHERE fecha >= NOW() - INTERVAL '30 days'
+        WHERE fecha >= NOW() - INTERVAL '30 days' ${sqlVerif}
         GROUP BY 1 ORDER BY 1
       `,
     ])
@@ -165,8 +189,15 @@ const getStats = async (req, res) => {
 const getReporteMotivos = async (req, res) => {
   try {
     const { institucion_id, fecha_desde, fecha_hasta } = req.query
+    const alcance = await resolverAlcance(req)
 
-    const instFilter  = institucion_id ? Prisma.sql`AND c.institucion_id = ${institucion_id}` : Prisma.empty
+    if (alcance && institucion_id && !alcance.includes(institucion_id)) {
+      return sendError(res, 'No autorizado para consultar esta institución', 403)
+    }
+
+    let instFilter = Prisma.empty
+    if (institucion_id) instFilter = Prisma.sql`AND c.institucion_id = ${institucion_id}`
+    else if (alcance) instFilter = Prisma.sql`AND c.institucion_id IN (${Prisma.join(alcance)})`
     const desdeFilter = fecha_desde    ? Prisma.sql`AND r.fecha_revocacion >= ${new Date(fecha_desde)}` : Prisma.empty
     const hastaFilter = fecha_hasta    ? Prisma.sql`AND r.fecha_revocacion <= ${new Date(fecha_hasta)}` : Prisma.empty
 
@@ -201,6 +232,11 @@ const getReporteMotivos = async (req, res) => {
 // T-98/T-104: Stats desde vistas materializadas (rápido, sin cómputo en tiempo real)
 const getStatsMV = async (req, res) => {
   try {
+    // Las vistas materializadas son globales: solo para el administrador de plataforma
+    if (await resolverAlcance(req)) {
+      return sendError(res, 'Solo el administrador de plataforma puede ver estadísticas globales', 403)
+    }
+
     const [certRows, emisionRows, verifRows] = await Promise.all([
       prisma.$queryRaw`SELECT * FROM public.v_estadisticas_certificados LIMIT 1`,
       prisma.$queryRaw`SELECT * FROM public.v_estadisticas_emisiones ORDER BY dia`,

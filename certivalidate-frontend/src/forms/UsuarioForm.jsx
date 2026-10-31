@@ -93,24 +93,25 @@ export const UsuarioForm = ({
 
       <div className="form-row-2">
         <div className="form-group">
-          <label className="form-label">Nombre <span className="req">*</span></label>
-          <input type="text" className="form-input" value={form.nombre} onChange={set('nombre')} placeholder="Nombre" required maxLength={80} />
+          <label className="form-label" htmlFor="usuario-nombre">Nombre <span className="req">*</span></label>
+          <input id="usuario-nombre" type="text" className="form-input" value={form.nombre} onChange={set('nombre')} placeholder="Nombre" required maxLength={80} />
         </div>
         <div className="form-group">
-          <label className="form-label">Apellido</label>
-          <input type="text" className="form-input" value={form.apellido} onChange={set('apellido')} placeholder="Apellido" maxLength={80} />
+          <label className="form-label" htmlFor="usuario-apellido">Apellido</label>
+          <input id="usuario-apellido" type="text" className="form-input" value={form.apellido} onChange={set('apellido')} placeholder="Apellido" maxLength={80} />
         </div>
       </div>
 
       <div className="form-group">
-        <label className="form-label">Correo electrónico <span className="req">*</span></label>
-        <input type="email" className="form-input" value={form.email} onChange={set('email')} placeholder="usuario@institución.edu.co" required maxLength={150} />
+        <label className="form-label" htmlFor="usuario-correo-electronico">Correo electrónico <span className="req">*</span></label>
+        <input id="usuario-correo-electronico" type="email" className="form-input" value={form.email} onChange={set('email')} placeholder="usuario@institución.edu.co" required maxLength={150} />
       </div>
 
       {!editing && (
         <div className="form-group">
-          <label className="form-label">Contraseña <span className="req">*</span></label>
+          <label className="form-label" htmlFor="usuario-password">Contraseña <span className="req">*</span></label>
           <input
+            id="usuario-password"
             type="password" className="form-input" value={form.password || ''} onChange={set('password')}
             placeholder="Mínimo 8 caracteres" required minLength={8} maxLength={128}
           />
@@ -122,7 +123,7 @@ export const UsuarioForm = ({
 
       {/* ── Sección de roles dinámica ──────────────────────────── */}
       <div className="form-group">
-        <label className="form-label">Rol <span className="req">*</span></label>
+        <p className="form-label">Rol <span className="req">*</span></p>
         <p className="form-hint" style={{ marginBottom: '0.6rem' }}>
           Selecciona el rol que tendrá este usuario en el sistema.
           Pasa el cursor sobre <Info size={11} style={{ display: 'inline', verticalAlign: 'middle' }} /> para ver los permisos de cada rol.
@@ -189,7 +190,7 @@ export const UsuarioForm = ({
       </div>
 
       <div className="form-group">
-        <label className="form-label">Estado</label>
+        <p className="form-label">Estado</p>
         <label className="toggle-label">
           <input type="checkbox" checked={form.activo} onChange={e => setForm(f => ({ ...f, activo: e.target.checked }))} />
           <span>{form.activo ? 'Activo' : 'Inactivo'}</span>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { authApi } from '../api/auth.api';
 import { ShieldCheck, CheckCircle2, XCircle, Loader2, Mail } from 'lucide-react';
@@ -15,6 +15,9 @@ export const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
   const [state, setState] = useState(STATE.LOADING);
   const [message, setMessage] = useState('');
+  // El token es de un solo uso: React.StrictMode ejecuta el efecto dos veces en
+  // desarrollo y la segunda llamada respondería 400 («Enlace inválido»).
+  const verifiedToken = useRef(null);
 
   useEffect(() => {
     const token = searchParams.get('token');
@@ -22,6 +25,8 @@ export const VerifyEmail = () => {
       setState(STATE.NO_TOKEN);
       return;
     }
+    if (verifiedToken.current === token) return;
+    verifiedToken.current = token;
     authApi.verificarEmail(token)
       .then(() => setState(STATE.SUCCESS))
       .catch(err => {

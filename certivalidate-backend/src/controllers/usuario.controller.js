@@ -37,7 +37,8 @@ async function validarDominioInstitucional(email, institucionId) {
 }
 
 const formatUsuario = (usuario, rolPrincipal = null) => {
-  const { password_hash, token_verificacion, token_verificacion_expira, ...datos } = usuario
+  // Credenciales y secretos nunca se devuelven (incluido el secreto 2FA, aunque esté cifrado)
+  const { password_hash, token_verificacion, token_verificacion_expira, totp_secret, ...datos } = usuario
   return { ...datos, rol: rolPrincipal }
 }
 
@@ -49,13 +50,29 @@ const resolverRol = async (usuarioId) => {
   return resolverRolPrincipal(accesos.map((a) => ({ rol: a.rol.nombre })))
 }
 
+/**
+ * Alcance multi-institución: el administrador de plataforma gestiona a todos los
+ * usuarios; cualquier otro, solo a los que pertenecen a alguna de sus instituciones.
+ */
+const esPlatformAdmin = async (usuarioId) =>
+  Boolean((await prisma.usuario.findUnique({ where: { id: usuarioId }, select: { es_platform_admin: true } }))?.es_platform_admin)
+
+const filtroAlcanceUsuarios = async (req) =>
+  (await esPlatformAdmin(req.usuario.id))
+    ? {}
+    : { instituciones: { some: { institucion_id: { in: req.institucionIds || [] } } } }
+
+/** Busca un usuario dentro del alcance de quien consulta (null si no existe o es ajeno). */
+const buscarUsuarioEnAlcance = async (req, id) =>
+  prisma.usuario.findFirst({ where: { id, deleted_at: null, ...(await filtroAlcanceUsuarios(req)) } })
+
 const listarUsuarios = async (req, res) => {
   try {
-    const page  = Math.max(parseInt(req.query.page, 10) || 1, 1)
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 100)
+    const page  = Math.max(Number.parseInt(req.query.page, 10) || 1, 1)
+    const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 10, 1), 100)
     const search = (req.query.search || '').trim()
 
-    const where = { deleted_at: null }
+    const where = { deleted_at: null, ...(await filtroAlcanceUsuarios(req)) }
 
     if (search) {
       where.OR = [
@@ -72,7 +89,7 @@ const listarUsuarios = async (req, res) => {
         take: limit,
         orderBy: { created_at: 'desc' },
         include: {
-          instituciones: { include: { rol: true } },
+          instituciones: { include: { rol: true, institucion: { select: { id: true, nombre: true } } } },
         },
       }),
       prisma.usuario.count({ where }),
@@ -98,9 +115,8 @@ const listarUsuarios = async (req, res) => {
 const obtenerUsuario = async (req, res) => {
   try {
     const { id } = req.params
-    const usuario = await prisma.usuario.findUnique({
-      where: { id, deleted_at: null },
-    })
+    // Un usuario de otra institución responde igual que uno inexistente (no se revela)
+    const usuario = await buscarUsuarioEnAlcance(req, id)
     if (!usuario) return sendError(res, 'Usuario no encontrado', 404)
     const rol = await resolverRol(id)
     return sendSuccess(res, formatUsuario(usuario, rol), 'Usuario obtenido correctamente', 200)
@@ -238,9 +254,7 @@ const actualizarUsuario = async (req, res) => {
     const { id } = req.params
     const { nombre, apellido, email, activo, rol } = req.body
 
-    const usuario = await prisma.usuario.findUnique({
-      where: { id, deleted_at: null },
-    })
+    const usuario = await buscarUsuarioEnAlcance(req, id)
 
     if (!usuario) {
       return sendError(res, 'Usuario no encontrado', 404)
@@ -371,7 +385,7 @@ const eliminarUsuario = async (req, res) => {
       return sendError(res, 'No puedes eliminar tu propia cuenta', 400)
     }
 
-    const usuario = await prisma.usuario.findUnique({ where: { id, deleted_at: null } })
+    const usuario = await buscarUsuarioEnAlcance(req, id)
     if (!usuario) return sendError(res, 'Usuario no encontrado', 404)
 
     await prisma.usuario.update({

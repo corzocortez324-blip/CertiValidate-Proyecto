@@ -48,6 +48,12 @@ function App() {
 
           {/* Home → landing / public verify */}
           <Route path="/" element={<VerifyCertificate />} />
+          {/* Alias de las rutas del diseño (y de PUBLIC_VERIFY_URL=/verificar, que conserva ?codigo=) */}
+          <Route path="/verificar" element={<VerifyCertificate />} />
+          <Route path="/dashboard" element={<Navigate to="/admin" replace />} />
+          <Route path="/auditoria" element={<Navigate to="/admin/auditoria" replace />} />
+          <Route path="/revocaciones" element={<Navigate to="/admin/certificados?estado=revocado" replace />} />
+          <Route path="/certificados/emitir" element={<Navigate to="/admin/certificados?emitir=1" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

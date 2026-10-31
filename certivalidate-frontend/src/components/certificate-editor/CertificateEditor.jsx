@@ -9,6 +9,7 @@ import {
   buildCompositeHtml, makeDefaultTemplateState, CANVAS_DEFAULTS,
 } from './editorUtils';
 import './CertificateEditor.css';
+import { stripCodeFences } from '../../utils/helpers';
 
 // Usa `zoom` en lugar de `transform` para escalar el certificado al ancho disponible.
 // `zoom` respeta el layout (flex, grid, etc.) sin romper la geometría del body.
@@ -28,7 +29,7 @@ function buildScaledDoc(html) {
   if (!html?.trim()) return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body></body></html>`;
 
   // Elimina markdown code fences (```html ... ```) que a veces se guardan en templates
-  html = html.replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+  html = stripCodeFences(html);
 
   const isFullDoc = /<!DOCTYPE\s+html|<html[\s>]/i.test(html);
 
@@ -50,7 +51,7 @@ function resolveInitialState(plantilla) {
   }
 
   const raw  = plantilla?.template_html ?? '';
-  const html = raw.replace(/^```(?:html)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+  const html = stripCodeFences(raw);
   const parsed = parseHtmlToEditorState(html);
 
   if (parsed) {
@@ -287,11 +288,11 @@ export function CertificateEditor({ plantilla, onSave, onCancel }) {
     }
   };
 
-  const adjustZoom = delta => setScale(s => Math.min(1, Math.max(0.2, parseFloat((s + delta).toFixed(2)))));
+  const adjustZoom = delta => setScale(s => Math.min(1, Math.max(0.2, Number.parseFloat((s + delta).toFixed(2)))));
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="ced-root" onClick={() => setEditingId(null)}>
+    <div className="ced-root" role="presentation" onClick={() => setEditingId(null)}>
 
       {/* Top bar */}
       <div className="ced-topbar">
@@ -443,7 +444,7 @@ export function CertificateEditor({ plantilla, onSave, onCancel }) {
           </div>
 
           {/* Divisor arrastrable */}
-          <div className="ced-html-divider" onMouseDown={handleSplitMouseDown}>
+          <div className="ced-html-divider" role="separator" aria-orientation="vertical" aria-label="Redimensionar paneles" onMouseDown={handleSplitMouseDown}>
             <div className="ced-html-divider-handle" />
           </div>
 

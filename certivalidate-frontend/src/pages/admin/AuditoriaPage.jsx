@@ -114,7 +114,7 @@ export const AuditoriaPage = () => {
     }
   }, [buildParams, showToast]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { void load(); }, [load]);
 
   const clearFilters = () => {
     setFilterEntidad(''); setFilterAccion(''); setFilterUsuario('');
@@ -164,8 +164,8 @@ export const AuditoriaPage = () => {
       <Card className={`audit-filters-card ${hasFilters ? 'has-filters' : ''}`}>
         <div className="filter-grid">
           <div className="form-group">
-            <label className="form-label">Entidad</label>
-            <select className="search-input" value={filterEntidad} onChange={e => { setFilterEntidad(e.target.value); setPage(1); }}>
+            <label className="form-label" htmlFor="auditoria-entidad">Entidad</label>
+            <select id="auditoria-entidad" className="search-input" value={filterEntidad} onChange={e => { setFilterEntidad(e.target.value); setPage(1); }}>
               <option value="">Todas</option>
               <option value="Certificado">Certificado</option>
               <option value="Usuario">Usuario</option>
@@ -175,8 +175,8 @@ export const AuditoriaPage = () => {
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">Acción</label>
-            <select className="search-input" value={filterAccion} onChange={e => { setFilterAccion(e.target.value); setPage(1); }}>
+            <label className="form-label" htmlFor="auditoria-accion">Acción</label>
+            <select id="auditoria-accion" className="search-input" value={filterAccion} onChange={e => { setFilterAccion(e.target.value); setPage(1); }}>
               <option value="">Todas</option>
               {ACCIONES.map(a => (
                 <option key={a} value={a}>{formatAccion(a)}</option>
@@ -184,19 +184,19 @@ export const AuditoriaPage = () => {
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">Usuario</label>
-            <select className="search-input" value={filterUsuario} onChange={e => { setFilterUsuario(e.target.value); setPage(1); }}>
+            <label className="form-label" htmlFor="auditoria-usuario">Usuario</label>
+            <select id="auditoria-usuario" className="search-input" value={filterUsuario} onChange={e => { setFilterUsuario(e.target.value); setPage(1); }}>
               <option value="">Todos</option>
               {usuarios.map(u => <option key={u.id} value={u.id}>{u.nombre} {u.apellido}</option>)}
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">Desde</label>
-            <input type="date" className="search-input" value={fechaDesde} onChange={e => { setFechaDesde(e.target.value); setPage(1); }} />
+            <label className="form-label" htmlFor="auditoria-desde">Desde</label>
+            <input id="auditoria-desde" type="date" className="search-input" value={fechaDesde} onChange={e => { setFechaDesde(e.target.value); setPage(1); }} />
           </div>
           <div className="form-group">
-            <label className="form-label">Hasta</label>
-            <input type="date" className="search-input" value={fechaHasta} onChange={e => { setFechaHasta(e.target.value); setPage(1); }} />
+            <label className="form-label" htmlFor="auditoria-hasta">Hasta</label>
+            <input id="auditoria-hasta" type="date" className="search-input" value={fechaHasta} onChange={e => { setFechaHasta(e.target.value); setPage(1); }} />
           </div>
         </div>
 

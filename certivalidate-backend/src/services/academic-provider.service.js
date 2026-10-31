@@ -27,6 +27,19 @@ const prisma = require('../utils/prisma')
  * @param {string} institucionId - ID de institución (para caché local)
  * @returns {Promise<object>} Datos del estudiante
  */
+/**
+ * URL y api_key (ya descifrada) de la integración configurada para la institución.
+ * Sin integración externa se devuelve {} y la API académica usa ACADEMIC_API_URL/KEY.
+ */
+async function opcionesIntegracion(institucionId) {
+  if (!institucionId) return {}
+  // require diferido: integration-config depende a su vez de los proveedores
+  const integrationConfig = require('./integration-config.service')
+  const config = await integrationConfig.obtenerConfiguracion(institucionId, { usarCache: true })
+  if (!config || config.provider === 'local-db' || !config.url_base) return {}
+  return { url_base: config.url_base, api_key: config.api_key }
+}
+
 async function buscarEstudiante({
   provider = 'external-api',
   documento,
@@ -44,7 +57,10 @@ async function buscarEstudiante({
     switch (provider) {
       case 'academic-api':
       case 'external-api':
-        estudiante = await academicApi.buscarEstudiantePorDocumento(documento)
+        estudiante = await academicApi.buscarEstudiantePorDocumento(
+          documento,
+          await opcionesIntegracion(institucionId),
+        )
         break
 
       case 'local-db':

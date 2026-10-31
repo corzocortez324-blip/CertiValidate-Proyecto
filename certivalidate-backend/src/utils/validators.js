@@ -73,12 +73,24 @@ const validateRefreshToken = [
 ]
 
 const validateCertificado = [
+  // estudiante_id es obligatorio salvo que el estudiante se identifique por documento
+  // (emisión con la API académica externa, provider = external-api)
   body('estudiante_id')
+    .if((value, { req }) => !req.body.documento_estudiante)
     .trim()
     .notEmpty()
     .withMessage('estudiante_id es obligatorio')
     .isUUID()
     .withMessage('estudiante_id debe ser un UUID válido'),
+  body('estudiante_id')
+    .if((value, { req }) => Boolean(req.body.documento_estudiante) && value !== undefined && value !== null && value !== '')
+    .isUUID()
+    .withMessage('estudiante_id debe ser un UUID válido'),
+  body('documento_estudiante')
+    .optional({ values: 'falsy' })
+    .trim()
+    .isLength({ min: 3, max: 50 })
+    .withMessage('documento_estudiante debe tener entre 3 y 50 caracteres'),
   body('institucion_id')
     .trim()
     .notEmpty()
@@ -273,6 +285,12 @@ const validateCrearUsuario = [
     .isEmail()
     .withMessage('Debe ser un email válido')
     .normalizeEmail(),
+  // Misma política que el registro público (validateRegister)
+  body('password')
+    .isLength({ min: 8 })
+    .withMessage('La contraseña debe tener al menos 8 caracteres')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('La contraseña debe contener mayúscula, minúscula y número'),
   body('rol')
     .optional()
     .trim()

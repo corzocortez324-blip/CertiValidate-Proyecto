@@ -1,3 +1,11 @@
+// Prisma devuelve BigInt (p. ej. la secuencia de la cadena de auditoría) y JSON.stringify
+// no sabe serializarlo. Se define aquí para que valga en cualquier punto de entrada de la app.
+if (!BigInt.prototype.toJSON) {
+  BigInt.prototype.toJSON = function () {
+    return this.toString()
+  }
+}
+
 const express = require('express')
 const helmet = require('helmet')
 const cors = require('cors')
@@ -85,7 +93,8 @@ const START_TIME = Date.now()
 
 const limiterGeneral = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  // Configurable: detrás de un NAT institucional varios usuarios comparten IP
+  max: Number(process.env.RATE_LIMIT_GENERAL_MAX) || 300,
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => isTest,
@@ -153,7 +162,7 @@ const limiterVerificacion = rateLimit({
   max: 50,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: () => isTest,
+  skip: () => isTest && process.env.TEST_RATE_LIMIT !== 'true',
   message: { success: false, statusCode: 429, message: 'Demasiadas solicitudes de verificación, inténtalo de nuevo más tarde' },
 })
 

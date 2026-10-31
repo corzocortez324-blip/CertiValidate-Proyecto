@@ -7,8 +7,8 @@ const { getClientIp } = require('../utils/validators')
 // Listar plantillas activas
 const listarPlantillas = async (req, res) => {
   try {
-    const page = Math.max(parseInt(req.query.page, 10) || 1, 1)
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 100)
+    const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1)
+    const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 10, 1), 100)
     const institucionIds = req.institucionIds
 
     if (institucionIds.length === 0) {
@@ -115,7 +115,7 @@ const crearPlantilla = async (req, res) => {
       },
     })
 
-    registrarAuditoria(prisma, req.usuario.id, 'CREAR_PLANTILLA', 'PlantillaCertificado', nuevaPlantilla.id,
+    await registrarAuditoria(prisma, req.usuario.id, 'CREAR_PLANTILLA', 'PlantillaCertificado', nuevaPlantilla.id,
       null, JSON.stringify({ nombre, version, activa: nuevaPlantilla.activa }), getClientIp(req), institucion_id)
 
     return sendSuccess(
@@ -188,7 +188,7 @@ const actualizarPlantilla = async (req, res) => {
       },
     })
 
-    registrarAuditoria(prisma, req.usuario.id, 'ACTUALIZAR_PLANTILLA', 'PlantillaCertificado', id,
+    await registrarAuditoria(prisma, req.usuario.id, 'ACTUALIZAR_PLANTILLA', 'PlantillaCertificado', id,
       JSON.stringify({ nombre: plantillaExistente.nombre, activa: plantillaExistente.activa }),
       JSON.stringify({ nombre: plantillaActualizada.nombre, activa: plantillaActualizada.activa }),
       getClientIp(req), plantillaActualizada.institucion_id)
@@ -238,7 +238,7 @@ const archivarPlantilla = async (req, res) => {
       data: { activa: false },
     })
 
-    registrarAuditoria(prisma, req.usuario.id, 'ARCHIVAR_PLANTILLA', 'PlantillaCertificado', id,
+    await registrarAuditoria(prisma, req.usuario.id, 'ARCHIVAR_PLANTILLA', 'PlantillaCertificado', id,
       JSON.stringify({ activa: true }), JSON.stringify({ activa: false }),
       getClientIp(req), plantilla.institucion_id)
 

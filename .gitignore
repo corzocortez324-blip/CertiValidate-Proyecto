@@ -28,3 +28,19 @@ Thumbs.db
 # Generated Prisma clients
 generated/
 src/generated/
+
+# SonarQube
+.sonar-token
+.scannerwork/
+
+# Copias comprimidas del proyecto (superan el límite de 100 MB de GitHub)
+*.zip
+
+# Evidencias generadas por las pruebas de aceptación (capturas, PDFs descargados)
+pruebas_aceptacion/evidencias*/
+pruebas_aceptacion/__pycache__/
+pruebas_aceptacion/.pytest_cache/
+
+# Archivos temporales de Office y configuración local de herramientas
+~$*
+.claude/

@@ -23,9 +23,9 @@ const construirFiltroAuditoriaAutorizada = (usuarioId, institucionIds) => {
 
 const listarAuditoria = async (req, res) => {
   try {
-    const page = Math.max(parseInt(req.query.page, 10) || 1, 1)
+    const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1)
     const limit = Math.min(
-      Math.max(parseInt(req.query.limit, 10) || 20, 1),
+      Math.max(Number.parseInt(req.query.limit, 10) || 20, 1),
       100,
     )
     const { entidad, accion, usuario_id, fecha_desde, fecha_hasta } = req.query
@@ -95,8 +95,8 @@ const listarAuditoria = async (req, res) => {
 const obtenerAuditoriaPorEntidad = async (req, res) => {
   try {
     const { entidad, entidad_id } = req.params
-    const page = Math.max(parseInt(req.query.page, 10) || 1, 1)
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 100)
+    const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1)
+    const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 20, 1), 100)
 
     if (!entidad || !entidad_id) {
       return sendError(res, 'Entidad y entidad_id son obligatorios', 400)

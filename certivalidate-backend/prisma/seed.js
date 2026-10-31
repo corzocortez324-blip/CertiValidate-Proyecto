@@ -136,7 +136,7 @@ const DEMO_USUARIOS = [
     email: 'admin@certivalidate.com',
     nombre: 'Admin',
     apellido: 'Demo',
-    password: 'Admin1234!',
+    passwordEnv: 'SEED_ADMIN_PASSWORD',
     rol: 'admin',
     es_platform_admin: true,
     email_verificado: true,
@@ -145,7 +145,7 @@ const DEMO_USUARIOS = [
     email: 'emisor@certivalidate.com',
     nombre: 'Emisor',
     apellido: 'Demo',
-    password: 'Emisor1234!',
+    passwordEnv: 'SEED_EMISOR_PASSWORD',
     rol: 'editor',
     es_platform_admin: false,
     email_verificado: true,
@@ -154,7 +154,7 @@ const DEMO_USUARIOS = [
     email: 'lector@certivalidate.com',
     nombre: 'Lector',
     apellido: 'Demo',
-    password: 'Lector1234!',
+    passwordEnv: 'SEED_LECTOR_PASSWORD',
     rol: 'lector',
     es_platform_admin: false,
     email_verificado: true,
@@ -450,12 +450,19 @@ async function main() {
     console.log(`   · Institución existente: ${institucionBase.nombre}`)
   }
 
+  const generadas = {}
   for (const demoUser of DEMO_USUARIOS) {
     const rolId = rolesCreados[demoUser.rol]
 
     let usuario = await prisma.usuario.findUnique({ where: { email: demoUser.email } })
     if (!usuario) {
-      const passwordHash = await bcrypt.hash(demoUser.password, 12)
+      // Nunca contraseñas fijas en el código: se toman del entorno o se generan
+      // al azar y se muestran una sola vez en consola.
+      const password = process.env[demoUser.passwordEnv] || nodeCrypto.randomBytes(12).toString('base64url')
+      generadas[demoUser.email] = process.env[demoUser.passwordEnv]
+        ? `(definida en ${demoUser.passwordEnv})`
+        : password
+      const passwordHash = await bcrypt.hash(password, 12)
       usuario = await prisma.usuario.create({
         data: {
           email: demoUser.email,
@@ -666,10 +673,9 @@ async function main() {
   console.log('\n================================================')
   console.log('  Seed completado')
   console.log('================================================')
-  console.log('\nUsuarios demo:')
-  console.log('  admin@certivalidate.com   → admin   → Admin1234!')
-  console.log('  emisor@certivalidate.com  → editor  → Emisor1234!')
-  console.log('  lector@certivalidate.com  → lector  → Lector1234!')
+  console.log('\nUsuarios demo creados en esta ejecución:')
+  for (const [email, info] of Object.entries(generadas)) console.log(`  ${email} → ${info}`)
+  if (Object.keys(generadas).length === 0) console.log('  (ya existían; sus contraseñas no se modificaron)')
   console.log('\nDatos demo:')
   console.log(`  Instituciones:  ${INSTITUCIONES_DEMO.length}  (+ 1 institución base)`)
   console.log(`  Integraciones:  ${INSTITUCIONES_DEMO.length}  (REST, api_key cifrada)`)

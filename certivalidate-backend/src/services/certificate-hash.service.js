@@ -31,8 +31,10 @@ const computeCertificateHash = (snapshot) => {
   }
 
   const sorted = Object.fromEntries(
+    // Orden por código de carácter (igual que sort() sin comparador); no usar
+    // localeCompare: cambiaría el orden y con él los hashes ya emitidos/anclados.
     Object.keys(data)
-      .sort()
+      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
       .map((k) => [k, data[k]]),
   )
 

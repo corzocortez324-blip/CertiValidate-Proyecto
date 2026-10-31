@@ -1,0 +1,1297 @@
+{
+ "perfil_admin": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Perfil obtenido correctamente",
+  "data": {
+   "id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+   "nombre": "Test",
+   "apellido": "User",
+   "email": "__test__doc_admin_contratos_1793463763900@certivalidate.test",
+   "activo": true,
+   "ultimo_acceso": "2026-10-31T16:22:44.465Z",
+   "created_at": "2026-10-31T16:22:44.229Z",
+   "updated_at": null,
+   "deleted_at": null,
+   "email_verificado": true,
+   "totp_enabled": false,
+   "es_platform_admin": false,
+   "rol": "admin",
+   "accesos": [
+    {
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "rol": "admin",
+     "permisos": [
+      "certificado:emitir",
+      "certificado:revocar",
+      "certificado:listar",
+      "certificado:ver",
+      "certificado:descargar",
+      "estudiante:crear",
+      "estudiante:actualizar",
+      "estudiante:eliminar",
+      "estudiante:listar",
+      "estudiante:ver",
+      "institucion:crear",
+      "institucion:actualizar",
+      "institucion:ver",
+      "institucion:estadisticas",
+      "plantilla:crear",
+      "plantilla:actualizar",
+      "plantilla:archivar",
+      "plantilla:ver",
+      "plantilla:listar",
+      "auditoria:ver",
+      "admin:stats",
+      "usuario:listar",
+      "usuario:ver",
+      "usuario:crear",
+      "usuario:actualizar",
+      "usuario:eliminar"
+     ]
+    }
+   ]
+  },
+  "timestamp": "2026-10-31T16:22:45.132Z"
+ },
+ "permisos_admin": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Accesos obtenidos correctamente",
+  "data": {
+   "accesos": [
+    {
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "rol": "admin",
+     "permisos": [
+      "certificado:emitir",
+      "certificado:revocar",
+      "certificado:listar",
+      "certificado:ver",
+      "certificado:descargar",
+      "estudiante:crear",
+      "estudiante:actualizar",
+      "estudiante:eliminar",
+      "estudiante:listar",
+      "estudiante:ver",
+      "institucion:crear",
+      "institucion:actualizar",
+      "institucion:ver",
+      "institucion:estadisticas",
+      "plantilla:crear",
+      "plantilla:actualizar",
+      "plantilla:archivar",
+      "plantilla:ver",
+      "plantilla:listar",
+      "auditoria:ver",
+      "admin:stats",
+      "usuario:listar",
+      "usuario:ver",
+      "usuario:crear",
+      "usuario:actualizar",
+      "usuario:eliminar"
+     ]
+    }
+   ]
+  },
+  "timestamp": "2026-10-31T16:22:45.142Z"
+ },
+ "perfil_lector": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Perfil obtenido correctamente",
+  "data": {
+   "id": "c07ad970-d820-499d-ac4f-908526151e01",
+   "nombre": "Test",
+   "apellido": "User",
+   "email": "__test__doc_lector_contratos_1793463763900@certivalidate.test",
+   "activo": true,
+   "ultimo_acceso": "2026-10-31T16:22:44.810Z",
+   "created_at": "2026-10-31T16:22:44.743Z",
+   "updated_at": null,
+   "deleted_at": null,
+   "email_verificado": true,
+   "totp_enabled": false,
+   "es_platform_admin": false,
+   "rol": "lector",
+   "accesos": [
+    {
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "rol": "lector",
+     "permisos": [
+      "certificado:listar",
+      "certificado:ver",
+      "certificado:descargar",
+      "estudiante:listar",
+      "estudiante:ver",
+      "institucion:ver",
+      "institucion:estadisticas",
+      "plantilla:ver",
+      "plantilla:listar",
+      "auditoria:ver"
+     ]
+    }
+   ]
+  },
+  "timestamp": "2026-10-31T16:22:45.150Z"
+ },
+ "permisos_lector": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Accesos obtenidos correctamente",
+  "data": {
+   "accesos": [
+    {
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "rol": "lector",
+     "permisos": [
+      "certificado:listar",
+      "certificado:ver",
+      "certificado:descargar",
+      "estudiante:listar",
+      "estudiante:ver",
+      "institucion:ver",
+      "institucion:estadisticas",
+      "plantilla:ver",
+      "plantilla:listar",
+      "auditoria:ver"
+     ]
+    }
+   ]
+  },
+  "timestamp": "2026-10-31T16:22:45.157Z"
+ },
+ "usuarios": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Usuarios obtenidos correctamente",
+  "data": {
+   "usuarios": [
+    {
+     "id": "c07ad970-d820-499d-ac4f-908526151e01",
+     "nombre": "Test",
+     "apellido": "User",
+     "email": "__test__doc_lector_contratos_1793463763900@certivalidate.test",
+     "activo": true,
+     "ultimo_acceso": "2026-10-31T16:22:44.810Z",
+     "created_at": "2026-10-31T16:22:44.743Z",
+     "updated_at": null,
+     "deleted_at": null,
+     "email_verificado": true,
+     "totp_enabled": false,
+     "es_platform_admin": false,
+     "instituciones": [
+      {
+       "id": "c65130f3-76e7-4327-806a-7ba22d564d34",
+       "usuario_id": "c07ad970-d820-499d-ac4f-908526151e01",
+       "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+       "rol_id": "c43f95f7-2145-40b0-b26a-d6e71c3c7eaa",
+       "created_at": "2026-10-31T16:22:44.746Z",
+       "rol": {
+        "id": "c43f95f7-2145-40b0-b26a-d6e71c3c7eaa",
+        "nombre": "lector",
+        "descripcion": "Solo lectura"
+       },
+       "institucion": {
+        "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+        "nombre": "__test__Institucion DOC_contratos_1793463763900"
+       }
+      }
+     ],
+     "rol": "lector"
+    },
+    {
+     "id": "52060085-5ced-4b24-a82b-f4111cfe8035",
+     "nombre": "Test",
+     "apellido": "User",
+     "email": "__test__doc_editor_contratos_1793463763900@certivalidate.test",
+     "activo": true,
+     "ultimo_acceso": "2026-10-31T16:22:44.667Z",
+     "created_at": "2026-10-31T16:22:44.587Z",
+     "updated_at": null,
+     "deleted_at": null,
+     "email_verificado": true,
+     "totp_enabled": false,
+     "es_platform_admin": false,
+     "instituciones": [
+      {
+       "id": "b204da19-e939-41b6-ba86-782763d9491a",
+       "usuario_id": "52060085-5ced-4b24-a82b-f4111cfe8035",
+       "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+       "rol_id": "8b824508-ba06-4a84-90b6-9dad254ec98c",
+       "created_at": "2026-10-31T16:22:44.589Z",
+       "rol": {
+        "id": "8b824508-ba06-4a84-90b6-9dad254ec98c",
+        "nombre": "editor",
+        "descripcion": "Puede crear y editar recursos, sin acceso administrativo"
+       },
+       "institucion": {
+        "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+        "nombre": "__test__Institucion DOC_contratos_1793463763900"
+       }
+      }
+     ],
+     "rol": "editor"
+    },
+    {
+     "id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+     "nombre": "Test",
+     "apellido": "User",
+     "email": "__test__doc_admin_contratos_1793463763900@certivalidate.test",
+     "activo": true,
+     "ultimo_acceso": "2026-10-31T16:22:44.465Z",
+     "created_at": "2026-10-31T16:22:44.229Z",
+     "updated_at": null,
+     "deleted_at": null,
+     "email_verificado": true,
+     "totp_enabled": false,
+     "es_platform_admin": false,
+     "instituciones": [
+      {
+       "id": "ec20fc0f-f492-4ca8-9288-acda840552e8",
+       "usuario_id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+       "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+       "rol_id": "2433ecc3-8c26-41f6-88d4-2e8cf020e1a0",
+       "created_at": "2026-10-31T16:22:44.260Z",
+       "rol": {
+        "id": "2433ecc3-8c26-41f6-88d4-2e8cf020e1a0",
+        "nombre": "admin",
+        "descripcion": "Acceso total a todos los recursos"
+       },
+       "institucion": {
+        "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+        "nombre": "__test__Institucion DOC_contratos_1793463763900"
+       }
+      }
+     ],
+     "rol": "admin"
+    }
+   ],
+   "total": 3,
+   "page": 1,
+   "limit": 10,
+   "totalPages": 1
+  },
+  "timestamp": "2026-10-31T16:22:45.179Z"
+ },
+ "roles": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Roles obtenidos correctamente",
+  "data": {
+   "roles": [
+    {
+     "id": "2433ecc3-8c26-41f6-88d4-2e8cf020e1a0",
+     "nombre": "admin",
+     "descripcion": "Acceso total a todos los recursos",
+     "permisos": [
+      {
+       "id": "c0fb5b2d-f089-4ae6-a105-3ef47b55d300",
+       "clave": "certificado:emitir",
+       "recurso": "certificado",
+       "accion": "emitir"
+      },
+      {
+       "id": "95e857db-702a-4717-bfa2-e2ef8f0d1ff9",
+       "clave": "certificado:revocar",
+       "recurso": "certificado",
+       "accion": "revocar"
+      },
+      {
+       "id": "bea3da76-951f-48e6-bfc0-fd3922edc85f",
+       "clave": "certificado:listar",
+       "recurso": "certificado",
+       "accion": "listar"
+      },
+      {
+       "id": "7d45138d-d991-4826-8c4e-14eefdc11c31",
+       "clave": "certificado:ver",
+       "recurso": "certificado",
+       "accion": "ver"
+      },
+      {
+       "id": "511ef727-9da7-4336-b3dd-4e86b53ec061",
+       "clave": "certificado:descargar",
+       "recurso": "certificado",
+       "accion": "descargar"
+      },
+      {
+       "id": "3c11cb43-5ac1-4c94-88c0-ef5db28cdbec",
+       "clave": "estudiante:crear",
+       "recurso": "estudiante",
+       "accion": "crear"
+      },
+      {
+       "id": "2c21ba12-6443-4179-b913-53abbb1a57f6",
+       "clave": "estudiante:actualizar",
+       "recurso": "estudiante",
+       "accion": "actualizar"
+      },
+      {
+       "id": "2bd511a6-cbbc-4bc4-8e1c-c05c7221088e",
+       "clave": "estudiante:eliminar",
+       "recurso": "estudiante",
+       "accion": "eliminar"
+      },
+      {
+       "id": "a38c8c8c-9c85-4c67-a595-fd9f356935f5",
+       "clave": "estudiante:listar",
+       "recurso": "estudiante",
+       "accion": "listar"
+      },
+      {
+       "id": "768e9c10-2412-4728-9031-eacb4893de13",
+       "clave": "estudiante:ver",
+       "recurso": "estudiante",
+       "accion": "ver"
+      },
+      {
+       "id": "8068ce4a-2147-4a1e-9842-f83f3f0a35eb",
+       "clave": "institucion:crear",
+       "recurso": "institucion",
+       "accion": "crear"
+      },
+      {
+       "id": "586339dc-4c8c-448b-8eb8-6fb6942dd4bb",
+       "clave": "institucion:actualizar",
+       "recurso": "institucion",
+       "accion": "actualizar"
+      },
+      {
+       "id": "fbd813c7-88c0-4071-a597-57e05c1b3fa8",
+       "clave": "institucion:ver",
+       "recurso": "institucion",
+       "accion": "ver"
+      },
+      {
+       "id": "2028bfe4-8b22-463e-8d2e-aed364748b91",
+       "clave": "institucion:estadisticas",
+       "recurso": "institucion",
+       "accion": "estadisticas"
+      },
+      {
+       "id": "8afd76b2-bb70-4707-99b6-598c6288a868",
+       "clave": "plantilla:crear",
+       "recurso": "plantilla",
+       "accion": "crear"
+      },
+      {
+       "id": "0f3c15f5-f01b-4fac-9f04-d5b2aac057c0",
+       "clave": "plantilla:actualizar",
+       "recurso": "plantilla",
+       "accion": "actualizar"
+      },
+      {
+       "id": "f999b1a9-3e40-4944-bb1a-4776b40c18f5",
+       "clave": "plantilla:archivar",
+       "recurso": "plantilla",
+       "accion": "archivar"
+      },
+      {
+       "id": "3e1b2abb-06be-44af-9703-aad38ff11e07",
+       "clave": "plantilla:ver",
+       "recurso": "plantilla",
+       "accion": "ver"
+      },
+      {
+       "id": "2a59e895-a6c9-4f1a-ae31-3bd9c29efe9c",
+       "clave": "plantilla:listar",
+       "recurso": "plantilla",
+       "accion": "listar"
+      },
+      {
+       "id": "242e18dc-7bb3-4e9e-8be7-fa01364f58b5",
+       "clave": "auditoria:ver",
+       "recurso": "auditoria",
+       "accion": "ver"
+      },
+      {
+       "id": "965cd068-23d3-4887-9bf4-d14147f2ab13",
+       "clave": "admin:stats",
+       "recurso": "admin",
+       "accion": "stats"
+      },
+      {
+       "id": "29a78f9e-6456-4e76-9c4d-5543341c9ca1",
+       "clave": "usuario:listar",
+       "recurso": "usuario",
+       "accion": "listar"
+      },
+      {
+       "id": "de9b3b1b-5d41-435a-bf73-b9c9eaf9e711",
+       "clave": "usuario:ver",
+       "recurso": "usuario",
+       "accion": "ver"
+      },
+      {
+       "id": "06cf8fb0-4c9e-4051-800a-bb4be2d11bdc",
+       "clave": "usuario:crear",
+       "recurso": "usuario",
+       "accion": "crear"
+      },
+      {
+       "id": "38fb2a06-7fb1-4238-a6e4-bb8594631e0e",
+       "clave": "usuario:actualizar",
+       "recurso": "usuario",
+       "accion": "actualizar"
+      },
+      {
+       "id": "51c94168-46f4-40c6-812a-e13b7173edd8",
+       "clave": "usuario:eliminar",
+       "recurso": "usuario",
+       "accion": "eliminar"
+      }
+     ]
+    },
+    {
+     "id": "8b824508-ba06-4a84-90b6-9dad254ec98c",
+     "nombre": "editor",
+     "descripcion": "Puede crear y editar recursos, sin acceso administrativo",
+     "permisos": [
+      {
+       "id": "c0fb5b2d-f089-4ae6-a105-3ef47b55d300",
+       "clave": "certificado:emitir",
+       "recurso": "certificado",
+       "accion": "emitir"
+      },
+      {
+       "id": "95e857db-702a-4717-bfa2-e2ef8f0d1ff9",
+       "clave": "certificado:revocar",
+       "recurso": "certificado",
+       "accion": "revocar"
+      },
+      {
+       "id": "bea3da76-951f-48e6-bfc0-fd3922edc85f",
+       "clave": "certificado:listar",
+       "recurso": "certificado",
+       "accion": "listar"
+      },
+      {
+       "id": "7d45138d-d991-4826-8c4e-14eefdc11c31",
+       "clave": "certificado:ver",
+       "recurso": "certificado",
+       "accion": "ver"
+      },
+      {
+       "id": "511ef727-9da7-4336-b3dd-4e86b53ec061",
+       "clave": "certificado:descargar",
+       "recurso": "certificado",
+       "accion": "descargar"
+      },
+      {
+       "id": "3c11cb43-5ac1-4c94-88c0-ef5db28cdbec",
+       "clave": "estudiante:crear",
+       "recurso": "estudiante",
+       "accion": "crear"
+      },
+      {
+       "id": "2c21ba12-6443-4179-b913-53abbb1a57f6",
+       "clave": "estudiante:actualizar",
+       "recurso": "estudiante",
+       "accion": "actualizar"
+      },
+      {
+       "id": "a38c8c8c-9c85-4c67-a595-fd9f356935f5",
+       "clave": "estudiante:listar",
+       "recurso": "estudiante",
+       "accion": "listar"
+      },
+      {
+       "id": "768e9c10-2412-4728-9031-eacb4893de13",
+       "clave": "estudiante:ver",
+       "recurso": "estudiante",
+       "accion": "ver"
+      },
+      {
+       "id": "fbd813c7-88c0-4071-a597-57e05c1b3fa8",
+       "clave": "institucion:ver",
+       "recurso": "institucion",
+       "accion": "ver"
+      },
+      {
+       "id": "2028bfe4-8b22-463e-8d2e-aed364748b91",
+       "clave": "institucion:estadisticas",
+       "recurso": "institucion",
+       "accion": "estadisticas"
+      },
+      {
+       "id": "8afd76b2-bb70-4707-99b6-598c6288a868",
+       "clave": "plantilla:crear",
+       "recurso": "plantilla",
+       "accion": "crear"
+      },
+      {
+       "id": "0f3c15f5-f01b-4fac-9f04-d5b2aac057c0",
+       "clave": "plantilla:actualizar",
+       "recurso": "plantilla",
+       "accion": "actualizar"
+      },
+      {
+       "id": "f999b1a9-3e40-4944-bb1a-4776b40c18f5",
+       "clave": "plantilla:archivar",
+       "recurso": "plantilla",
+       "accion": "archivar"
+      },
+      {
+       "id": "3e1b2abb-06be-44af-9703-aad38ff11e07",
+       "clave": "plantilla:ver",
+       "recurso": "plantilla",
+       "accion": "ver"
+      },
+      {
+       "id": "2a59e895-a6c9-4f1a-ae31-3bd9c29efe9c",
+       "clave": "plantilla:listar",
+       "recurso": "plantilla",
+       "accion": "listar"
+      },
+      {
+       "id": "242e18dc-7bb3-4e9e-8be7-fa01364f58b5",
+       "clave": "auditoria:ver",
+       "recurso": "auditoria",
+       "accion": "ver"
+      }
+     ]
+    },
+    {
+     "id": "c43f95f7-2145-40b0-b26a-d6e71c3c7eaa",
+     "nombre": "lector",
+     "descripcion": "Solo lectura",
+     "permisos": [
+      {
+       "id": "bea3da76-951f-48e6-bfc0-fd3922edc85f",
+       "clave": "certificado:listar",
+       "recurso": "certificado",
+       "accion": "listar"
+      },
+      {
+       "id": "7d45138d-d991-4826-8c4e-14eefdc11c31",
+       "clave": "certificado:ver",
+       "recurso": "certificado",
+       "accion": "ver"
+      },
+      {
+       "id": "511ef727-9da7-4336-b3dd-4e86b53ec061",
+       "clave": "certificado:descargar",
+       "recurso": "certificado",
+       "accion": "descargar"
+      },
+      {
+       "id": "a38c8c8c-9c85-4c67-a595-fd9f356935f5",
+       "clave": "estudiante:listar",
+       "recurso": "estudiante",
+       "accion": "listar"
+      },
+      {
+       "id": "768e9c10-2412-4728-9031-eacb4893de13",
+       "clave": "estudiante:ver",
+       "recurso": "estudiante",
+       "accion": "ver"
+      },
+      {
+       "id": "fbd813c7-88c0-4071-a597-57e05c1b3fa8",
+       "clave": "institucion:ver",
+       "recurso": "institucion",
+       "accion": "ver"
+      },
+      {
+       "id": "2028bfe4-8b22-463e-8d2e-aed364748b91",
+       "clave": "institucion:estadisticas",
+       "recurso": "institucion",
+       "accion": "estadisticas"
+      },
+      {
+       "id": "3e1b2abb-06be-44af-9703-aad38ff11e07",
+       "clave": "plantilla:ver",
+       "recurso": "plantilla",
+       "accion": "ver"
+      },
+      {
+       "id": "2a59e895-a6c9-4f1a-ae31-3bd9c29efe9c",
+       "clave": "plantilla:listar",
+       "recurso": "plantilla",
+       "accion": "listar"
+      },
+      {
+       "id": "242e18dc-7bb3-4e9e-8be7-fa01364f58b5",
+       "clave": "auditoria:ver",
+       "recurso": "auditoria",
+       "accion": "ver"
+      }
+     ]
+    }
+   ],
+   "permisos": [
+    {
+     "id": "965cd068-23d3-4887-9bf4-d14147f2ab13",
+     "clave": "admin:stats",
+     "recurso": "admin",
+     "accion": "stats"
+    },
+    {
+     "id": "242e18dc-7bb3-4e9e-8be7-fa01364f58b5",
+     "clave": "auditoria:ver",
+     "recurso": "auditoria",
+     "accion": "ver"
+    },
+    {
+     "id": "511ef727-9da7-4336-b3dd-4e86b53ec061",
+     "clave": "certificado:descargar",
+     "recurso": "certificado",
+     "accion": "descargar"
+    },
+    {
+     "id": "c0fb5b2d-f089-4ae6-a105-3ef47b55d300",
+     "clave": "certificado:emitir",
+     "recurso": "certificado",
+     "accion": "emitir"
+    },
+    {
+     "id": "bea3da76-951f-48e6-bfc0-fd3922edc85f",
+     "clave": "certificado:listar",
+     "recurso": "certificado",
+     "accion": "listar"
+    },
+    {
+     "id": "95e857db-702a-4717-bfa2-e2ef8f0d1ff9",
+     "clave": "certificado:revocar",
+     "recurso": "certificado",
+     "accion": "revocar"
+    },
+    {
+     "id": "7d45138d-d991-4826-8c4e-14eefdc11c31",
+     "clave": "certificado:ver",
+     "recurso": "certificado",
+     "accion": "ver"
+    },
+    {
+     "id": "2c21ba12-6443-4179-b913-53abbb1a57f6",
+     "clave": "estudiante:actualizar",
+     "recurso": "estudiante",
+     "accion": "actualizar"
+    },
+    {
+     "id": "3c11cb43-5ac1-4c94-88c0-ef5db28cdbec",
+     "clave": "estudiante:crear",
+     "recurso": "estudiante",
+     "accion": "crear"
+    },
+    {
+     "id": "2bd511a6-cbbc-4bc4-8e1c-c05c7221088e",
+     "clave": "estudiante:eliminar",
+     "recurso": "estudiante",
+     "accion": "eliminar"
+    },
+    {
+     "id": "a38c8c8c-9c85-4c67-a595-fd9f356935f5",
+     "clave": "estudiante:listar",
+     "recurso": "estudiante",
+     "accion": "listar"
+    },
+    {
+     "id": "768e9c10-2412-4728-9031-eacb4893de13",
+     "clave": "estudiante:ver",
+     "recurso": "estudiante",
+     "accion": "ver"
+    },
+    {
+     "id": "586339dc-4c8c-448b-8eb8-6fb6942dd4bb",
+     "clave": "institucion:actualizar",
+     "recurso": "institucion",
+     "accion": "actualizar"
+    },
+    {
+     "id": "8068ce4a-2147-4a1e-9842-f83f3f0a35eb",
+     "clave": "institucion:crear",
+     "recurso": "institucion",
+     "accion": "crear"
+    },
+    {
+     "id": "2028bfe4-8b22-463e-8d2e-aed364748b91",
+     "clave": "institucion:estadisticas",
+     "recurso": "institucion",
+     "accion": "estadisticas"
+    },
+    {
+     "id": "fbd813c7-88c0-4071-a597-57e05c1b3fa8",
+     "clave": "institucion:ver",
+     "recurso": "institucion",
+     "accion": "ver"
+    },
+    {
+     "id": "0f3c15f5-f01b-4fac-9f04-d5b2aac057c0",
+     "clave": "plantilla:actualizar",
+     "recurso": "plantilla",
+     "accion": "actualizar"
+    },
+    {
+     "id": "f999b1a9-3e40-4944-bb1a-4776b40c18f5",
+     "clave": "plantilla:archivar",
+     "recurso": "plantilla",
+     "accion": "archivar"
+    },
+    {
+     "id": "8afd76b2-bb70-4707-99b6-598c6288a868",
+     "clave": "plantilla:crear",
+     "recurso": "plantilla",
+     "accion": "crear"
+    },
+    {
+     "id": "2a59e895-a6c9-4f1a-ae31-3bd9c29efe9c",
+     "clave": "plantilla:listar",
+     "recurso": "plantilla",
+     "accion": "listar"
+    },
+    {
+     "id": "3e1b2abb-06be-44af-9703-aad38ff11e07",
+     "clave": "plantilla:ver",
+     "recurso": "plantilla",
+     "accion": "ver"
+    },
+    {
+     "id": "38fb2a06-7fb1-4238-a6e4-bb8594631e0e",
+     "clave": "usuario:actualizar",
+     "recurso": "usuario",
+     "accion": "actualizar"
+    },
+    {
+     "id": "06cf8fb0-4c9e-4051-800a-bb4be2d11bdc",
+     "clave": "usuario:crear",
+     "recurso": "usuario",
+     "accion": "crear"
+    },
+    {
+     "id": "51c94168-46f4-40c6-812a-e13b7173edd8",
+     "clave": "usuario:eliminar",
+     "recurso": "usuario",
+     "accion": "eliminar"
+    },
+    {
+     "id": "29a78f9e-6456-4e76-9c4d-5543341c9ca1",
+     "clave": "usuario:listar",
+     "recurso": "usuario",
+     "accion": "listar"
+    },
+    {
+     "id": "de9b3b1b-5d41-435a-bf73-b9c9eaf9e711",
+     "clave": "usuario:ver",
+     "recurso": "usuario",
+     "accion": "ver"
+    }
+   ]
+  },
+  "timestamp": "2026-10-31T16:22:45.192Z"
+ },
+ "instituciones": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Instituciones obtenidas correctamente",
+  "data": {
+   "data": [
+    {
+     "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "nombre": "__test__Institucion DOC_contratos_1793463763900",
+     "dominio": null,
+     "logo_url": null,
+     "activa": true,
+     "created_at": "2026-10-31T16:22:44.035Z"
+    }
+   ],
+   "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+   }
+  },
+  "timestamp": "2026-10-31T16:22:45.204Z"
+ },
+ "certificados": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Certificados obtenidos correctamente",
+  "data": {
+   "data": [
+    {
+     "id": "d067c899-20a4-4278-803a-409f2c6f371a",
+     "estudiante_id": "bf17f00a-cee5-421b-a3d8-3b0375f4eb1e",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "plantilla_id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
+     "codigo_unico": "56EFC797700FAAAB",
+     "estado": "valido",
+     "fecha_emision": "2026-10-31T16:22:45.088Z",
+     "fecha_expiracion": null,
+     "pdf_url": null,
+     "hash_sha256": "89f934384314b55b4a1a79a3320a2e1207da745af34c6175fd12cbe157c8c0ea",
+     "created_at": "2026-10-31T16:22:45.090Z",
+     "deleted_at": null,
+     "estudiante": {
+      "id": "bf17f00a-cee5-421b-a3d8-3b0375f4eb1e",
+      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "nombre": "Estudiante",
+      "apellido": "Test DOC_contratos_1793463763900_1793463765072_a323",
+      "documento": "TESTDOC_contratos_1793463763900_1793463765072_a323",
+      "email": null,
+      "created_at": "2026-10-31T16:22:45.072Z"
+     },
+     "plantilla": {
+      "id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
+      "nombre": "__test__Plantilla DOC_contratos_1793463763900",
+      "version": 1,
+      "activa": true,
+      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef"
+     },
+     "institucion": {
+      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "nombre": "__test__Institucion DOC_contratos_1793463763900",
+      "dominio": null,
+      "logo_url": null,
+      "activa": true,
+      "created_at": "2026-10-31T16:22:44.035Z"
+     },
+     "revocaciones": []
+    },
+    {
+     "id": "210abf65-4db9-4222-a328-8b9d141440d4",
+     "estudiante_id": "f320d80f-e682-47f1-87ec-04ddc04ef4e4",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "plantilla_id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
+     "codigo_unico": "25B4A3D7DEF355A3",
+     "estado": "revocado",
+     "fecha_emision": "2026-10-31T16:22:45.061Z",
+     "fecha_expiracion": null,
+     "pdf_url": null,
+     "hash_sha256": "a70e840557cd335e888a9371cd38a3ed33fd411157e4c53a56b3f671984891ad",
+     "created_at": "2026-10-31T16:22:45.065Z",
+     "deleted_at": null,
+     "estudiante": {
+      "id": "f320d80f-e682-47f1-87ec-04ddc04ef4e4",
+      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "nombre": "Estudiante",
+      "apellido": "Test DOC_contratos_1793463763900_1793463765045_d323",
+      "documento": "TESTDOC_contratos_1793463763900_1793463765045_d323",
+      "email": null,
+      "created_at": "2026-10-31T16:22:45.045Z"
+     },
+     "plantilla": {
+      "id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
+      "nombre": "__test__Plantilla DOC_contratos_1793463763900",
+      "version": 1,
+      "activa": true,
+      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef"
+     },
+     "institucion": {
+      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "nombre": "__test__Institucion DOC_contratos_1793463763900",
+      "dominio": null,
+      "logo_url": null,
+      "activa": true,
+      "created_at": "2026-10-31T16:22:44.035Z"
+     },
+     "revocaciones": [
+      {
+       "motivo_codigo": "ERROR_DATOS",
+       "fecha_revocacion": "2026-10-31T16:22:45.112Z"
+      }
+     ]
+    },
+    {
+     "id": "b548b481-2b99-4572-aa37-a7ff10e6c247",
+     "estudiante_id": "be80b6eb-511d-4acb-b88d-20bd5013eace",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "plantilla_id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
+     "codigo_unico": "BB70518DA796A75F",
+     "estado": "valido",
+     "fecha_emision": "2026-10-31T16:22:45.017Z",
+     "fecha_expiracion": null,
+     "pdf_url": null,
+     "hash_sha256": "b59804ed010a63cd77a2ff4eb46faeea7cd7985f1255318e6fac660c7009de3b",
+     "created_at": "2026-10-31T16:22:45.032Z",
+     "deleted_at": null,
+     "estudiante": {
+      "id": "be80b6eb-511d-4acb-b88d-20bd5013eace",
+      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "nombre": "Estudiante",
+      "apellido": "Test DOC_contratos_1793463763900_1793463764983_09a6",
+      "documento": "TESTDOC_contratos_1793463763900_1793463764983_09a6",
+      "email": null,
+      "created_at": "2026-10-31T16:22:44.983Z"
+     },
+     "plantilla": {
+      "id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
+      "nombre": "__test__Plantilla DOC_contratos_1793463763900",
+      "version": 1,
+      "activa": true,
+      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef"
+     },
+     "institucion": {
+      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "nombre": "__test__Institucion DOC_contratos_1793463763900",
+      "dominio": null,
+      "logo_url": null,
+      "activa": true,
+      "created_at": "2026-10-31T16:22:44.035Z"
+     },
+     "revocaciones": []
+    }
+   ],
+   "meta": {
+    "total": 3,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+   }
+  },
+  "timestamp": "2026-10-31T16:22:45.225Z"
+ },
+ "certificados_revocados": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Certificados obtenidos correctamente",
+  "data": {
+   "data": [
+    {
+     "id": "210abf65-4db9-4222-a328-8b9d141440d4",
+     "estudiante_id": "f320d80f-e682-47f1-87ec-04ddc04ef4e4",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "plantilla_id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
+     "codigo_unico": "25B4A3D7DEF355A3",
+     "estado": "revocado",
+     "fecha_emision": "2026-10-31T16:22:45.061Z",
+     "fecha_expiracion": null,
+     "pdf_url": null,
+     "hash_sha256": "a70e840557cd335e888a9371cd38a3ed33fd411157e4c53a56b3f671984891ad",
+     "created_at": "2026-10-31T16:22:45.065Z",
+     "deleted_at": null,
+     "estudiante": {
+      "id": "f320d80f-e682-47f1-87ec-04ddc04ef4e4",
+      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "nombre": "Estudiante",
+      "apellido": "Test DOC_contratos_1793463763900_1793463765045_d323",
+      "documento": "TESTDOC_contratos_1793463763900_1793463765045_d323",
+      "email": null,
+      "created_at": "2026-10-31T16:22:45.045Z"
+     },
+     "plantilla": {
+      "id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
+      "nombre": "__test__Plantilla DOC_contratos_1793463763900",
+      "version": 1,
+      "activa": true,
+      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef"
+     },
+     "institucion": {
+      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "nombre": "__test__Institucion DOC_contratos_1793463763900",
+      "dominio": null,
+      "logo_url": null,
+      "activa": true,
+      "created_at": "2026-10-31T16:22:44.035Z"
+     },
+     "revocaciones": [
+      {
+       "motivo_codigo": "ERROR_DATOS",
+       "fecha_revocacion": "2026-10-31T16:22:45.112Z"
+      }
+     ]
+    }
+   ],
+   "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+   }
+  },
+  "timestamp": "2026-10-31T16:22:45.243Z"
+ },
+ "estudiantes": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Estudiantes obtenidos correctamente",
+  "data": {
+   "data": [
+    {
+     "id": "bf17f00a-cee5-421b-a3d8-3b0375f4eb1e",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "nombre": "Estudiante",
+     "apellido": "Test DOC_contratos_1793463763900_1793463765072_a323",
+     "documento": "TESTDOC_contratos_1793463763900_1793463765072_a323",
+     "email": null,
+     "created_at": "2026-10-31T16:22:45.072Z"
+    },
+    {
+     "id": "f320d80f-e682-47f1-87ec-04ddc04ef4e4",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "nombre": "Estudiante",
+     "apellido": "Test DOC_contratos_1793463763900_1793463765045_d323",
+     "documento": "TESTDOC_contratos_1793463763900_1793463765045_d323",
+     "email": null,
+     "created_at": "2026-10-31T16:22:45.045Z"
+    },
+    {
+     "id": "be80b6eb-511d-4acb-b88d-20bd5013eace",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "nombre": "Estudiante",
+     "apellido": "Test DOC_contratos_1793463763900_1793463764983_09a6",
+     "documento": "TESTDOC_contratos_1793463763900_1793463764983_09a6",
+     "email": null,
+     "created_at": "2026-10-31T16:22:44.983Z"
+    },
+    {
+     "id": "6f353d9f-4f74-40dc-a794-536b7e459af8",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "nombre": "Estudiante",
+     "apellido": "Test DOC_contratos_1793463763900",
+     "documento": "TESTDOC_contratos_1793463763900",
+     "email": "__test__est_contratos_1793463763900@certivalidate.test",
+     "created_at": "2026-10-31T16:22:44.969Z"
+    }
+   ],
+   "meta": {
+    "total": 4,
+    "page": 1,
+    "limit": 100,
+    "totalPages": 1
+   }
+  },
+  "timestamp": "2026-10-31T16:22:45.262Z"
+ },
+ "plantillas": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Plantillas obtenidas correctamente",
+  "data": {
+   "data": [
+    {
+     "id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "nombre": "__test__Plantilla DOC_contratos_1793463763900",
+     "template_html": "<p>Test template</p>",
+     "version": 1,
+     "activa": true,
+     "created_at": "2026-10-31T16:22:44.977Z"
+    }
+   ],
+   "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 100,
+    "totalPages": 1
+   }
+  },
+  "timestamp": "2026-10-31T16:22:45.279Z"
+ },
+ "auditoria": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Registros de auditoría obtenidos correctamente",
+  "data": {
+   "data": [
+    {
+     "id": "514",
+     "usuario_id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+     "accion": "REVOCAR_CERTIFICADO",
+     "entidad": "Certificado",
+     "entidad_id": "210abf65-4db9-4222-a328-8b9d141440d4",
+     "valores_antes": "{\"estado\":\"valido\"}",
+     "valores_despues": "{\"estado\":\"revocado\",\"nivel_acceso\":\"admin\"}",
+     "ip": "::ffff:127.0.0.1",
+     "fecha": "2026-10-31T16:22:45.121Z",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "hash_anterior": null,
+     "hash_actual": null,
+     "usuario": {
+      "id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+      "nombre": "Test",
+      "apellido": "User",
+      "email": "__test__doc_admin_contratos_1793463763900@certivalidate.test"
+     },
+     "institucion": {
+      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "nombre": "__test__Institucion DOC_contratos_1793463763900"
+     }
+    },
+    {
+     "id": "513",
+     "usuario_id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+     "accion": "EMITIR_CERTIFICADO",
+     "entidad": "Certificado",
+     "entidad_id": "d067c899-20a4-4278-803a-409f2c6f371a",
+     "valores_antes": null,
+     "valores_despues": "{\"estudiante_id\":\"bf17f00a-cee5-421b-a3d8-3b0375f4eb1e\",\"documento_estudiante\":\"TESTDOC_contratos_1793463763900_1793463765072_a323\",\"provider\":\"local-db\",\"fallback\":false,\"institucion_id\":\"240fc316-906e-411e-a48f-d1c49a5af7ef\",\"plantilla_id\":\"fd9ebd8e-43af-4851-b73d-8886a9003cda\",\"codigo_unico\":\"56EFC797700FAAAB\"}",
+     "ip": "::ffff:127.0.0.1",
+     "fecha": "2026-10-31T16:22:45.093Z",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "hash_anterior": null,
+     "hash_actual": null,
+     "usuario": {
+      "id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+      "nombre": "Test",
+      "apellido": "User",
+      "email": "__test__doc_admin_contratos_1793463763900@certivalidate.test"
+     },
+     "institucion": {
+      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "nombre": "__test__Institucion DOC_contratos_1793463763900"
+     }
+    },
+    {
+     "id": "512",
+     "usuario_id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+     "accion": "EMITIR_CERTIFICADO",
+     "entidad": "Certificado",
+     "entidad_id": "210abf65-4db9-4222-a328-8b9d141440d4",
+     "valores_antes": null,
+     "valores_despues": "{\"estudiante_id\":\"f320d80f-e682-47f1-87ec-04ddc04ef4e4\",\"documento_estudiante\":\"TESTDOC_contratos_1793463763900_1793463765045_d323\",\"provider\":\"local-db\",\"fallback\":false,\"institucion_id\":\"240fc316-906e-411e-a48f-d1c49a5af7ef\",\"plantilla_id\":\"fd9ebd8e-43af-4851-b73d-8886a9003cda\",\"codigo_unico\":\"25B4A3D7DEF355A3\"}",
+     "ip": "::ffff:127.0.0.1",
+     "fecha": "2026-10-31T16:22:45.068Z",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "hash_anterior": null,
+     "hash_actual": null,
+     "usuario": {
+      "id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+      "nombre": "Test",
+      "apellido": "User",
+      "email": "__test__doc_admin_contratos_1793463763900@certivalidate.test"
+     },
+     "institucion": {
+      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "nombre": "__test__Institucion DOC_contratos_1793463763900"
+     }
+    },
+    {
+     "id": "511",
+     "usuario_id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+     "accion": "EMITIR_CERTIFICADO",
+     "entidad": "Certificado",
+     "entidad_id": "b548b481-2b99-4572-aa37-a7ff10e6c247",
+     "valores_antes": null,
+     "valores_despues": "{\"estudiante_id\":\"be80b6eb-511d-4acb-b88d-20bd5013eace\",\"documento_estudiante\":\"TESTDOC_contratos_1793463763900_1793463764983_09a6\",\"provider\":\"local-db\",\"fallback\":false,\"institucion_id\":\"240fc316-906e-411e-a48f-d1c49a5af7ef\",\"plantilla_id\":\"fd9ebd8e-43af-4851-b73d-8886a9003cda\",\"codigo_unico\":\"BB70518DA796A75F\"}",
+     "ip": "::ffff:127.0.0.1",
+     "fecha": "2026-10-31T16:22:45.038Z",
+     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "hash_anterior": null,
+     "hash_actual": null,
+     "usuario": {
+      "id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+      "nombre": "Test",
+      "apellido": "User",
+      "email": "__test__doc_admin_contratos_1793463763900@certivalidate.test"
+     },
+     "institucion": {
+      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "nombre": "__test__Institucion DOC_contratos_1793463763900"
+     }
+    }
+   ],
+   "meta": {
+    "total": 4,
+    "page": 1,
+    "limit": 20,
+    "totalPages": 1
+   }
+  },
+  "timestamp": "2026-10-31T16:22:45.303Z"
+ },
+ "stats": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Operación exitosa",
+  "data": {
+   "totalEmitidos": 3,
+   "totalValidos": 2,
+   "totalRevocados": 1,
+   "tasaValidez": 66.7,
+   "verificacionesHoy": 0,
+   "verificacionesSemana": 0,
+   "verificacionesMes": 0,
+   "tendencia": [
+    {
+     "mes": "2026-07",
+     "emisiones": 0,
+     "verificaciones": 0
+    },
+    {
+     "mes": "2026-08",
+     "emisiones": 0,
+     "verificaciones": 0
+    },
+    {
+     "mes": "2026-10",
+     "emisiones": 3,
+     "verificaciones": 0
+    },
+    {
+     "mes": "2026-10",
+     "emisiones": 3,
+     "verificaciones": 0
+    }
+   ],
+   "topEmisores": [
+    {
+     "nombre": "Test User",
+     "total": 3
+    }
+   ],
+   "ultimasRevocaciones": [
+    {
+     "id": "3e0a484f-3b44-4dad-8f30-8f1d1f4f8eca",
+     "motivo_codigo": "ERROR_DATOS",
+     "fecha_revocacion": "2026-10-31T16:22:45.112Z",
+     "codigo_unico": "25B4A3D7DEF355A3",
+     "titular": "Estudiante Test DOC_contratos_1793463763900_1793463765045_d323"
+    }
+   ],
+   "emisionesDiarias": [
+    {
+     "dia": "2026-10-31T00:00:00.000Z",
+     "total_emitidos": 3,
+     "total_revocados": 1
+    }
+   ],
+   "verificacionesDiarias": []
+  },
+  "timestamp": "2026-10-31T16:22:45.509Z"
+ },
+ "verificar_no_encontrado": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Certificado no encontrado",
+  "data": {
+   "estado": "no_encontrado",
+   "mensaje": "El certificado no fue encontrado"
+  },
+  "timestamp": "2026-10-31T16:22:45.531Z"
+ },
+ "verificar_valido": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Certificado verificado correctamente",
+  "data": {
+   "codigo_unico": "BB70518DA796A75F",
+   "estado": "valido",
+   "mensaje": "Certificado verificado correctamente",
+   "hash_verificado": true,
+   "fecha_emision": "2026-10-31T16:22:45.017Z",
+   "fecha_expiracion": null,
+   "estudiante": {
+    "nombre": "Estudiante",
+    "apellido": "Test DOC_contratos_1793463763900_1793463764983_09a6"
+   },
+   "titular": "Estudiante T***6",
+   "tipo_certificado": "__test__Plantilla DOC_contratos_1793463763900",
+   "institucion": "__test__Institucion DOC_contratos_1793463763900",
+   "revocacion": null,
+   "blockchain": null
+  },
+  "timestamp": "2026-10-31T16:22:45.567Z"
+ },
+ "login_2fa": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Se requiere verificación 2FA",
+  "data": {
+   "requires2FA": true,
+   "partial_token": "token.parcial.prueba"
+  }
+ }
+}

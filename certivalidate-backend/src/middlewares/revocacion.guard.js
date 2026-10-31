@@ -4,6 +4,9 @@ const { obtenerAccesosUsuario } = require('../utils/authorization')
 const { getClientIp } = require('../utils/validators')
 const logger = require('../utils/logger')
 
+// 'editor' es el rol emisor del seed; 'emisor' se conserva por compatibilidad con BD antiguas
+const ROLES_EMISOR = ['editor', 'emisor']
+
 const deny = (res, message, status = 403) =>
   res.status(status).json({
     success: false,
@@ -29,7 +32,8 @@ const logIntento = (prisma, usuarioId, certId, motivo, rol, institucionId, ip) =
  * Verifica ownership multi-tenant antes de permitir la revocación:
  *
  *  admin  (rol 'admin' en la institución del certificado) → acceso dentro de su propia institución
- *  emisor (rol 'emisor' en la institución del certificado) → solo certificados que él mismo emitió
+ *  emisor (rol 'editor', que la interfaz muestra como «Emisor», o el rol heredado
+ *          'emisor') → solo certificados que él mismo emitió
  *  sin acceso a la institución del certificado → 403 inmediato + registro en auditoría
  *  cualquier otro rol → 403 + registro en auditoría
  *
@@ -72,7 +76,7 @@ const revocacionGuard = async (req, res, next) => {
       return next()
     }
 
-    if (rol === 'emisor') {
+    if (ROLES_EMISOR.includes(rol)) {
       // Verifica que el emisor haya sido quien emitió el certificado
       const emision = await prisma.auditoria.findFirst({
         where: {
@@ -97,7 +101,7 @@ const revocacionGuard = async (req, res, next) => {
       return next()
     }
 
-    // Roles sin permiso de revocación (lector, viewer, docente, editor)
+    // Roles sin permiso de revocación (lector, viewer, docente)
     await logIntento(
       prisma, usuarioId, id,
       'Rol sin permiso de revocación',

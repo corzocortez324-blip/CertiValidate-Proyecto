@@ -229,6 +229,7 @@ function EstadoValido({ result, onReset }) {
 function EstadoRevocado({ result, onReset }) {
   const [showTech, setShowTech] = useState(false)
   const hasTech = result.hash_sha256 || result.tx_hash_revocacion || result.fecha_revocacion
+  const fechaRevocacion = result.fecha_revocacion || result.revocacion?.fecha
   return (
     <div className='result-card result-revocado animate-fade-in' role='alert' aria-live='assertive'>
       <div className='result-status-banner'>
@@ -262,10 +263,16 @@ function EstadoRevocado({ result, onReset }) {
               <span className='rd-label'>Fecha de emisión</span>
               <strong className='rd-value'>{formatDate(result.fecha_emision)}</strong>
             </div>
-            {result.fecha_revocacion && (
+            {fechaRevocacion && (
               <div>
                 <span className='rd-label'>Fecha de revocación</span>
-                <strong style={{ color: 'var(--color-revoked-public)' }}>{formatDate(result.fecha_revocacion)}</strong>
+                <strong style={{ color: 'var(--color-revoked-public)' }}>{formatDate(fechaRevocacion)}</strong>
+              </div>
+            )}
+            {result.revocacion?.motivo && (
+              <div>
+                <span className='rd-label'>Motivo</span>
+                <strong className='rd-value'>{result.revocacion.motivo.replace(/_/g, ' ')}</strong>
               </div>
             )}
           </div>
@@ -356,6 +363,59 @@ function EstadoAlterado({ result, onReset }) {
   )
 }
 
+function EstadoExpirado({ result, onReset }) {
+  return (
+    <div className='result-card result-alterado animate-fade-in' role='alert' aria-live='assertive'>
+      <div className='result-status-banner'>
+        <AlertCircle size={44} className='result-icon' aria-hidden='true' />
+        <div>
+          <h3 className='result-title'>Certificado Expirado</h3>
+          <p className='result-subtitle'>El certificado es auténtico, pero su vigencia terminó.</p>
+        </div>
+      </div>
+
+      <div className='result-body'>
+        {result.codigo_unico && (
+          <div className='result-data-grid'>
+            {result.titular && (
+              <div className='rd-primary'>
+                <span className='rd-label'>Titular</span>
+                <span className='rd-value'>{result.titular}</span>
+              </div>
+            )}
+            {result.institucion && (
+              <div className='rd-primary rd-inst'>
+                <span className='rd-label'>Institución</span>
+                <span className='rd-value'>{result.institucion}</span>
+              </div>
+            )}
+            <div>
+              <span className='rd-label'>Código único</span>
+              <strong className='rd-mono'>{result.codigo_unico}</strong>
+            </div>
+            <div>
+              <span className='rd-label'>Fecha de emisión</span>
+              <strong className='rd-value'>{formatDate(result.fecha_emision)}</strong>
+            </div>
+            {result.fecha_expiracion && (
+              <div>
+                <span className='rd-label'>Expiró</span>
+                <strong className='rd-value'>{formatDate(result.fecha_expiracion)}</strong>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className='result-actions'>
+          <button className='btn-result-secondary' onClick={onReset} type='button'>
+            <RotateCcw size={13} />Verificar otro
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function EstadoInexistente({ result, onReset }) {
   const [showTech, setShowTech] = useState(false)
   const consultado = result?.uuid_consultado || result?.codigo_consultado || result?.hash_consultado
@@ -403,10 +463,11 @@ function EstadoInexistente({ result, onReset }) {
 }
 
 function ResultCard({ result, onReset }) {
-  const estado = result.estado || 'no_encontrado'
-  if (estado === 'valido')   return <EstadoValido result={result} onReset={onReset} />
-  if (estado === 'revocado') return <EstadoRevocado result={result} onReset={onReset} />
-  if (estado === 'alterado') return <EstadoAlterado result={result} onReset={onReset} />
+  const estado = String(result.estado || 'no_encontrado').toLowerCase()
+  if (estado === 'valido' || estado === 'vigente')    return <EstadoValido result={result} onReset={onReset} />
+  if (estado === 'revocado')                          return <EstadoRevocado result={result} onReset={onReset} />
+  if (estado === 'alterado' || estado === 'invalido') return <EstadoAlterado result={result} onReset={onReset} />
+  if (estado === 'expirado')                          return <EstadoExpirado result={result} onReset={onReset} />
   return <EstadoInexistente result={result} onReset={onReset} />
 }
 
@@ -439,7 +500,7 @@ export const VerifyCertificate = () => {
     if (codigo) {
       setTab('codigo')
       setQuery(codigo)
-      verify({ codigo: codigo.trim() })
+      void verify({ codigo: codigo.trim() })
       setTimeout(() => document.getElementById('verificar')?.scrollIntoView({ behavior: 'smooth' }), 100)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -449,7 +510,7 @@ export const VerifyCertificate = () => {
     e.preventDefault()
     if (!query.trim()) return
     const payload = tab === 'hash' ? { hash: query.trim() } : { codigo: query.trim() }
-    verify(payload)
+    void verify(payload)
   }
 
   const processFile = async (file) => {
@@ -477,14 +538,14 @@ export const VerifyCertificate = () => {
 
   const handleFileInput = (e) => {
     const file = e.target.files?.[0]
-    if (file) processFile(file)
+    if (file) void processFile(file)
   }
 
   const handleDrop = (e) => {
     e.preventDefault()
     setDragOver(false)
     const file = e.dataTransfer.files?.[0]
-    if (file) processFile(file)
+    if (file) void processFile(file)
   }
 
   const reset = () => {

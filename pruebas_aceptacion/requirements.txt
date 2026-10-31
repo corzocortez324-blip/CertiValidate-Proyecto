@@ -1,0 +1,8 @@
+selenium>=4.20
+pytest>=8.0
+pyotp>=2.9
+pypdf>=4.0
+# Opcionales (CA012: decodificar el QR del PDF descargado)
+# PyMuPDF
+# opencv-python-headless
+# numpy

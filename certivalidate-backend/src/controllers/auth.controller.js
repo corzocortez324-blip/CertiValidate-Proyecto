@@ -418,6 +418,10 @@ const cambiarPassword = async (req, res) => {
       return sendError(res, 'Contraseña actual incorrecta', 401)
     }
 
+    if (await bcrypt.compare(newPassword, usuario.password_hash)) {
+      return sendError(res, 'La nueva contraseña debe ser distinta de la actual', 400)
+    }
+
     const nuevoHash = await bcrypt.hash(newPassword, 12)
 
     await prisma.usuario.update({

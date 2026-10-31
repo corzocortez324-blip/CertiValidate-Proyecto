@@ -138,12 +138,21 @@ const emitirCertificado = async (req, res) => {
         '[CertificadoController] Error consultando provider, intentando fallback',
       )
 
-      // Intenta fallback a local
-      if (providerFinal === 'external-api' && estudiante_id) {
+      // Intenta fallback a la BD local: por estudiante_id o, si no viene, por documento
+      if (providerFinal === 'external-api' && (estudiante_id || documento_estudiante)) {
         try {
-          estudiante = await prisma.estudiante.findUnique({
-            where: { id: estudiante_id },
-          })
+          estudiante = estudiante_id
+            ? await prisma.estudiante.findUnique({ where: { id: estudiante_id } })
+            : await academicProvider.buscarEstudiante({
+                provider: 'local-db',
+                documento: documento_estudiante,
+                institucionId: institucion_id,
+              })
+          if (!estudiante) {
+            const noEncontrado = new Error('Estudiante no encontrado')
+            noEncontrado.statusCode = 404
+            throw noEncontrado
+          }
           fallbackUsado = true
           proveedorUsado = 'local-db (fallback)'
 
@@ -156,7 +165,8 @@ const emitirCertificado = async (req, res) => {
             '[CertificadoController] Fallback a local-db exitoso',
           )
         } catch (fallbackErr) {
-          throw error // Relanzar error original si fallback también falla
+          // 404 si el estudiante tampoco está en la BD local; si no, el error original
+          throw fallbackErr.statusCode === 404 ? fallbackErr : error
         }
       } else {
         throw error
@@ -500,6 +510,17 @@ const verificarCertificado = async (req, res) => {
       },
     })
 
+    // Motivo (código) y fecha de la revocación; el detalle libre no se publica
+    let revocacionInfo = null
+    if (resultado === 'revocado') {
+      const rev = await prisma.revocacion.findFirst({
+        where: { certificado_id: cert.id },
+        orderBy: { fecha_revocacion: 'desc' },
+        select: { motivo_codigo: true, fecha_revocacion: true },
+      })
+      if (rev) revocacionInfo = { motivo: rev.motivo_codigo, fecha: rev.fecha_revocacion }
+    }
+
     const txBlockchain = cert.blockchain?.[0] ?? null
 
     let blockchainInfo = null
@@ -554,6 +575,7 @@ const verificarCertificado = async (req, res) => {
         titular: ofuscarNombre(nombreDisplay, apellidoDisplay),
         tipo_certificado: cert.snapshot_plantilla_nombre ?? cert.plantilla?.nombre ?? null,
         institucion: cert.snapshot_institucion_nombre ?? cert.institucion?.nombre ?? null,
+        revocacion: revocacionInfo,
         blockchain: blockchainInfo,
       },
       mensaje,
@@ -614,9 +636,9 @@ const descargarCertificado = async (req, res) => {
 // Listar certificados
 const listarCertificados = async (req, res) => {
   try {
-    const page = Math.max(parseInt(req.query.page, 10) || 1, 1)
+    const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1)
     const limit = Math.min(
-      Math.max(parseInt(req.query.limit, 10) || 10, 1),
+      Math.max(Number.parseInt(req.query.limit, 10) || 10, 1),
       100,
     )
     const estadoFiltro = req.query.estado
@@ -690,6 +712,12 @@ const listarCertificados = async (req, res) => {
             },
           },
           institucion: true,
+          // Motivo y fecha de la revocación para mostrarlos en el listado
+          revocaciones: {
+            select: { motivo_codigo: true, fecha_revocacion: true },
+            orderBy: { fecha_revocacion: 'desc' },
+            take: 1,
+          },
         },
       }),
       prisma.certificado.count({ where }),
@@ -767,9 +795,9 @@ const obtenerCertificado = async (req, res) => {
 const obtenerVerificaciones = async (req, res) => {
   try {
     const { id } = req.params
-    const page = Math.max(parseInt(req.query.page, 10) || 1, 1)
+    const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1)
     const limit = Math.min(
-      Math.max(parseInt(req.query.limit, 10) || 10, 1),
+      Math.max(Number.parseInt(req.query.limit, 10) || 10, 1),
       100,
     )
 
@@ -840,9 +868,9 @@ const obtenerVerificaciones = async (req, res) => {
 const obtenerRevocaciones = async (req, res) => {
   try {
     const { id } = req.params
-    const page = Math.max(parseInt(req.query.page, 10) || 1, 1)
+    const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1)
     const limit = Math.min(
-      Math.max(parseInt(req.query.limit, 10) || 10, 1),
+      Math.max(Number.parseInt(req.query.limit, 10) || 10, 1),
       100,
     )
 
@@ -1081,6 +1109,8 @@ const enviarEmailConPdfTemplate = async (req, res) => {
     return sendSuccess(res, null, 'Email enviado correctamente', 200)
   } catch (error) {
     logger.error({ err: error, requestId: req.requestId }, 'Error en enviarEmailConPdfTemplate')
+    if (error.code === 'EMAIL_PROVIDER_ERROR')
+      return sendError(res, 'El proveedor de correo no pudo enviar el email', 502)
     return sendError(res, 'Error al enviar el email', 500)
   }
 }

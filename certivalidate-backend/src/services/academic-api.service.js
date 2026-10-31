@@ -13,8 +13,8 @@ const logger = require('../utils/logger')
  * - Config dinámica por institución (url_base, api_key)
  */
 
-const DEFAULT_TIMEOUT = parseInt(process.env.ACADEMIC_API_TIMEOUT || 5000)
-const MAX_RETRIES = parseInt(process.env.ACADEMIC_API_MAX_RETRIES || 3)
+const DEFAULT_TIMEOUT = Number.parseInt(process.env.ACADEMIC_API_TIMEOUT || 5000)
+const MAX_RETRIES = Number.parseInt(process.env.ACADEMIC_API_MAX_RETRIES || 3)
 const BACKOFF_MULTIPLIER = 1.5
 
 /**
@@ -317,7 +317,10 @@ function esperar(ms) {
  *   url_base debe ser la URL raíz (ej: http://localhost:4000); el health se prueba en {url_base}/health
  * @returns {Promise<boolean>} True si API está disponible
  */
-async function verificarDisponibilidad(config = {}) {
+/**
+ * Con { conDetalle: true } devuelve { disponible, error } en lugar de un booleano.
+ */
+async function verificarDisponibilidad(config = {}, { conDetalle = false } = {}) {
   const healthUrl = getHealthUrl(config)
   const apiKey = getApiKey(config)
 
@@ -347,7 +350,7 @@ async function verificarDisponibilidad(config = {}) {
       '[AcademicAPI] Health check exitoso',
     )
 
-    return true
+    return conDetalle ? { disponible: true, error: null } : true
   } catch (error) {
     logger.warn(
       {
@@ -359,7 +362,11 @@ async function verificarDisponibilidad(config = {}) {
       '[AcademicAPI] Health check falló',
     )
 
-    return false
+    if (!conDetalle) return false
+    let detalle = error.message || 'Error de conexión'
+    if (error.statusCode === 408) detalle = 'Timeout'
+    else if (error.statusCode >= 400) detalle = `HTTP ${error.statusCode}`
+    return { disponible: false, error: detalle }
   }
 }
 

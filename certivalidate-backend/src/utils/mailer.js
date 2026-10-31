@@ -415,23 +415,26 @@ const enviarEmailCertificadoConPdf = async (certificado, pdfBuffer) => {
       </td></tr>
     </table>`
 
-  try {
-    const resend = getResend()
-    const filename = `certificado-${codigoUnico}.pdf`
-    const { data, error } = await resend.emails.send({
-      from: emailFrom(),
-      to: resolveRecipient(email),
-      subject: `Tu certificado de ${safe(plantillaNombre)} — CertiValidate`,
-      html: wrap(content),
-      attachments: [
-        { filename, content: pdfBuffer },
-      ],
-    })
-    if (error) { logger.error({ error, email }, 'Resend rechazó email con PDF adjunto'); return }
-    logger.info({ id: data?.id, email, codigoUnico }, 'Email de certificado con PDF enviado')
-  } catch (err) {
-    logger.error({ err, email }, 'Error al enviar email de certificado con PDF')
+  // A diferencia de los otros envíos, este lo solicita el usuario explícitamente:
+  // el error se propaga para que el controlador no informe un éxito falso.
+  const resend = getResend()
+  const filename = `certificado-${codigoUnico}.pdf`
+  const { data, error } = await resend.emails.send({
+    from: emailFrom(),
+    to: resolveRecipient(email),
+    subject: `Tu certificado de ${safe(plantillaNombre)} — CertiValidate`,
+    html: wrap(content),
+    attachments: [
+      { filename, content: pdfBuffer },
+    ],
+  })
+  if (error) {
+    logger.error({ error, email }, 'Resend rechazó email con PDF adjunto')
+    const err = new Error(error.message || 'El proveedor de correo rechazó el envío')
+    err.code = 'EMAIL_PROVIDER_ERROR'
+    throw err
   }
+  logger.info({ id: data?.id, email, codigoUnico }, 'Email de certificado con PDF enviado')
 }
 
 module.exports = {

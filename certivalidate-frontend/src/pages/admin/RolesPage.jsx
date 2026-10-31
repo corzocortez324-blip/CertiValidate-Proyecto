@@ -80,7 +80,7 @@ function groupPermisos(permisos) {
   const conocidos  = RECURSO_ORDEN.filter(r => map[r]).map(r => ({ recurso: r, permisos: map[r] }));
   const desconocidos = Object.keys(map)
     .filter(r => !RECURSO_ORDEN.includes(r))
-    .sort()
+    .sort((a, b) => a.localeCompare(b))
     .map(r => ({ recurso: r, permisos: map[r] }));
   return [...conocidos, ...desconocidos];
 }
@@ -119,7 +119,7 @@ export const RolesPage = () => {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { void load(); }, [load]);
 
   const toggle = (rolId, permisoId) => {
     if (!canEdit) return;

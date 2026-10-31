@@ -73,10 +73,10 @@ export const AuthProvider = ({ children }) => {
   }, [clearAuthState]);
 
   useEffect(() => {
-    refreshProfile().finally(() => setLoading(false));
+    void refreshProfile().finally(() => setLoading(false));
     const onExpired = () => {
       clearAuthState();
-      navigate('/login');
+      void navigate('/login');
     };
     window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
     return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
@@ -109,7 +109,7 @@ export const AuthProvider = ({ children }) => {
       // Si el servidor falla, limpiamos sesión localmente de todas formas.
     } finally {
       clearAuthState();
-      navigate('/login');
+      void navigate('/login');
     }
   };
 
