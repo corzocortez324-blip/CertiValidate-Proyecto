@@ -13,11 +13,11 @@ async function test() {
 
     console.log(limpiarLog(JSON.stringify(estudiante, null, 2)))
   } catch (error) {
-    console.error(error.message)
+    console.error(limpiarLog(error.message))
   }
 }
 
 test().catch((err) => {
-  console.error(err)
+  console.error(limpiarLog(err?.stack || err))
   process.exit(1)
 })

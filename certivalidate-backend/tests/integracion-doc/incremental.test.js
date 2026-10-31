@@ -56,7 +56,8 @@ for (const [caso, pasos] of Object.entries(CASOS)) {
     for (const paso of backend) {
       it(`${caso} · ${paso}`, async () => {
         expect.hasAssertions() // cada paso verifica su salida esperada con expect
-        await PASOS[paso](ctx, api)
+        // y el paso completo debe terminar sin fallar
+        await expect(Promise.resolve(PASOS[paso](ctx, api)).then(() => true)).resolves.toBe(true)
       }, 45000)
     }
   })
