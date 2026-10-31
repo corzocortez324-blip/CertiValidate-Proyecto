@@ -435,6 +435,7 @@ const enviarEmailCertificadoConPdf = async (certificado, pdfBuffer) => {
     throw err
   }
   logger.info({ id: data?.id, email, codigoUnico }, 'Email de certificado con PDF enviado')
+  return data?.id ?? null
 }
 
 module.exports = {

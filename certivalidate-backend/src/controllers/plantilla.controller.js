@@ -74,17 +74,20 @@ const obtenerPlantilla = async (req, res) => {
   }
 }
 
+const PLANTILLA_HTML_POR_DEFECTO =
+  '<div class="certificado"><h1>{{institucion}}</h1><p>Certifica que</p>' +
+  '<h2>{{nombre_completo}}</h2><p>{{plantilla}}</p><p>Emitido el {{fecha_emision}} · Código: {{codigo}}</p></div>'
+
 // Crear plantilla
 const crearPlantilla = async (req, res) => {
   try {
-    const { institucion_id, nombre, template_html, version, activa } = req.body
+    const { institucion_id, nombre, activa } = req.body
+    // Sin diseño propio se usa la plantilla base; la versión inicial es 1
+    const template_html = req.body.template_html || PLANTILLA_HTML_POR_DEFECTO
+    const version = req.body.version ?? 1
 
-    if (!institucion_id || !nombre || !template_html || version === undefined) {
-      return sendError(
-        res,
-        'institucion_id, nombre, template_html y version son obligatorios',
-        400,
-      )
+    if (!institucion_id || !nombre) {
+      return sendError(res, 'institucion_id y nombre son obligatorios', 400)
     }
 
     const institucion = await prisma.institucion.findUnique({

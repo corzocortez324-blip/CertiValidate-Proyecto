@@ -14,7 +14,7 @@ const assertNoForbiddenFields = (req, res, fields) => {
     return sendError(
       res,
       `No autorizado para modificar el campo ${attempted}`,
-      403,
+      400,
     )
   }
 
@@ -38,7 +38,7 @@ async function validarDominioInstitucional(email, institucionId) {
 
 const formatUsuario = (usuario, rolPrincipal = null) => {
   // Credenciales y secretos nunca se devuelven (incluido el secreto 2FA, aunque esté cifrado)
-  const { password_hash, token_verificacion, token_verificacion_expira, totp_secret, ...datos } = usuario
+  const { password_hash, token_verificacion, token_verificacion_expira, totp_secret, password_changed_at, ...datos } = usuario
   return { ...datos, rol: rolPrincipal }
 }
 
@@ -172,7 +172,7 @@ const crearUsuario = async (req, res) => {
     )
 
     if (dominioError) {
-      return sendError(res, dominioError, 422)
+      return sendError(res, dominioError, 400)
     }
 
     const hash = await bcrypt.hash(password, 12)
@@ -275,7 +275,7 @@ const actualizarUsuario = async (req, res) => {
       )
 
       if (dominioError) {
-        return sendError(res, dominioError, 422)
+        return sendError(res, dominioError, 400)
       }
     }
 

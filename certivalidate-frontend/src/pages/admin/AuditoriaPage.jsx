@@ -39,7 +39,7 @@ function buildAuditRows(rows) {
 }
 
 function exportXLSX(rows) {
-  exportToXLSX(buildAuditRows(rows), AUDIT_HEADERS, 'auditoria');
+  return exportToXLSX(buildAuditRows(rows), AUDIT_HEADERS, 'auditoria');
 }
 
 function exportJSON(rows) {
@@ -133,7 +133,7 @@ export const AuditoriaPage = () => {
         p++;
       }
       if (fmt === 'json') exportJSON(allPages);
-      else exportXLSX(allPages);
+      else await exportXLSX(allPages);
       setShowExportModal(false);
     } catch (err) {
       alert('Error al exportar: ' + err.message);

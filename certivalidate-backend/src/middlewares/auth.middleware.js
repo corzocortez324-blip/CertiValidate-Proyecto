@@ -35,6 +35,7 @@ const verificarToken = async (req, res, next) => {
         activo: true,
         email_verificado: true,
         deleted_at: true,
+        password_changed_at: true,
       },
     })
 
@@ -44,6 +45,11 @@ const verificarToken = async (req, res, next) => {
 
     if (!usuario.activo) {
       return sendError(res, 'Usuario desactivado', 403)
+    }
+
+    // Un token emitido antes del último cambio de contraseña ya no es válido
+    if (usuario.password_changed_at && decoded.iat < Math.floor(usuario.password_changed_at.getTime() / 1000)) {
+      return sendError(res, 'Sesión expirada: la contraseña cambió', 401)
     }
 
     req.usuario = {

@@ -74,7 +74,7 @@ describe('POST /api/certificados/verificar (público)', () => {
     const res = await request(app)
       .post('/api/certificados/verificar')
       .send({ codigo: 'CODIGOINEXISTENTE999' })
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(404)
     expect(res.body.data.estado).toBe('no_encontrado')
   })
 

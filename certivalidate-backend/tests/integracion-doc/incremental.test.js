@@ -7,6 +7,7 @@
 const { crearEscenario, crearApiAcademica } = require('./escenario')
 const { PASOS } = require('./pasos')
 const { cleanupTestData } = require('../helpers/db')
+const { iniciarBlockchainLocal } = require('./blockchain-local')
 
 const FRONTEND = new Set(['P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'CP-P1', 'SIS-CP',
   'P1-P2', 'P1-P3', 'P1-P4', 'P1-P5', 'P1-P6', 'P1-P7', 'P1-P8'])
@@ -39,9 +40,10 @@ const CASOS = {
 }
 
 let api
+let red
 
-beforeAll(async () => { api = await crearApiAcademica() })
-afterAll(async () => { await api.cerrar(); await cleanupTestData() })
+beforeAll(async () => { red = await iniciarBlockchainLocal(); api = await crearApiAcademica() }, 60000)
+afterAll(async () => { await api.cerrar(); await red.detener(); await cleanupTestData() })
 
 for (const [caso, pasos] of Object.entries(CASOS)) {
   const backend = pasos.filter((p) => !FRONTEND.has(p))

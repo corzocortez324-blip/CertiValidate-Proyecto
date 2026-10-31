@@ -123,7 +123,6 @@ const PERMISOS_POR_ROL = {
     'institucion:estadisticas',
     'plantilla:ver',
     'plantilla:listar',
-    'auditoria:ver',
   ],
 }
 
@@ -437,6 +436,10 @@ async function main() {
         create: { rol_id: rolId, permiso_id: permisoId },
       })
     }
+    // Quita permisos asignados antes que ya no forman parte del rol
+    await prisma.rolPermiso.deleteMany({
+      where: { rol_id: rolId, permiso_id: { notIn: permisoKeys.map((k) => permisosCreados[k]) } },
+    })
     console.log(`   ✓ ${rolNombre}: ${permisoKeys.length} permisos`)
   }
 

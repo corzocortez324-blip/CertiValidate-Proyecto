@@ -65,3 +65,25 @@ INTEG_KEY = env("INTEG_KEY", "sk-abc123")
 
 # Buzón de pruebas MailHog (opcional, solo si redirige el SMTP/Resend a MailHog)
 MAILHOG_URL = env("MAILHOG_URL", "").rstrip("/")
+
+
+def _env_backend(nombre):
+    """Lee una variable de los .env del backend (los mismos que usa `npm run start:e2e`)."""
+    raiz = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "certivalidate-backend")
+    for archivo in (".env.e2e", ".env"):
+        try:
+            with open(os.path.join(raiz, archivo), encoding="utf-8") as f:
+                for linea in f:
+                    clave, _, valor = linea.strip().partition("=")
+                    if clave == nombre and valor:
+                        return valor.strip().strip('"').strip("'")
+        except OSError:
+            continue
+    return ""
+
+
+# CA013: la entrega del correo se confirma con la API de Resend (estado «delivered»)
+RESEND_API_KEY = env("RESEND_API_KEY") or _env_backend("RESEND_API_KEY")
+EMAIL_DEV_TO = env("EMAIL_DEV_TO") or _env_backend("EMAIL_DEV_TO")
+# CA004: sin DATABASE_URL explícita se usa la BD local del backend E2E (.env.e2e)
+DATABASE_URL = DATABASE_URL or _env_backend("DATABASE_URL")

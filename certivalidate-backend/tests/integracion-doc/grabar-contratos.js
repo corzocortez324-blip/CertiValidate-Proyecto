@@ -7,6 +7,13 @@
  */
 const fs = require('fs')
 const path = require('path')
+
+// Doble de Resend: el contrato del envío por correo se graba sin salir a internet
+process.env.RESEND_API_KEY = 're_test_doble'
+require.cache[require.resolve('resend')] = {
+  exports: { Resend: class { constructor() { this.emails = { send: async () => ({ data: { id: 'email_contrato' }, error: null }) } } } },
+}
+
 const { app, prisma, request, auth, crearEscenario } = require('./escenario')
 const { cleanupTestData } = require('../helpers/db')
 
@@ -17,11 +24,14 @@ const DESTINO = path.resolve(__dirname, '../../../certivalidate-frontend/src/__t
   const admin = auth(ctx.usuarios.admin.token)
   const lector = auth(ctx.usuarios.lector.token)
 
-  // Datos: 3 certificados (uno revocado) y eventos de auditoría
+  // Datos: 4 certificados (dos revocados) y eventos de auditoría
   const emitidos = []
-  for (let i = 0; i < 3; i++) emitidos.push((await ctx.emitir()).body.data)
+  for (let i = 0; i < 4; i++) emitidos.push((await ctx.emitir()).body.data)
   await request(app).post(`/api/certificados/${emitidos[1].id}/revocar`).set(admin)
     .send({ motivo_codigo: 'ERROR_DATOS', motivo_detalle: 'Contrato de prueba' })
+  await request(app).post(`/api/certificados/${emitidos[2].id}/revocar`).set(admin)
+    .send({ motivo_codigo: 'FRAUDE', motivo_detalle: 'Contrato de prueba' })
+  await prisma.estudiante.updateMany({ where: { id: emitidos[0].estudiante_id }, data: { email: '__test__titular@certivalidate.test' } })
 
   const get = async (url, headers = admin) => (await request(app).get(url).set(headers)).body
   const contratos = {
@@ -40,6 +50,9 @@ const DESTINO = path.resolve(__dirname, '../../../certivalidate-frontend/src/__t
     stats: await get('/api/admin/stats?period=30d'),
     verificar_no_encontrado: (await request(app).post('/api/certificados/verificar').send({ codigo: 'XXXX0000XXXX0000' })).body,
     verificar_valido: (await request(app).post('/api/certificados/verificar').send({ codigo: emitidos[0].codigo_unico })).body,
+    certificado_detalle: await get(`/api/certificados/${emitidos[0].id}`),
+    email_enviado: (await request(app).post(`/api/certificados/${emitidos[0].id}/email`).set(admin)
+      .send({ pdf_base64: Buffer.from('%PDF-1.4 contrato').toString('base64') })).body,
     login_2fa: { success: true, statusCode: 200, message: 'Se requiere verificación 2FA', data: { requires2FA: true, partial_token: 'token.parcial.prueba' } },
   }
 

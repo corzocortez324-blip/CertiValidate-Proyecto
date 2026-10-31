@@ -14,6 +14,7 @@ import { EstudiantesPage } from './pages/admin/EstudiantesPage';
 import { PlantillasPage } from './pages/admin/PlantillasPage';
 import { InstitucionesPage } from './pages/admin/InstitucionesPage';
 import { AuditoriaPage } from './pages/admin/AuditoriaPage';
+import { RevocacionesPage } from './pages/admin/RevocacionesPage';
 import { PerfilPage } from './pages/admin/PerfilPage';
 import { UsuariosPage } from './pages/admin/UsuariosPage';
 import { RolesPage } from './pages/admin/RolesPage';
@@ -38,6 +39,7 @@ function App() {
             <Route path="estudiantes" element={<PermissionRoute permission={PERMISSIONS.ESTUDIANTE_LISTAR} element={<EstudiantesPage />} />} />
             <Route path="plantillas" element={<PermissionRoute permission={PERMISSIONS.PLANTILLA_LISTAR} element={<PlantillasPage />} />} />
             <Route path="instituciones" element={<PermissionRoute permission={PERMISSIONS.INSTITUCION_VER} element={<InstitucionesPage />} />} />
+            <Route path="revocaciones" element={<PermissionRoute permission={PERMISSIONS.CERTIFICADO_LISTAR} element={<RevocacionesPage />} />} />
             <Route path="auditoria" element={<PermissionRoute permission={PERMISSIONS.AUDITORIA_VER} element={<AuditoriaPage />} />} />
             <Route path="usuarios" element={<PermissionRoute permission={PERMISSIONS.USUARIO_LISTAR} element={<UsuariosPage />} />} />
             <Route path="roles" element={<PermissionRoute permission={PERMISSIONS.USUARIO_LISTAR} element={<RolesPage />} />} />
@@ -52,7 +54,7 @@ function App() {
           <Route path="/verificar" element={<VerifyCertificate />} />
           <Route path="/dashboard" element={<Navigate to="/admin" replace />} />
           <Route path="/auditoria" element={<Navigate to="/admin/auditoria" replace />} />
-          <Route path="/revocaciones" element={<Navigate to="/admin/certificados?estado=revocado" replace />} />
+          <Route path="/revocaciones" element={<Navigate to="/admin/revocaciones" replace />} />
           <Route path="/certificados/emitir" element={<Navigate to="/admin/certificados?emitir=1" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

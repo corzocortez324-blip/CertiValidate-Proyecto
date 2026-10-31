@@ -55,6 +55,22 @@ function getApiKey(config = {}) {
  * @param {object} opciones - Configuración (timeout, maxRetries, url_base, api_key)
  * @returns {Promise<object>} Datos del estudiante
  */
+/**
+ * Normaliza la respuesta de la API académica: acepta el objeto plano o el
+ * envoltorio { success, data } de la academic-api, y nombres/apellidos.
+ */
+function normalizarEstudiante(respuesta) {
+  const e = respuesta && typeof respuesta === 'object' && respuesta.data && !respuesta.documento
+    ? respuesta.data
+    : respuesta
+  if (!e || typeof e !== 'object') return e
+  return {
+    ...e,
+    nombre: e.nombre ?? e.nombres ?? null,
+    apellido: e.apellido ?? e.apellidos ?? '',
+  }
+}
+
 async function buscarEstudiantePorDocumento(documento, opciones = {}) {
   const timeout = opciones.timeout || DEFAULT_TIMEOUT
   const maxRetries = opciones.maxRetries || MAX_RETRIES
@@ -96,7 +112,7 @@ async function buscarEstudiantePorDocumento(documento, opciones = {}) {
         '[AcademicAPI] Búsqueda exitosa',
       )
 
-      return data
+      return normalizarEstudiante(data)
     } catch (error) {
       ultimoError = error
       const duracion = Date.now() - inicio

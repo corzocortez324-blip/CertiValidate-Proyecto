@@ -269,7 +269,7 @@ async function _sincronizarEstudiantes(institucionId, config, requestId) {
     '[Sincronizar] Estudiantes sincronizados',
   )
 
-  return { recibidos: lista.length, creados, actualizados, errores }
+  return { recibidos: lista.length, creados, actualizados, errores, created: creados, updated: actualizados }
 }
 
 /**
@@ -339,7 +339,7 @@ async function _sincronizarPlantillas(institucionId, config, requestId) {
     '[Sincronizar] Plantillas sincronizadas',
   )
 
-  return { recibidos: lista.length, creados, actualizados, errores }
+  return { recibidos: lista.length, creados, actualizados, errores, created: creados, updated: actualizados }
 }
 
 /**
@@ -473,7 +473,7 @@ async function _sincronizarCertificados(institucionId, config, requestId) {
     '[Sincronizar] Certificados sincronizados',
   )
 
-  return { recibidos: lista.length, creados, actualizados, errores }
+  return { recibidos: lista.length, creados, actualizados, errores, created: creados, updated: actualizados }
 }
 
 module.exports = {

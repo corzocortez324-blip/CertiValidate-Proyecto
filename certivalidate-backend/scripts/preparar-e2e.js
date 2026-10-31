@@ -72,6 +72,21 @@ const USUARIOS = [
   // CA014 deja una integración hacia una URL de ejemplo; sin limpiarla, CA007 fallaría
   await prisma.integracion.deleteMany({ where: { institucion_id: institucion.id } })
 
+  // CA005/CA006 crean el estudiante y la plantilla de prueba. Los de corridas anteriores
+  // se renombran (sus certificados y revocaciones son inmutables y no se borran).
+  const sufijo = ` (corrida ${new Date().toISOString().slice(0, 16)})`
+  const documento = process.env.STUDENT_DOC || '1023456789'
+  const plantilla = process.env.PLANTILLA_NOMBRE || 'Certificado de Grado'
+  const est = await prisma.estudiante.updateMany({
+    where: { institucion_id: institucion.id, documento },
+    data: { documento: `${documento}-${Date.now()}` },
+  })
+  const pla = await prisma.plantillaCertificado.updateMany({
+    where: { institucion_id: institucion.id, nombre: plantilla },
+    data: { nombre: plantilla + sufijo, activa: false },
+  })
+  if (est.count || pla.count) console.log(`Datos de corridas anteriores renombrados: ${est.count} estudiante(s), ${pla.count} plantilla(s)`)
+
   console.log(`Institución: ${INSTITUCION} (${institucion.id})`)
   await prisma.$disconnect()
 })().catch(async (e) => {

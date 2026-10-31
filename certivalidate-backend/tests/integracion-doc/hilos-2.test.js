@@ -12,9 +12,11 @@ jest.mock('../../src/services/blockchain.service', () => {
 const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
 const { generateSync } = require('otplib')
+const { iniciarBlockchainLocal } = require('./blockchain-local')
 const { app, prisma, request, auth, login, emailDe, PASSWORD, crearEscenario, crearApiAcademica } = require('./escenario')
 const { emitirValido, verificarCodigo, revocarComo, configurarIntegracion } = require('./pasos')
 const blockchainService = require('../../src/services/blockchain.service')
+const { procesarTransaccionesPendientes } = require('../../src/services/blockchain-worker.service')
 const { decrypt } = require('../../src/utils/crypto')
 const { createTestUser, createTestInstitucion, linkUserToInstitucion, cleanupTestData } = require('../helpers/db')
 
@@ -22,12 +24,14 @@ const sha256 = (t) => crypto.createHash('sha256').update(t).digest('hex')
 
 let ctx
 let api
+let red
 
 beforeAll(async () => {
+  red = await iniciarBlockchainLocal()
   ctx = await crearEscenario(`hilos2_${Date.now()}`)
   api = await crearApiAcademica()
 }, 60000)
-afterAll(async () => { await api.cerrar(); await cleanupTestData() })
+afterAll(async () => { await api.cerrar(); await red.detener(); await cleanupTestData() })
 beforeEach(() => api.reiniciar())
 
 const nuevoUsuario = async (nombre, { rol = 'admin', inst = ctx.inst } = {}) => {
@@ -65,6 +69,9 @@ describe('H12 Configuración de integración', () => {
     expect(api.apiKeys).toContain('clave-secreta-h12') // descifrada antes de llamar
     const despues = (await prisma.integracion.findUnique({ where: { institucion_id: esc.inst.id } })).ultima_verificacion
     expect(despues).not.toEqual(antes)
+    // Solo quien administra la institución puede probar la conexión
+    const lector = await request(app).post(`/api/instituciones/${esc.inst.id}/probar-conexion`).set(auth(esc.usuarios.lector.token))
+    expect(lector.status).toBe(403)
   })
 
   it('CI-H12-03 Probar conexión sin respuesta (timeout de 5 s)', async () => {
@@ -96,14 +103,15 @@ describe('H13 Sincronización', () => {
     const res = await sincronizar(['estudiantes', 'certificados'])
     expect(res.status).toBe(200)
     expect(api.apiKeys).toContain('clave-h13')
-    expect(res.body.data.estudiantes).toMatchObject({ recibidos: 2, creados: 2 })
-    expect(res.body.data.certificados).toMatchObject({ recibidos: 1, creados: 1 })
+    expect(res.body.data.estudiantes).toMatchObject({ recibidos: 2, created: 2, updated: 0 })
+    expect(res.body.data.certificados).toMatchObject({ recibidos: 1, created: 1, updated: 0 })
     expect(await prisma.auditoria.findFirst({ where: { accion: 'SINCRONIZAR_DATOS', entidad_id: esc.inst.id } })).not.toBeNull()
   })
 
   it('CI-H13-02 Sincronización parcial (una entidad no disponible)', async () => {
     api.modo = 'certificadosCaidos'
     api.estudiantes = [{ documento: `S3${esc.tag}`, nombre: 'Sol', apellido: 'Tres' }]
+    api.certificados = []
     const res = await sincronizar(['estudiantes', 'certificados'])
     expect(res.status).toBe(200)
     expect(res.body.data.estudiantes.recibidos).toBe(1)
@@ -193,8 +201,20 @@ describe('H15 Anclaje en blockchain', () => {
     expect(estadoDuranteEnvio).toBe('pendiente')
     const tx = await ultimaTx(c.id)
     expect(tx).toMatchObject({ estado: 'confirmado', intentos: 0 })
-    expect(tx.tx_hash).toMatch(/^mock_tx_/)
+    expect(tx.tx_hash).toMatch(/^0x[0-9a-f]{64}$/)
+    expect(tx.red).toBe('ganache-local')
     expect(tx.confirmado_en).not.toBeNull()
+
+    // El worker confirma las transacciones que quedaron pendientes
+    const otro = await emitirValido(ctx)
+    const pendiente = await prisma.blockchainTransaccion.create({
+      data: { certificado_id: otro.id, hash: blockchainService.generateCertificateHash(otro), red: 'ganache-local', estado: 'pendiente', intentos: 1 },
+    })
+    const resumen = await procesarTransaccionesPendientes()
+    expect(resumen.confirmadas).toBeGreaterThanOrEqual(1)
+    const procesada = await prisma.blockchainTransaccion.findUnique({ where: { id: pendiente.id } })
+    expect(procesada).toMatchObject({ estado: 'confirmado', error_mensaje: null })
+    expect(procesada.tx_hash).toMatch(/^0x[0-9a-f]{64}$/)
   })
 
   it('CI-H15-02 Error de red con reintentos hasta fallo', async () => {
@@ -211,7 +231,7 @@ describe('H15 Anclaje en blockchain', () => {
     await registrar(c.id)
     const tx = await ultimaTx(c.id)
     const v = await verificarCodigo(c.codigo_unico)
-    expect(v.blockchain).toMatchObject({ registered: true, verified: true, integrityStatus: 'valid', network: 'mock' })
+    expect(v.blockchain).toMatchObject({ registered: true, verified: true, integrityStatus: 'valid', network: 'ganache-local' })
     expect(v.blockchain.txHashMasked).toContain(tx.tx_hash.slice(0, 10))
     expect(v.blockchain.registeredAt).toBeTruthy()
   })
@@ -225,10 +245,14 @@ describe('H16 Cambio de contraseña', () => {
   it('CI-H16-01 Cambio de contraseña exitoso cierra todas las sesiones', async () => {
     const u = await nuevoUsuario('h1601')
     const d1 = await login(u.sufijo)
-    await login(u.sufijo) // segundo dispositivo
+    const d2 = await login(u.sufijo) // segundo dispositivo
     expect(await prisma.sesionActiva.count({ where: { usuario_id: u.id } })).toBe(2)
+    await new Promise((r) => setTimeout(r, 1100)) // el iat del JWT tiene resolución de segundos
     const res = await cambiar(d1.token, PASSWORD, 'Nueva1234')
     expect(res.status).toBe(200)
+    // El access token emitido antes del cambio deja de ser válido
+    const viejo = await request(app).get('/api/auth/perfil').set(auth(d2.token))
+    expect(viejo.status).toBe(401)
     expect(await prisma.sesionActiva.count({ where: { usuario_id: u.id } })).toBe(0)
     expect(await prisma.refreshToken.count({ where: { usuario_id: u.id, revoked_at: null } })).toBe(0)
     expect(await prisma.auditoria.findFirst({ where: { accion: 'CAMBIAR_PASSWORD', usuario_id: u.id } })).not.toBeNull()
@@ -240,7 +264,7 @@ describe('H16 Cambio de contraseña', () => {
     const { token } = await login(u.sufijo)
     const hashAntes = (await prisma.usuario.findUnique({ where: { id: u.id } })).password_hash
     const res = await cambiar(token, 'Erronea1', 'Nueva1234')
-    expect(res.status).toBe(401)
+    expect(res.status).toBe(400)
     expect((await prisma.usuario.findUnique({ where: { id: u.id } })).password_hash).toBe(hashAntes)
     expect(await prisma.sesionActiva.count({ where: { usuario_id: u.id } })).toBe(1)
   })
@@ -316,7 +340,7 @@ describe('H18 Sesiones activas', () => {
 
     const ajena = await prisma.sesionActiva.findFirst({ where: { usuario_id: ctx.usuarios.ajeno.id } })
     const intento = await request(app).delete(`/api/auth/sesiones/${ajena.id}`).set(auth(token))
-    expect(intento.status).toBe(404) // no revela si la sesión existe
+    expect(intento.status).toBe(403)
     expect(await prisma.sesionActiva.findUnique({ where: { id: ajena.id } })).not.toBeNull()
   })
 

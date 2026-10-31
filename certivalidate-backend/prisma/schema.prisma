@@ -29,6 +29,7 @@ model Usuario {
   password_hash             String
   activo                    Boolean              @default(true)
   ultimo_acceso             DateTime?
+  password_changed_at       DateTime?
   created_at                DateTime             @default(now())
   updated_at                DateTime?
   deleted_at                DateTime?
