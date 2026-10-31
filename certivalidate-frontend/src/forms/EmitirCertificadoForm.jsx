@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import DOMPurify from 'dompurify';
+import { createPortal } from 'react-dom';
 import {
   Search, User, AlertTriangle, CheckCircle2, XCircle, WifiOff,
   FileText, Eye, X, AlertCircle,
@@ -41,8 +42,11 @@ function fillPreview(html, data = {}) {
 }
 
 /* ── Modal de confirmación con vista previa ─────────────────────── */
+// Se dibuja en <body> con un portal: dentro de la página, un ancestro con transform
+// (p. ej. .animate-fade-in) convertía position:fixed en relativo a ese ancestro y el
+// botón «Confirmar emisión» quedaba fuera de pantalla en pantallas de 768 px de alto.
 function PreviewConfirmModal({ previewHtml, loading, onCancel, onConfirm }) {
-  return (
+  return createPortal(
     <div className="pcm-overlay" role="presentation" onClick={onCancel} onKeyDown={(e) => { if (e.key === 'Escape') onCancel(); }}>
       <div className="pcm-dialog glass-panel animate-fade-in" role="dialog" aria-modal="true" aria-label="Vista previa del certificado" onClick={e => e.stopPropagation()}>
         <div className="pcm-header">
@@ -113,7 +117,8 @@ function PreviewConfirmModal({ previewHtml, loading, onCancel, onConfirm }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

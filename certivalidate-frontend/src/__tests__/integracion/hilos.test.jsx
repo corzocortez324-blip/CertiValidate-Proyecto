@@ -13,6 +13,7 @@ import { MemoryRouter } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { AuthProvider } from '../../context/AuthContext';
 import { ToastProvider } from '../../components/ui/ToastProvider';
+import { ThemeProvider } from '../../context/ThemeContext';
 import { AuditoriaPage } from '../../pages/admin/AuditoriaPage';
 import { PerfilPage } from '../../pages/admin/PerfilPage';
 import { AdminDashboard } from '../../pages/admin/AdminDashboard';
@@ -32,7 +33,7 @@ const ESPERA = { timeout: 6000 };
 const montar = (elemento) =>
   render(
     <MemoryRouter>
-      <ToastProvider><AuthProvider>{elemento}</AuthProvider></ToastProvider>
+      <ThemeProvider><ToastProvider><AuthProvider>{elemento}</AuthProvider></ToastProvider></ThemeProvider>
     </MemoryRouter>,
   );
 

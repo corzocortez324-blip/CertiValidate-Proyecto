@@ -8,6 +8,7 @@ import { vi } from 'vitest';
 import { render } from '@testing-library/react';
 import App from '../../App';
 import { ToastProvider } from '../../components/ui/ToastProvider';
+import { ThemeProvider } from '../../context/ThemeContext';
 import contratos from './contratos.json';
 
 export { contratos };
@@ -65,10 +66,10 @@ export const iniciarSesion = (rol = 'admin') => {
   localStorage.setItem('accesos', JSON.stringify(perfil.accesos));
 };
 
-/** Monta la aplicación completa (App) en la ruta indicada. */
+/** Monta la aplicación completa (App) en la ruta indicada, con los proveedores de main.jsx. */
 export const renderApp = (ruta = '/') => {
   window.history.pushState({}, '', ruta);
-  return render(<ToastProvider><App /></ToastProvider>);
+  return render(<ThemeProvider><ToastProvider><App /></ToastProvider></ThemeProvider>);
 };
 
 export const llamo = (metodo, re) => llamadas.some((l) => l.metodo === metodo && re.test(l.ruta));

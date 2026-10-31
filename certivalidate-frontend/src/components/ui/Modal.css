@@ -1,8 +1,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(16px) saturate(0.5);
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -16,6 +15,10 @@
   max-height: 78vh;
   overflow-y: auto;
   animation: fadeIn 0.3s ease;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
 }
 
 .modal-sm { max-width: 400px; }

@@ -10,31 +10,31 @@
 }
 
 .badge-success {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--success-tint);
+  color: var(--color-success);
+  border: 1px solid var(--success-ring);
 }
 
 .badge-error {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--error-tint);
+  color: var(--color-error);
+  border: 1px solid var(--error-ring);
 }
 
 .badge-warning {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: var(--warning-tint);
+  color: var(--color-warning);
+  border: 1px solid var(--warning-ring);
 }
 
 .badge-muted {
-  background: rgba(156, 163, 175, 0.15);
-  color: #9ca3af;
-  border: 1px solid rgba(156, 163, 175, 0.3);
+  background: var(--overlay-hover);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
 }
 
 .badge-primary {
-  background: rgba(0, 240, 255, 0.1);
+  background: var(--primary-tint-08);
   color: var(--color-primary);
-  border: 1px solid rgba(0, 240, 255, 0.3);
+  border: 1px solid var(--primary-ring);
 }

@@ -2,11 +2,16 @@
  * Tests de integridad de certificados.
  * Verifica:
  * - Hash es consistente entre emisión y verificación
+ * - Editar el estudiante después de emitir NO rompe la verificación (snapshot)
+ * - El hash de verificación pública == el hash usado en blockchain
  * - Providers no implementados devuelven 501
  * - Multi-tenant security es enforced
  */
 const request = require('supertest')
 const app = require('../src/app')
+const prisma = require('../src/utils/prisma')
+const { computeCertificateHash } = require('../src/services/certificate-hash.service')
+const { generateCertificateHash } = require('../src/services/blockchain.service')
 const {
   cleanupTestData,
   createTestUser,
@@ -112,6 +117,90 @@ describe('Integridad de Hash', () => {
 
     expect(verifyRes.status).toBe(200)
     expect(verifyRes.body.data.estado).toBe('valido')
+    expect(verifyRes.body.data.hash_verificado).toBe(true)
+  })
+
+  it('editar el estudiante después de emitir NO rompe la verificación (snapshot frozen)', async () => {
+    // Emitir un certificado con datos actuales del estudiante
+    const estudianteSnap = await createTestEstudiante(instA.id, `SNAP_${UNIQUE}`)
+    const plantillaSnap = await createTestPlantilla(instA.id, `SNAP_${UNIQUE}`)
+
+    const certRes = await request(app)
+      .post('/api/certificados/emitir')
+      .set('Authorization', `Bearer ${tokenA}`)
+      .send({
+        estudiante_id: estudianteSnap.id,
+        institucion_id: instA.id,
+        plantilla_id: plantillaSnap.id,
+      })
+
+    expect(certRes.status).toBe(201)
+    const certEmitido = certRes.body.data
+
+    // Modificar el nombre del estudiante en la tabla viva
+    await prisma.estudiante.update({
+      where: { id: estudianteSnap.id },
+      data: { nombre: 'NombreModificado', apellido: 'ApellidoModificado' },
+    })
+
+    // La verificación debe seguir siendo válida porque usa el snapshot congelado
+    const verifyRes = await request(app)
+      .post('/api/certificados/verificar')
+      .send({ hash: certEmitido.hash_sha256 })
+
+    expect(verifyRes.status).toBe(200)
+    expect(verifyRes.body.data.hash_verificado).toBe(true)
+    expect(verifyRes.body.data.estado).toBe('valido')
+  })
+
+  it('hash de verificación pública == hash usado en blockchain (mismo computeCertificateHash)', async () => {
+    // Emitir certificado nuevo
+    const estudianteH = await createTestEstudiante(instA.id, `HASH_UNITY_${UNIQUE}`)
+    const plantillaH = await createTestPlantilla(instA.id, `HASH_UNITY_${UNIQUE}`)
+
+    const certRes = await request(app)
+      .post('/api/certificados/emitir')
+      .set('Authorization', `Bearer ${tokenA}`)
+      .send({
+        estudiante_id: estudianteH.id,
+        institucion_id: instA.id,
+        plantilla_id: plantillaH.id,
+      })
+
+    expect(certRes.status).toBe(201)
+    const certId = certRes.body.data.id
+
+    // Leer el certificado completo (con snapshot fields) desde la BD
+    const certDb = await prisma.certificado.findUnique({ where: { id: certId } })
+
+    // El hash almacenado debe coincidir con computeCertificateHash sobre el snapshot
+    const hashCanónico = computeCertificateHash({
+      certificado_id: certDb.id,
+      codigo_unico: certDb.codigo_unico,
+      estudiante_id: certDb.estudiante_id,
+      fecha_emision: certDb.fecha_emision,
+      institucion_id: certDb.institucion_id,
+      plantilla_id: certDb.plantilla_id,
+      snapshot_apellido: certDb.snapshot_apellido,
+      snapshot_documento: certDb.snapshot_documento,
+      snapshot_email: certDb.snapshot_email,
+      snapshot_institucion_nombre: certDb.snapshot_institucion_nombre,
+      snapshot_nombre: certDb.snapshot_nombre,
+      snapshot_plantilla_nombre: certDb.snapshot_plantilla_nombre,
+    })
+
+    expect(certDb.hash_sha256).toBe(hashCanónico)
+
+    // generateCertificateHash (usado por blockchain) debe producir el mismo valor
+    const hashBlockchain = generateCertificateHash(certDb)
+    expect(hashBlockchain).toBe(certDb.hash_sha256)
+
+    // Y la verificación pública debe confirmar el hash como válido
+    const verifyRes = await request(app)
+      .post('/api/certificados/verificar')
+      .send({ hash: certDb.hash_sha256 })
+
+    expect(verifyRes.status).toBe(200)
     expect(verifyRes.body.data.hash_verificado).toBe(true)
   })
 })

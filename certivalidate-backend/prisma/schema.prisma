@@ -148,6 +148,12 @@ model Certificado {
   hash_sha256      String?
   created_at       DateTime                @default(now())
   deleted_at       DateTime?
+  snapshot_nombre              String?
+  snapshot_apellido            String?
+  snapshot_email               String?
+  snapshot_documento           String?
+  snapshot_institucion_nombre  String?
+  snapshot_plantilla_nombre    String?
   blockchain       BlockchainTransaccion[]
   estudiante       Estudiante              @relation(fields: [estudiante_id], references: [id])
   institucion      Institucion             @relation(fields: [institucion_id], references: [id])

@@ -93,7 +93,8 @@ const START_TIME = Date.now()
 
 const limiterGeneral = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  // Configurable: detrás de un NAT institucional varios usuarios comparten IP
+  max: Number(process.env.RATE_LIMIT_GENERAL_MAX) || 300,
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => isTest,

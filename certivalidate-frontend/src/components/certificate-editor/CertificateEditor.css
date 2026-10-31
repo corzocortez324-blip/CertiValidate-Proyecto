@@ -43,16 +43,16 @@
 }
 .ced-mode-tab:hover { color: var(--color-text-main, #f9fafb); background: rgba(255,255,255,0.05); }
 .ced-mode-tab.active {
-  background: rgba(0, 240, 255, 0.12);
-  color: var(--color-primary, #00f0ff);
+  background: var(--primary-tint-12);
+  color: var(--color-primary);
 }
 
 /* ── Warning banner ────────────────────────────── */
 .ced-warning-banner {
   flex-shrink: 0;
-  background: rgba(251, 191, 36, 0.12);
-  border-bottom: 1px solid rgba(251, 191, 36, 0.35);
-  color: #fbbf24;
+  background: var(--warning-tint);
+  border-bottom: 1px solid var(--warning-ring);
+  color: var(--color-warning);
   font-size: 0.8rem;
   padding: 0.5rem 1.25rem;
   text-align: center;
@@ -134,19 +134,19 @@
   white-space: nowrap;
 }
 .ced-btn-ghost:hover, .ced-btn-ghost.active {
-  color: var(--color-primary, #00f0ff);
-  border-color: rgba(0, 240, 255, 0.3);
-  background: rgba(0, 240, 255, 0.06);
+  color: var(--color-primary);
+  border-color: var(--primary-ring);
+  background: var(--primary-tint-06);
 }
 
 .ced-btn-primary {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  background: var(--color-primary, #00f0ff);
+  background: var(--color-primary);
   border: none;
   border-radius: var(--radius-sm, 6px);
-  color: #04192e;
+  color: var(--color-text-on-primary);
   cursor: pointer;
   padding: 0.38rem 1rem;
   font-size: 0.82rem;
@@ -202,11 +202,11 @@
   margin-bottom: 0.4rem;
 }
 .ced-section-hint--info {
-  background: rgba(0, 240, 255, 0.05);
-  border: 1px solid rgba(0, 240, 255, 0.15);
+  background: var(--primary-tint-06);
+  border: 1px solid var(--primary-ring);
   border-radius: 4px;
   padding: 0.5rem 0.65rem;
-  color: rgba(0, 240, 255, 0.8);
+  color: var(--color-primary);
 }
 
 /* Element add buttons */
@@ -231,9 +231,9 @@
   transition: all 0.15s;
 }
 .ced-elem-btn:hover {
-  color: var(--color-primary, #00f0ff);
-  border-color: rgba(0, 240, 255, 0.3);
-  background: rgba(0, 240, 255, 0.06);
+  color: var(--color-primary);
+  border-color: var(--primary-ring);
+  background: var(--primary-tint-06);
 }
 
 /* Shapes & Decoratives gallery */
@@ -259,9 +259,9 @@
   line-height: 1;
 }
 .ced-shape-btn:hover {
-  color: var(--color-primary, #00f0ff);
-  border-color: rgba(0, 240, 255, 0.3);
-  background: rgba(0, 240, 255, 0.06);
+  color: var(--color-primary);
+  border-color: var(--primary-ring);
+  background: var(--primary-tint-06);
 }
 .ced-deco-icon {
   display: flex;
@@ -297,12 +297,12 @@
   transition: all 0.12s;
 }
 .ced-var-chip:hover {
-  background: rgba(0, 240, 255, 0.05);
-  border-color: rgba(0, 240, 255, 0.2);
+  background: var(--primary-tint-06);
+  border-color: var(--primary-ring);
 }
 .ced-var-chip code {
   font-size: 0.68rem;
-  color: var(--color-primary, #00f0ff);
+  color: var(--color-primary);
   font-family: 'Courier New', monospace;
   white-space: nowrap;
 }
@@ -333,7 +333,7 @@
   outline: none;
   transition: border-color 0.15s;
 }
-.ced-input:focus { border-color: var(--color-primary, #00f0ff); }
+.ced-input:focus { border-color: var(--color-primary); }
 .ced-input--sm { width: 80px; }
 
 .ced-select {
@@ -348,7 +348,7 @@
   cursor: pointer;
 }
 .ced-select--full { width: 100%; }
-.ced-select:focus { border-color: var(--color-primary, #00f0ff); }
+.ced-select:focus { border-color: var(--color-primary); }
 
 .ced-color {
   width: 32px;
@@ -375,7 +375,7 @@
   min-height: 60px;
   line-height: 1.45;
 }
-.ced-textarea:focus { border-color: var(--color-primary, #00f0ff); }
+.ced-textarea:focus { border-color: var(--color-primary); }
 
 .ced-row {
   display: flex;
@@ -419,9 +419,9 @@
   background: rgba(255, 255, 255, 0.05);
 }
 .ced-icon-btn--danger:hover {
-  color: var(--color-error, #ef4444);
-  border-color: rgba(239, 68, 68, 0.35);
-  background: rgba(239, 68, 68, 0.08);
+  color: var(--color-error);
+  border-color: var(--error-ring);
+  background: var(--error-tint);
 }
 
 .ced-prop-row {
@@ -461,9 +461,9 @@
 }
 .ced-style-btn:hover { color: var(--color-text-main, #f9fafb); border-color: rgba(255,255,255,0.2); }
 .ced-style-btn.active {
-  background: rgba(0, 240, 255, 0.12);
-  border-color: rgba(0, 240, 255, 0.4);
-  color: var(--color-primary, #00f0ff);
+  background: var(--primary-tint-12);
+  border-color: var(--primary-ring);
+  color: var(--color-primary);
 }
 
 .ced-grid-2 {
@@ -494,45 +494,20 @@
   gap: 0.4rem;
   flex-wrap: wrap;
   padding: 0.3rem 0.85rem;
-  background: rgba(251, 191, 36, 0.07);
-  border-bottom: 1px solid rgba(251, 191, 36, 0.18);
+  background: var(--warning-tint);
+  border-bottom: 1px solid var(--warning-ring);
   font-size: 0.71rem;
-  color: rgba(251, 191, 36, 0.75);
+  color: var(--color-warning);
 }
 .ced-legacy-hint-btn {
   background: none;
   border: none;
-  color: var(--color-primary, #00f0ff);
+  color: var(--color-primary);
   font-size: 0.71rem;
   cursor: pointer;
   font-family: inherit;
   text-decoration: underline;
   padding: 0;
-}
-.ced-legacy-hint-btn:hover { opacity: 0.8; }
-
-/* ── Legacy HTML reference hint (non-intrusive) ─── */
-.ced-legacy-hint {
-  flex-shrink: 0;
-  font-size: 0.72rem;
-  color: rgba(156, 163, 175, 0.7);
-  padding: 0.3rem 0.85rem;
-  background: rgba(251, 191, 36, 0.05);
-  border-bottom: 1px solid rgba(251, 191, 36, 0.15);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-}
-.ced-legacy-hint-btn {
-  background: none;
-  border: none;
-  color: var(--color-primary, #00f0ff);
-  font-size: 0.72rem;
-  cursor: pointer;
-  padding: 0;
-  font-family: inherit;
-  text-decoration: underline;
 }
 .ced-legacy-hint-btn:hover { opacity: 0.8; }
 
@@ -598,10 +573,10 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.38rem 0.85rem;
-  background: rgba(0, 240, 255, 0.07);
-  border: 1px solid rgba(0, 240, 255, 0.28);
+  background: var(--primary-tint-06);
+  border: 1px solid var(--primary-ring);
   border-radius: var(--radius-sm, 6px);
-  color: var(--color-primary, #00f0ff);
+  color: var(--color-primary);
   font-size: 0.78rem;
   font-family: inherit;
   cursor: pointer;
@@ -610,8 +585,8 @@
   justify-content: center;
 }
 .ced-upload-btn:hover {
-  background: rgba(0, 240, 255, 0.13);
-  border-color: var(--color-primary, #00f0ff);
+  background: var(--primary-tint-12);
+  border-color: var(--color-primary);
 }
 
 .ced-prop-note {
@@ -651,8 +626,8 @@
 }
 .ced-html-divider:hover,
 .ced-html-divider:active {
-  background: rgba(0, 240, 255, 0.12);
-  border-color: rgba(0, 240, 255, 0.25);
+  background: var(--primary-tint-12);
+  border-color: var(--primary-ring);
 }
 .ced-html-divider-handle {
   width: 2px;
@@ -661,7 +636,8 @@
   border-radius: 2px;
 }
 .ced-html-divider:hover .ced-html-divider-handle {
-  background: rgba(0, 240, 255, 0.5);
+  background: var(--color-primary);
+  opacity: 0.6;
 }
 
 .ced-html-editor-header {
@@ -688,7 +664,7 @@
 }
 .ced-html-hint code {
   font-family: 'Courier New', monospace;
-  color: var(--color-primary, #00f0ff);
+  color: var(--color-primary);
   font-size: 0.68rem;
 }
 

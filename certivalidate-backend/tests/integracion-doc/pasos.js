@@ -15,14 +15,27 @@ const blockchainService = require('../../src/services/blockchain.service')
 const academicApi = require('../../src/services/academic-api.service')
 const academicProvider = require('../../src/services/academic-provider.service')
 const { generarPDFBuffer } = require('../../src/utils/pdf.generator')
+const { computeCertificateHash } = require('../../src/services/certificate-hash.service')
 
 const BACKEND = path.resolve(__dirname, '../..')
 let contador = 0
 const unico = () => `${Date.now()}${++contador}`
 
-/** Cadena canónica con la que se calcula hash_sha256 al emitir (y al verificar). */
-const cadenaCanonica = (c) =>
-  `${c.estudiante.id}|${c.estudiante.nombre}|${c.estudiante.apellido}|${c.estudiante.email || ''}|${c.institucion.id}|${c.institucion.nombre}|${c.plantilla.id}|${c.plantilla.nombre}|${c.codigo_unico}|${c.fecha_emision.toISOString()}`
+/** Hash canónico: datos del certificado congelados (snapshot) al emitir. */
+const hashCanonico = (c) => computeCertificateHash({
+  certificado_id: c.id,
+  codigo_unico: c.codigo_unico,
+  estudiante_id: c.estudiante_id,
+  fecha_emision: c.fecha_emision,
+  institucion_id: c.institucion_id,
+  plantilla_id: c.plantilla_id,
+  snapshot_apellido: c.snapshot_apellido,
+  snapshot_documento: c.snapshot_documento,
+  snapshot_email: c.snapshot_email,
+  snapshot_institucion_nombre: c.snapshot_institucion_nombre,
+  snapshot_nombre: c.snapshot_nombre,
+  snapshot_plantilla_nombre: c.snapshot_plantilla_nombre,
+})
 
 const certCompleto = (id) =>
   prisma.certificado.findUnique({ where: { id }, include: { estudiante: true, institucion: true, plantilla: true } })
@@ -136,8 +149,9 @@ const PASOS = {
   // ── Módulos hoja: Servicios Transversales ─────────────────────────────────
   T1: async (ctx) => {
     const c = await certCompleto((await emitirValido(ctx)).id)
-    const h1 = crypto.createHash('sha256').update(cadenaCanonica(c)).digest('hex')
-    const h2 = crypto.createHash('sha256').update(cadenaCanonica(c)).digest('hex')
+    expect(c.snapshot_nombre).toBe(c.estudiante.nombre) // datos congelados al emitir
+    const h1 = hashCanonico(c)
+    const h2 = hashCanonico(c)
     expect(h1).toMatch(/^[0-9a-f]{64}$/)
     expect(h1).toBe(h2)
     expect(h1).toBe(c.hash_sha256)
@@ -289,4 +303,4 @@ const PASOS = {
   },
 }
 
-module.exports = { PASOS, emitirValido, verificarCodigo, revocarComo, configurarIntegracion, certCompleto, cadenaCanonica }
+module.exports = { PASOS, emitirValido, verificarCodigo, revocarComo, configurarIntegracion, certCompleto, hashCanonico }

@@ -21,6 +21,10 @@
   align-items: center;
   text-align: center;
   gap: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
 }
 
 .ve-card h2 {
@@ -38,7 +42,7 @@
 .ve-hint {
   font-size: 0.82rem;
   color: var(--color-text-muted);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--color-surface-hover);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   padding: 0.75rem 1rem;
@@ -53,7 +57,7 @@
 
 .ve-icon-success { color: var(--color-success); }
 .ve-icon-error   { color: var(--color-error); }
-.ve-icon-warn    { color: #f59e0b; }
+.ve-icon-warn    { color: var(--color-warning); }
 
 /* Button */
 .ve-btn-primary {
@@ -63,7 +67,7 @@
   justify-content: center;
   padding: 0.65rem 1.75rem;
   background: var(--color-primary);
-  color: #030712;
+  color: var(--color-text-on-primary);
   border-radius: var(--radius-sm);
   font-weight: 700;
   font-family: var(--font-display);

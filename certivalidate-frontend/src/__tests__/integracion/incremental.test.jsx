@@ -12,6 +12,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '../../context/AuthContext';
 import { ToastProvider } from '../../components/ui/ToastProvider';
+import { ThemeProvider } from '../../context/ThemeContext';
 import { LoginPage } from '../../pages/LoginPage';
 import { UsuariosPage } from '../../pages/admin/UsuariosPage';
 import { CertificadosPage } from '../../pages/admin/CertificadosPage';
@@ -34,7 +35,7 @@ const revocado = contratos.certificados_revocados.data.data[0];
 const montar = (elemento, ruta = '/') =>
   render(
     <MemoryRouter initialEntries={[ruta]}>
-      <ToastProvider><AuthProvider>{elemento}</AuthProvider></ToastProvider>
+      <ThemeProvider><ToastProvider><AuthProvider>{elemento}</AuthProvider></ToastProvider></ThemeProvider>
     </MemoryRouter>,
   );
 

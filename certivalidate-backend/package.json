@@ -9,6 +9,7 @@
     "start:e2e": "dotenv -e .env.e2e -e .env -- node src/index.js",
     "prepare:e2e": "dotenv -e .env.e2e -e .env -- node scripts/preparar-e2e.js",
     "seed": "node prisma/seed.js",
+    "setup:dev": "npm run migrate && npm run seed",
     "cleanup:test-users": "node scripts/cleanup-test-users.js",
     "cleanup:test-users:confirm": "node scripts/cleanup-test-users.js --confirm",
     "postinstall": "prisma generate",

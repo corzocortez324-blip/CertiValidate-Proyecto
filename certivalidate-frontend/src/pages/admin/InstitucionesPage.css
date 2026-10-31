@@ -50,15 +50,15 @@
 }
 
 .inst-integration-item--pending {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--overlay-subtle);
+  border-color: var(--color-border);
   color: var(--color-text-muted);
 }
 
 .inst-integration-item--active {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.25);
-  color: #34d399;
+  background: var(--success-tint);
+  border-color: var(--success-ring);
+  color: var(--color-success);
 }
 
 .inst-card-actions {

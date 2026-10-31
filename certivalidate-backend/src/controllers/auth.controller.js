@@ -422,7 +422,7 @@ const cambiarPassword = async (req, res) => {
       return sendError(res, 'La nueva contraseña debe ser distinta de la actual', 400)
     }
 
-    const nuevoHash = await bcrypt.hash(newPassword, 10)
+    const nuevoHash = await bcrypt.hash(newPassword, 12)
 
     await prisma.usuario.update({
       where: { id: usuarioId },
