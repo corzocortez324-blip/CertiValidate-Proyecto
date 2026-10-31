@@ -1,3 +1,4 @@
+const { limpiarLog } = require('../utils/limpiarLog')
 const prisma = require('../utils/prisma')
 const { ESTUDIANTES } = require('../data/demo-data')
 
@@ -31,7 +32,7 @@ async function listar(req, res) {
 
 async function buscarPorDocumento(req, res) {
   const { documento } = req.params
-  console.log(`[academic-api] GET /api/estudiantes/${documento} — ${new Date().toISOString()}`)
+  console.log(`[academic-api] GET /api/estudiantes/${limpiarLog(documento)} — ${new Date().toISOString()}`)
 
   try {
     const row = await prisma.estudiante.findFirst({ where: { documento } })

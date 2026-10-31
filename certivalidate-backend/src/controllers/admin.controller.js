@@ -195,23 +195,31 @@ const getReporteMotivos = async (req, res) => {
       return sendError(res, 'No autorizado para consultar esta institución', 403)
     }
 
-    let instFilter = Prisma.empty
-    if (institucion_id) instFilter = Prisma.sql`AND c.institucion_id = ${institucion_id}`
-    else if (alcance) instFilter = Prisma.sql`AND c.institucion_id IN (${Prisma.join(alcance)})`
-    const desdeFilter = fecha_desde    ? Prisma.sql`AND r.fecha_revocacion >= ${new Date(fecha_desde)}` : Prisma.empty
-    const hastaFilter = fecha_hasta    ? Prisma.sql`AND r.fecha_revocacion <= ${new Date(fecha_hasta)}` : Prisma.empty
+    const desde = fecha_desde ? new Date(fecha_desde) : null
+    const hasta = fecha_hasta ? new Date(fecha_hasta) : null
+    if ((desde && Number.isNaN(desde.getTime())) || (hasta && Number.isNaN(hasta.getTime()))) {
+      return sendError(res, 'fecha_desde y fecha_hasta deben ser fechas válidas', 400)
+    }
 
-    const rows = await prisma.$queryRaw`
-      SELECT r.motivo_codigo, COUNT(*)::int AS total
-      FROM "Revocacion" r
-      JOIN "Certificado" c ON c.id = r.certificado_id
-      WHERE TRUE
-        ${instFilter}
-        ${desdeFilter}
-        ${hastaFilter}
-      GROUP BY r.motivo_codigo
-      ORDER BY total DESC
-    `
+    // Consulta con el query builder de Prisma (sin SQL directo)
+    let filtroInstitucion = {}
+    if (institucion_id) filtroInstitucion = { institucion_id: String(institucion_id) }
+    else if (alcance) filtroInstitucion = { institucion_id: { in: alcance } }
+    const fecha_revocacion = {}
+    if (desde) fecha_revocacion.gte = desde
+    if (hasta) fecha_revocacion.lte = hasta
+
+    const grupos = await prisma.revocacion.groupBy({
+      by: ['motivo_codigo'],
+      where: {
+        certificado: filtroInstitucion,
+        ...(desde || hasta ? { fecha_revocacion } : {}),
+      },
+      _count: { _all: true },
+    })
+    const rows = grupos
+      .map((g) => ({ motivo_codigo: g.motivo_codigo, total: g._count._all }))
+      .sort((x, y) => y.total - x.total)
 
     const totalRevocaciones = rows.reduce((sum, r) => sum + Number(r.total), 0)
     const reporte = rows.map((r) => ({

@@ -1,3 +1,4 @@
+const { limpiarLog } = require('../utils/limpiarLog')
 const { CURSOS } = require('../data/demo-data')
 
 function listar(req, res) {
@@ -7,7 +8,7 @@ function listar(req, res) {
 
 function buscarPorId(req, res) {
   const { id } = req.params
-  console.log(`[academic-api] GET /api/cursos/${id} — ${new Date().toISOString()}`)
+  console.log(`[academic-api] GET /api/cursos/${limpiarLog(id)} — ${new Date().toISOString()}`)
   const curso = CURSOS.find((c) => c.id === id)
   if (!curso) {
     return res.status(404).json({ success: false, message: 'Registro no encontrado' })

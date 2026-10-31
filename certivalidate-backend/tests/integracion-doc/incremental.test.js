@@ -54,7 +54,10 @@ for (const [caso, pasos] of Object.entries(CASOS)) {
     beforeEach(() => api.reiniciar())
 
     for (const paso of backend) {
-      it(`${caso} · ${paso}`, async () => { await PASOS[paso](ctx, api) }, 45000)
+      it(`${caso} · ${paso}`, async () => {
+        expect.hasAssertions() // cada paso verifica su salida esperada con expect
+        await PASOS[paso](ctx, api)
+      }, 45000)
     }
   })
 }

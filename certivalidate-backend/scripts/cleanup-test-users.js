@@ -72,10 +72,8 @@ const isSafeCandidate = (usuario) => {
 
 async function main() {
   console.log('Modo:', confirmFlag ? 'EJECUCIÓN REAL' : 'DRY-RUN')
-  console.log(
-    'DATABASE_URL:',
-    process.env.DATABASE_URL.replace(/:[^:@]+@/, ':***@'),
-  )
+  // No se registra la cadena de conexión (usuario, host y BD son datos sensibles)
+  console.log('Base de datos:', /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? 'local' : 'remota')
 
   const usuarios = await prisma.usuario.findMany({
     where: { deleted_at: null },
