@@ -14,6 +14,7 @@ import {
   User,
   UserCheck,
   ShieldAlert,
+  Ban,
   Zap,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -24,6 +25,7 @@ import './Sidebar.css';
 const allNavItems = [
   { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true, permission: null },
   { path: '/admin/certificados', icon: FileBadge, label: 'Certificados', permission: 'certificado:listar' },
+  { path: '/admin/revocaciones', icon: Ban, label: 'Revocaciones', permission: 'certificado:listar' },
   { path: '/admin/estudiantes', icon: Users, label: 'Estudiantes', permission: 'estudiante:listar' },
   { path: '/admin/usuarios', icon: UserCheck, label: 'Usuarios', permission: 'usuario:listar' },
   { path: '/admin/roles', icon: ShieldAlert, label: 'Roles y Permisos', permission: 'usuario:listar' },

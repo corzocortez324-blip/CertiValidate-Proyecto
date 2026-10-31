@@ -18,6 +18,8 @@ import { UsuariosPage } from '../../pages/admin/UsuariosPage';
 import { CertificadosPage } from '../../pages/admin/CertificadosPage';
 import { VerifyCertificate } from '../../pages/VerifyCertificate';
 import { AuditoriaPage } from '../../pages/admin/AuditoriaPage';
+import { RevocacionesPage } from '../../pages/admin/RevocacionesPage';
+import { formatDateTime } from '../../utils/helpers';
 import { AdminDashboard } from '../../pages/admin/AdminDashboard';
 import { contratos, instalarStub, iniciarSesion, renderApp, llamadas, llamo } from './stub';
 
@@ -29,7 +31,9 @@ vi.mock('react-chartjs-2', () => ({
 }));
 
 const ESPERA = { timeout: 4000 };
-const revocado = contratos.certificados_revocados.data.data[0];
+const revocados = contratos.certificados_revocados.data.data;
+const revocado = revocados[0];
+const motivoDe = (c) => c.revocaciones[0].motivo_codigo.replace(/_/g, ' ');
 
 /** Driver de módulo hoja: monta el componente con sus proveedores mínimos. */
 const montar = (elemento, ruta = '/') =>
@@ -100,13 +104,15 @@ const PASOS = {
   },
   P6: async () => {
     iniciarSesion();
-    montar(<CertificadosPage />, '/admin/certificados?estado=revocado');
-    expect(await screen.findByText(revocado.codigo_unico, {}, ESPERA)).toBeInTheDocument();
-    await waitFor(() => expect(llamadas.some((l) => l.ruta === '/certificados/listar' && l.query.get('estado') === 'revocado')).toBe(true));
-    const fila = screen.getByText(revocado.codigo_unico).closest('tr');
-    expect(within(fila).getByText(/Revocado/)).toBeInTheDocument();
-    expect(within(fila).getByText(/ERROR DATOS/)).toBeInTheDocument(); // motivo
-    expect(within(fila).getByText(/·/)).toBeInTheDocument();           // motivo · fecha
+    montar(<RevocacionesPage />, '/admin/revocaciones');
+    expect(await screen.findByRole('heading', { name: 'Revocaciones' }, ESPERA)).toBeInTheDocument();
+    expect(revocados).toHaveLength(2); // lista de 2 certificados revocados
+    for (const c of revocados) {
+      const fila = (await screen.findByText(c.codigo_unico, {}, ESPERA)).closest('tr');
+      expect(within(fila).getByText(motivoDe(c))).toBeInTheDocument(); // motivo
+      expect(within(fila).getByText(formatDateTime(c.revocaciones[0].fecha_revocacion))).toBeInTheDocument(); // fecha
+    }
+    expect(llamadas.some((l) => l.ruta === '/certificados/listar' && l.query.get('estado') === 'revocado')).toBe(true);
   },
   P7: async () => {
     iniciarSesion();
@@ -161,8 +167,10 @@ const PASOS = {
   'P1-P6': async () => {
     iniciarSesion();
     renderApp('/revocaciones');
-    expect(await screen.findByText(revocado.codigo_unico, {}, ESPERA)).toBeInTheDocument();
-    expect(within(screen.getByText(revocado.codigo_unico).closest('tr')).getByText(/ERROR DATOS/)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Revocaciones' }, ESPERA)).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/admin/revocaciones');
+    const fila = (await screen.findByText(revocado.codigo_unico, {}, ESPERA)).closest('tr');
+    expect(within(fila).getByText(motivoDe(revocado))).toBeInTheDocument();
   },
   'P1-P7': async () => {
     iniciarSesion();

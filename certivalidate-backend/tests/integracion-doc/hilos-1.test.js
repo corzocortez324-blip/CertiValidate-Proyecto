@@ -9,6 +9,7 @@ jest.mock('resend', () => ({ Resend: jest.fn().mockImplementation(() => ({ email
 const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
 const { generateSync } = require('otplib')
+const { iniciarBlockchainLocal } = require('./blockchain-local')
 const { app, prisma, request, auth, login, emailDe, PASSWORD, crearEscenario, crearApiAcademica } = require('./escenario')
 const { emitirValido, verificarCodigo, revocarComo, configurarIntegracion } = require('./pasos')
 const { createTestUser, createTestInstitucion, linkUserToInstitucion, cleanupTestData } = require('../helpers/db')
@@ -19,13 +20,15 @@ const PDF_B64 = Buffer.from('%PDF-1.4 certificado de prueba').toString('base64')
 
 let ctx
 let api
+let red
 
 beforeAll(async () => {
+  red = await iniciarBlockchainLocal()
   process.env.RESEND_API_KEY = 're_test_doble'
   ctx = await crearEscenario(`hilos1_${Date.now()}`)
   api = await crearApiAcademica()
 }, 60000)
-afterAll(async () => { await api.cerrar(); await cleanupTestData() })
+afterAll(async () => { await api.cerrar(); await red.detener(); await cleanupTestData() })
 beforeEach(() => { mockSend.mockReset(); mockSend.mockResolvedValue({ data: { id: 'email_123' }, error: null }); api.reiniciar() })
 
 const nuevoUsuario = async (nombre, { rol = 'admin', inst = ctx.inst, password = PASSWORD } = {}) => {
@@ -72,10 +75,13 @@ describe('H01 Inicio de sesión con 2FA', () => {
 
   it('CI-H01-03 Credenciales inválidas y bloqueo por intentos', async () => {
     const u = await nuevoUsuario('h0103')
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 4; i++) {
       const r = await request(app).post('/api/auth/login').send({ email: u.email, password: 'Incorrecta1' })
       expect(r.status).toBe(401)
     }
+    // El quinto intento fallido bloquea la cuenta
+    const quinto = await request(app).post('/api/auth/login').send({ email: u.email, password: 'Incorrecta1' })
+    expect(quinto.status).toBe(423)
     expect((await request(app).post('/api/auth/login').send({ email: u.email, password: 'Incorrecta1' })).status).toBe(423)
     const correcta = await request(app).post('/api/auth/login').send({ email: u.email, password: PASSWORD })
     expect(correcta.status).toBe(423)
@@ -111,13 +117,17 @@ describe('H02 Registro y verificación de correo', () => {
   })
 
   it('CI-H02-03 Verificación de correo: token inválido, expirado y válido', async () => {
-    expect((await request(app).get('/api/auth/verificar-email?token=xxx')).status).toBe(400)
+    const invalido = await request(app).get('/api/auth/verificar-email?token=xxx')
+    expect(invalido.status).toBe(400)
+    expect(invalido.body.message).toBe('Token de verificación inválido')
 
     const email = emailReg()
     await request(app).post('/api/auth/register').send({ nombre: 'Ana', apellido: 'Pérez', email, password: 'Clave1234' })
     const u = await prisma.usuario.findUnique({ where: { email } })
     await prisma.usuario.update({ where: { id: u.id }, data: { token_verificacion_expira: new Date(Date.now() - 25 * 3600 * 1000) } })
-    expect((await request(app).get(`/api/auth/verificar-email?token=${u.token_verificacion}`)).status).toBe(400)
+    const expirado = await request(app).get(`/api/auth/verificar-email?token=${u.token_verificacion}`)
+    expect(expirado.status).toBe(400)
+    expect(expirado.body.message).toBe('Token de verificación expirado')
 
     await prisma.usuario.update({ where: { id: u.id }, data: { token_verificacion_expira: new Date(Date.now() + 3600 * 1000) } })
     const ok = await request(app).get(`/api/auth/verificar-email?token=${u.token_verificacion}`)
@@ -172,6 +182,8 @@ describe('H04 Emisión de certificado', () => {
     const sinToken = await request(app).post('/api/certificados/emitir').send({})
     expect(sinToken.status).toBe(401)
     const c = await emitirValido(ctx)
+    expect(c.codigo_unico).toMatch(/^[0-9A-F]{16}$/) // nanoid(16)
+    expect(c.hash_sha256).toMatch(/^[0-9a-f]{64}$/)
     expect(await prisma.certificadoMetadata.findFirst({ where: { certificado_id: c.id } })).not.toBeNull()
     expect(await prisma.auditoria.findFirst({ where: { accion: 'EMITIR_CERTIFICADO', entidad_id: c.id } })).not.toBeNull()
   })
@@ -187,7 +199,8 @@ describe('H04 Emisión de certificado', () => {
   it('CI-H04-03 Usuario sin permiso o estudiante de otra institución', async () => {
     expect((await ctx.emitir({ token: ctx.usuarios.lector.token })).status).toBe(403)
     const res = await ctx.emitir({ estudianteId: ctx.estudianteAjeno.id })
-    expect(res.status).toBe(400)
+    expect(res.status).toBe(404)
+    expect(res.body.message).toBe('Estudiante no encontrado')
     expect(await prisma.certificado.count({ where: { estudiante_id: ctx.estudianteAjeno.id } })).toBe(0)
   })
 })
@@ -245,7 +258,7 @@ describe('H06 Verificación pública', () => {
 
     const alterado = await emitirValido(ctx)
     await prisma.certificado.update({ where: { id: alterado.id }, data: { hash_sha256: 'f'.repeat(64) } })
-    expect((await verificarCodigo(alterado.codigo_unico)).estado).toBe('invalido')
+    expect((await verificarCodigo(alterado.codigo_unico)).estado).toBe('alterado')
 
     const revocado = await emitirValido(ctx)
     await revocarComo(ctx.usuarios.admin.token, revocado.id)
@@ -263,7 +276,7 @@ describe('H06 Verificación pública', () => {
     process.env.TEST_RATE_LIMIT = 'true'
     try {
       for (let i = 0; i < 50; i++) {
-        expect((await request(app).post('/api/certificados/verificar').send({ codigo: 'LIMITE0000000000' })).status).toBe(200)
+        expect((await request(app).post('/api/certificados/verificar').send({ codigo: 'LIMITE0000000000' })).status).toBe(404)
       }
       const res = await request(app).post('/api/certificados/verificar').send({ codigo: 'LIMITE0000000000' })
       expect(res.status).toBe(429)
@@ -316,6 +329,7 @@ describe('H08 Envío por correo', () => {
     expect((await request(app).post(`/api/certificados/${c.body.data.id}/email`).send({ pdf_base64: PDF_B64 })).status).toBe(401)
     const res = await enviar(c.body.data.id)
     expect(res.status).toBe(200)
+    expect(res.body.data).toEqual({ email_id: 'email_123' }) // id devuelto por Resend
     expect(mockSend).toHaveBeenCalledTimes(1)
     expect(mockSend.mock.calls[0][0].attachments[0].filename).toMatch(/\.pdf$/)
   })
@@ -361,12 +375,12 @@ describe('H09 Creación de usuario institucional', () => {
   })
 
   it('CI-H09-02 Rechazo por dominio, duplicado o campo prohibido', async () => {
-    expect((await crear({ nombre: 'Luis', email: `__test__luis${Date.now()}@gmail.com`, password: 'Clave1234' })).status).toBe(422)
+    expect((await crear({ nombre: 'Luis', email: `__test__luis${Date.now()}@gmail.com`, password: 'Clave1234' })).status).toBe(400)
     const email = `__test__dup.${Date.now()}@universidad.test`
     expect((await crear({ nombre: 'Luis', email, password: 'Clave1234' })).status).toBe(201)
     expect((await crear({ nombre: 'Luis', email, password: 'Clave1234' })).status).toBe(409)
     const prohibido = await crear({ nombre: 'Luis', email: `__test__adm.${Date.now()}@universidad.test`, password: 'Clave1234', es_platform_admin: true })
-    expect(prohibido.status).toBe(403)
+    expect(prohibido.status).toBe(400)
   })
 
   it('CI-H09-03 Usuario sin permiso de creación', async () => {

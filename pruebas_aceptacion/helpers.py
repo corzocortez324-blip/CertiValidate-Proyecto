@@ -319,6 +319,43 @@ def public_verify(driver, codigo, ev=None):
 
 
 # ───────────── MailHog (opcional) ─────────────
+def resend_api(path, timeout=15):
+    """GET a la API de Resend con la clave del backend. Devuelve (status, json)."""
+    req = urllib.request.Request(f"https://api.resend.com{path}", method="GET")
+    req.add_header("Authorization", f"Bearer {config.RESEND_API_KEY}")
+    req.add_header("User-Agent", "certivalidate-pruebas-aceptacion")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.status, json.load(r)
+    except urllib.error.HTTPError as e:
+        try:
+            return e.code, json.load(e)
+        except Exception:
+            return e.code, {}
+
+
+def resend_entrega(destinatario, desde, timeout=90):
+    """Busca en Resend el correo más reciente a `destinatario` creado desde `desde`
+    (UTC, ISO) y espera a que su último evento sea «delivered». Devuelve el correo."""
+    limite = time.time() + timeout
+    correo = None
+    while time.time() < limite:
+        if correo is None:
+            st, js = resend_api("/emails?limit=20")
+            assert st == 200, f"La API de Resend respondió HTTP {st} al listar correos: {js}"
+            correo = next((e for e in (js or {}).get("data", [])  # la lista viene del más reciente al más antiguo
+                           if destinatario in (e.get("to") or [])
+                           and e.get("created_at", "").replace(" ", "T")[:19] >= desde), None)
+        if correo is not None:
+            st, js = resend_api(f"/emails/{correo['id']}")
+            if st == 200 and js.get("last_event") == "delivered":
+                return js
+            if st == 200 and js.get("last_event") in ("bounced", "failed", "complained"):
+                raise AssertionError(f"Resend reporta el correo como {js.get('last_event')}")
+        time.sleep(3)
+    raise AssertionError(f"Resend no confirmó la entrega del correo a {destinatario} en {timeout} s")
+
+
 def mailhog_find(to, timeout=30):
     if not config.MAILHOG_URL:
         return None

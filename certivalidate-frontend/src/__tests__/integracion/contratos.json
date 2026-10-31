@@ -4,13 +4,13 @@
   "statusCode": 200,
   "message": "Perfil obtenido correctamente",
   "data": {
-   "id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+   "id": "059143eb-a2cf-4a09-823e-0310057503d6",
    "nombre": "Test",
    "apellido": "User",
-   "email": "__test__doc_admin_contratos_1793463763900@certivalidate.test",
+   "email": "__test__doc_admin_contratos_1793485117348@certivalidate.test",
    "activo": true,
-   "ultimo_acceso": "2026-10-31T16:22:44.465Z",
-   "created_at": "2026-10-31T16:22:44.229Z",
+   "ultimo_acceso": "2026-10-31T22:18:38.416Z",
+   "created_at": "2026-10-31T22:18:38.031Z",
    "updated_at": null,
    "deleted_at": null,
    "email_verificado": true,
@@ -19,7 +19,7 @@
    "rol": "admin",
    "accesos": [
     {
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
      "rol": "admin",
      "permisos": [
       "certificado:emitir",
@@ -52,7 +52,7 @@
     }
    ]
   },
-  "timestamp": "2026-10-31T16:22:45.132Z"
+  "timestamp": "2026-10-31T22:18:40.910Z"
  },
  "permisos_admin": {
   "success": true,
@@ -61,7 +61,7 @@
   "data": {
    "accesos": [
     {
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
      "rol": "admin",
      "permisos": [
       "certificado:emitir",
@@ -94,20 +94,20 @@
     }
    ]
   },
-  "timestamp": "2026-10-31T16:22:45.142Z"
+  "timestamp": "2026-10-31T22:18:40.923Z"
  },
  "perfil_lector": {
   "success": true,
   "statusCode": 200,
   "message": "Perfil obtenido correctamente",
   "data": {
-   "id": "c07ad970-d820-499d-ac4f-908526151e01",
+   "id": "c51241e2-3bcf-47f7-b995-5a0998219ac1",
    "nombre": "Test",
    "apellido": "User",
-   "email": "__test__doc_lector_contratos_1793463763900@certivalidate.test",
+   "email": "__test__doc_lector_contratos_1793485117348@certivalidate.test",
    "activo": true,
-   "ultimo_acceso": "2026-10-31T16:22:44.810Z",
-   "created_at": "2026-10-31T16:22:44.743Z",
+   "ultimo_acceso": "2026-10-31T22:18:39.310Z",
+   "created_at": "2026-10-31T22:18:39.185Z",
    "updated_at": null,
    "deleted_at": null,
    "email_verificado": true,
@@ -116,7 +116,7 @@
    "rol": "lector",
    "accesos": [
     {
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
      "rol": "lector",
      "permisos": [
       "certificado:listar",
@@ -127,13 +127,12 @@
       "institucion:ver",
       "institucion:estadisticas",
       "plantilla:ver",
-      "plantilla:listar",
-      "auditoria:ver"
+      "plantilla:listar"
      ]
     }
    ]
   },
-  "timestamp": "2026-10-31T16:22:45.150Z"
+  "timestamp": "2026-10-31T22:18:40.933Z"
  },
  "permisos_lector": {
   "success": true,
@@ -142,7 +141,7 @@
   "data": {
    "accesos": [
     {
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
      "rol": "lector",
      "permisos": [
       "certificado:listar",
@@ -153,13 +152,12 @@
       "institucion:ver",
       "institucion:estadisticas",
       "plantilla:ver",
-      "plantilla:listar",
-      "auditoria:ver"
+      "plantilla:listar"
      ]
     }
    ]
   },
-  "timestamp": "2026-10-31T16:22:45.157Z"
+  "timestamp": "2026-10-31T22:18:40.944Z"
  },
  "usuarios": {
   "success": true,
@@ -168,13 +166,13 @@
   "data": {
    "usuarios": [
     {
-     "id": "c07ad970-d820-499d-ac4f-908526151e01",
+     "id": "c51241e2-3bcf-47f7-b995-5a0998219ac1",
      "nombre": "Test",
      "apellido": "User",
-     "email": "__test__doc_lector_contratos_1793463763900@certivalidate.test",
+     "email": "__test__doc_lector_contratos_1793485117348@certivalidate.test",
      "activo": true,
-     "ultimo_acceso": "2026-10-31T16:22:44.810Z",
-     "created_at": "2026-10-31T16:22:44.743Z",
+     "ultimo_acceso": "2026-10-31T22:18:39.310Z",
+     "created_at": "2026-10-31T22:18:39.185Z",
      "updated_at": null,
      "deleted_at": null,
      "email_verificado": true,
@@ -182,32 +180,32 @@
      "es_platform_admin": false,
      "instituciones": [
       {
-       "id": "c65130f3-76e7-4327-806a-7ba22d564d34",
-       "usuario_id": "c07ad970-d820-499d-ac4f-908526151e01",
-       "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+       "id": "f3be2982-1942-4fa6-9c9b-cfb64889647e",
+       "usuario_id": "c51241e2-3bcf-47f7-b995-5a0998219ac1",
+       "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
        "rol_id": "c43f95f7-2145-40b0-b26a-d6e71c3c7eaa",
-       "created_at": "2026-10-31T16:22:44.746Z",
+       "created_at": "2026-10-31T22:18:39.189Z",
        "rol": {
         "id": "c43f95f7-2145-40b0-b26a-d6e71c3c7eaa",
         "nombre": "lector",
         "descripcion": "Solo lectura"
        },
        "institucion": {
-        "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-        "nombre": "__test__Institucion DOC_contratos_1793463763900"
+        "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+        "nombre": "__test__Institucion DOC_contratos_1793485117348"
        }
       }
      ],
      "rol": "lector"
     },
     {
-     "id": "52060085-5ced-4b24-a82b-f4111cfe8035",
+     "id": "5fafab38-9b0c-4559-8753-12804f2fe7d6",
      "nombre": "Test",
      "apellido": "User",
-     "email": "__test__doc_editor_contratos_1793463763900@certivalidate.test",
+     "email": "__test__doc_editor_contratos_1793485117348@certivalidate.test",
      "activo": true,
-     "ultimo_acceso": "2026-10-31T16:22:44.667Z",
-     "created_at": "2026-10-31T16:22:44.587Z",
+     "ultimo_acceso": "2026-10-31T22:18:39.047Z",
+     "created_at": "2026-10-31T22:18:38.724Z",
      "updated_at": null,
      "deleted_at": null,
      "email_verificado": true,
@@ -215,32 +213,32 @@
      "es_platform_admin": false,
      "instituciones": [
       {
-       "id": "b204da19-e939-41b6-ba86-782763d9491a",
-       "usuario_id": "52060085-5ced-4b24-a82b-f4111cfe8035",
-       "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+       "id": "b83f376b-efe6-4cb6-8e09-095635fbaff5",
+       "usuario_id": "5fafab38-9b0c-4559-8753-12804f2fe7d6",
+       "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
        "rol_id": "8b824508-ba06-4a84-90b6-9dad254ec98c",
-       "created_at": "2026-10-31T16:22:44.589Z",
+       "created_at": "2026-10-31T22:18:38.732Z",
        "rol": {
         "id": "8b824508-ba06-4a84-90b6-9dad254ec98c",
         "nombre": "editor",
         "descripcion": "Puede crear y editar recursos, sin acceso administrativo"
        },
        "institucion": {
-        "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-        "nombre": "__test__Institucion DOC_contratos_1793463763900"
+        "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+        "nombre": "__test__Institucion DOC_contratos_1793485117348"
        }
       }
      ],
      "rol": "editor"
     },
     {
-     "id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+     "id": "059143eb-a2cf-4a09-823e-0310057503d6",
      "nombre": "Test",
      "apellido": "User",
-     "email": "__test__doc_admin_contratos_1793463763900@certivalidate.test",
+     "email": "__test__doc_admin_contratos_1793485117348@certivalidate.test",
      "activo": true,
-     "ultimo_acceso": "2026-10-31T16:22:44.465Z",
-     "created_at": "2026-10-31T16:22:44.229Z",
+     "ultimo_acceso": "2026-10-31T22:18:38.416Z",
+     "created_at": "2026-10-31T22:18:38.031Z",
      "updated_at": null,
      "deleted_at": null,
      "email_verificado": true,
@@ -248,19 +246,19 @@
      "es_platform_admin": false,
      "instituciones": [
       {
-       "id": "ec20fc0f-f492-4ca8-9288-acda840552e8",
-       "usuario_id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
-       "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+       "id": "cf7aabdb-49fd-45e9-8d13-7e3cff3015a0",
+       "usuario_id": "059143eb-a2cf-4a09-823e-0310057503d6",
+       "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
        "rol_id": "2433ecc3-8c26-41f6-88d4-2e8cf020e1a0",
-       "created_at": "2026-10-31T16:22:44.260Z",
+       "created_at": "2026-10-31T22:18:38.084Z",
        "rol": {
         "id": "2433ecc3-8c26-41f6-88d4-2e8cf020e1a0",
         "nombre": "admin",
         "descripcion": "Acceso total a todos los recursos"
        },
        "institucion": {
-        "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-        "nombre": "__test__Institucion DOC_contratos_1793463763900"
+        "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+        "nombre": "__test__Institucion DOC_contratos_1793485117348"
        }
       }
      ],
@@ -272,7 +270,7 @@
    "limit": 10,
    "totalPages": 1
   },
-  "timestamp": "2026-10-31T16:22:45.179Z"
+  "timestamp": "2026-10-31T22:18:40.980Z"
  },
  "roles": {
   "success": true,
@@ -610,12 +608,6 @@
        "clave": "plantilla:listar",
        "recurso": "plantilla",
        "accion": "listar"
-      },
-      {
-       "id": "242e18dc-7bb3-4e9e-8be7-fa01364f58b5",
-       "clave": "auditoria:ver",
-       "recurso": "auditoria",
-       "accion": "ver"
       }
      ]
     }
@@ -779,7 +771,7 @@
     }
    ]
   },
-  "timestamp": "2026-10-31T16:22:45.192Z"
+  "timestamp": "2026-10-31T22:18:40.998Z"
  },
  "instituciones": {
   "success": true,
@@ -788,12 +780,12 @@
   "data": {
    "data": [
     {
-     "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-     "nombre": "__test__Institucion DOC_contratos_1793463763900",
+     "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+     "nombre": "__test__Institucion DOC_contratos_1793485117348",
      "dominio": null,
      "logo_url": null,
      "activa": true,
-     "created_at": "2026-10-31T16:22:44.035Z"
+     "created_at": "2026-10-31T22:18:37.787Z"
     }
    ],
    "meta": {
@@ -803,7 +795,7 @@
     "totalPages": 1
    }
   },
-  "timestamp": "2026-10-31T16:22:45.204Z"
+  "timestamp": "2026-10-31T22:18:41.019Z"
  },
  "certificados": {
   "success": true,
@@ -812,136 +804,204 @@
   "data": {
    "data": [
     {
-     "id": "d067c899-20a4-4278-803a-409f2c6f371a",
-     "estudiante_id": "bf17f00a-cee5-421b-a3d8-3b0375f4eb1e",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-     "plantilla_id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
-     "codigo_unico": "56EFC797700FAAAB",
+     "id": "545d42af-f4b6-4f40-9223-31b960cb69a5",
+     "estudiante_id": "61b520c1-bcab-4227-ae0e-9848cfd9c5a8",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+     "plantilla_id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+     "codigo_unico": "D5440DC3D880B86F",
      "estado": "valido",
-     "fecha_emision": "2026-10-31T16:22:45.088Z",
+     "fecha_emision": "2026-10-31T22:18:40.755Z",
      "fecha_expiracion": null,
-     "pdf_url": null,
-     "hash_sha256": "89f934384314b55b4a1a79a3320a2e1207da745af34c6175fd12cbe157c8c0ea",
-     "created_at": "2026-10-31T16:22:45.090Z",
+     "pdf_url": "/api/certificados/descargar/545d42af-f4b6-4f40-9223-31b960cb69a5",
+     "hash_sha256": "598f6af59a1ee67fe5d4f4c72c8c4037c264b5353f50735a3ae6f277e1f7e493",
+     "created_at": "2026-10-31T22:18:40.760Z",
      "deleted_at": null,
+     "snapshot_nombre": "Estudiante",
+     "snapshot_apellido": "Test DOC_contratos_1793485117348_1793485120734_abc8",
+     "snapshot_email": null,
+     "snapshot_documento": "TESTDOC_contratos_1793485117348_1793485120734_abc8",
+     "snapshot_institucion_nombre": "__test__Institucion DOC_contratos_1793485117348",
+     "snapshot_plantilla_nombre": "__test__Plantilla DOC_contratos_1793485117348",
      "estudiante": {
-      "id": "bf17f00a-cee5-421b-a3d8-3b0375f4eb1e",
-      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "id": "61b520c1-bcab-4227-ae0e-9848cfd9c5a8",
+      "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
       "nombre": "Estudiante",
-      "apellido": "Test DOC_contratos_1793463763900_1793463765072_a323",
-      "documento": "TESTDOC_contratos_1793463763900_1793463765072_a323",
+      "apellido": "Test DOC_contratos_1793485117348_1793485120734_abc8",
+      "documento": "TESTDOC_contratos_1793485117348_1793485120734_abc8",
       "email": null,
-      "created_at": "2026-10-31T16:22:45.072Z"
+      "created_at": "2026-10-31T22:18:40.734Z"
      },
      "plantilla": {
-      "id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
-      "nombre": "__test__Plantilla DOC_contratos_1793463763900",
+      "id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+      "nombre": "__test__Plantilla DOC_contratos_1793485117348",
       "version": 1,
       "activa": true,
-      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef"
+      "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2"
      },
      "institucion": {
-      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-      "nombre": "__test__Institucion DOC_contratos_1793463763900",
+      "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "__test__Institucion DOC_contratos_1793485117348",
       "dominio": null,
       "logo_url": null,
       "activa": true,
-      "created_at": "2026-10-31T16:22:44.035Z"
+      "created_at": "2026-10-31T22:18:37.787Z"
      },
      "revocaciones": []
     },
     {
-     "id": "210abf65-4db9-4222-a328-8b9d141440d4",
-     "estudiante_id": "f320d80f-e682-47f1-87ec-04ddc04ef4e4",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-     "plantilla_id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
-     "codigo_unico": "25B4A3D7DEF355A3",
+     "id": "928620a2-c434-425b-8368-c34aa529fffc",
+     "estudiante_id": "2e4208b4-ceb1-4a89-adf3-829eaa352fbb",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+     "plantilla_id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+     "codigo_unico": "47BA67E76A7BB26A",
      "estado": "revocado",
-     "fecha_emision": "2026-10-31T16:22:45.061Z",
+     "fecha_emision": "2026-10-31T22:18:40.664Z",
      "fecha_expiracion": null,
-     "pdf_url": null,
-     "hash_sha256": "a70e840557cd335e888a9371cd38a3ed33fd411157e4c53a56b3f671984891ad",
-     "created_at": "2026-10-31T16:22:45.065Z",
+     "pdf_url": "/api/certificados/descargar/928620a2-c434-425b-8368-c34aa529fffc",
+     "hash_sha256": "319400fc16f365e704bcc4e8c9d56214b86e018ef415703a4e5f2b5dde3b7ae4",
+     "created_at": "2026-10-31T22:18:40.669Z",
      "deleted_at": null,
+     "snapshot_nombre": "Estudiante",
+     "snapshot_apellido": "Test DOC_contratos_1793485117348_1793485120641_552f",
+     "snapshot_email": null,
+     "snapshot_documento": "TESTDOC_contratos_1793485117348_1793485120641_552f",
+     "snapshot_institucion_nombre": "__test__Institucion DOC_contratos_1793485117348",
+     "snapshot_plantilla_nombre": "__test__Plantilla DOC_contratos_1793485117348",
      "estudiante": {
-      "id": "f320d80f-e682-47f1-87ec-04ddc04ef4e4",
-      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "id": "2e4208b4-ceb1-4a89-adf3-829eaa352fbb",
+      "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
       "nombre": "Estudiante",
-      "apellido": "Test DOC_contratos_1793463763900_1793463765045_d323",
-      "documento": "TESTDOC_contratos_1793463763900_1793463765045_d323",
+      "apellido": "Test DOC_contratos_1793485117348_1793485120641_552f",
+      "documento": "TESTDOC_contratos_1793485117348_1793485120641_552f",
       "email": null,
-      "created_at": "2026-10-31T16:22:45.045Z"
+      "created_at": "2026-10-31T22:18:40.642Z"
      },
      "plantilla": {
-      "id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
-      "nombre": "__test__Plantilla DOC_contratos_1793463763900",
+      "id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+      "nombre": "__test__Plantilla DOC_contratos_1793485117348",
       "version": 1,
       "activa": true,
-      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef"
+      "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2"
      },
      "institucion": {
-      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-      "nombre": "__test__Institucion DOC_contratos_1793463763900",
+      "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "__test__Institucion DOC_contratos_1793485117348",
       "dominio": null,
       "logo_url": null,
       "activa": true,
-      "created_at": "2026-10-31T16:22:44.035Z"
+      "created_at": "2026-10-31T22:18:37.787Z"
      },
      "revocaciones": [
       {
-       "motivo_codigo": "ERROR_DATOS",
-       "fecha_revocacion": "2026-10-31T16:22:45.112Z"
+       "motivo_codigo": "FRAUDE",
+       "fecha_revocacion": "2026-10-31T22:18:40.881Z"
       }
      ]
     },
     {
-     "id": "b548b481-2b99-4572-aa37-a7ff10e6c247",
-     "estudiante_id": "be80b6eb-511d-4acb-b88d-20bd5013eace",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-     "plantilla_id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
-     "codigo_unico": "BB70518DA796A75F",
-     "estado": "valido",
-     "fecha_emision": "2026-10-31T16:22:45.017Z",
+     "id": "7c50d127-121c-4d2d-93fe-8585d1681425",
+     "estudiante_id": "355d1bf2-550e-4739-92aa-7b8699544451",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+     "plantilla_id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+     "codigo_unico": "DDBC79ADBB963157",
+     "estado": "revocado",
+     "fecha_emision": "2026-10-31T22:18:40.560Z",
      "fecha_expiracion": null,
-     "pdf_url": null,
-     "hash_sha256": "b59804ed010a63cd77a2ff4eb46faeea7cd7985f1255318e6fac660c7009de3b",
-     "created_at": "2026-10-31T16:22:45.032Z",
+     "pdf_url": "/api/certificados/descargar/7c50d127-121c-4d2d-93fe-8585d1681425",
+     "hash_sha256": "d93cf824cf4186ef0ba8015b83329af2b937e141edf438fe548798ce892fa190",
+     "created_at": "2026-10-31T22:18:40.574Z",
      "deleted_at": null,
+     "snapshot_nombre": "Estudiante",
+     "snapshot_apellido": "Test DOC_contratos_1793485117348_1793485120430_1c94",
+     "snapshot_email": null,
+     "snapshot_documento": "TESTDOC_contratos_1793485117348_1793485120430_1c94",
+     "snapshot_institucion_nombre": "__test__Institucion DOC_contratos_1793485117348",
+     "snapshot_plantilla_nombre": "__test__Plantilla DOC_contratos_1793485117348",
      "estudiante": {
-      "id": "be80b6eb-511d-4acb-b88d-20bd5013eace",
-      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "id": "355d1bf2-550e-4739-92aa-7b8699544451",
+      "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
       "nombre": "Estudiante",
-      "apellido": "Test DOC_contratos_1793463763900_1793463764983_09a6",
-      "documento": "TESTDOC_contratos_1793463763900_1793463764983_09a6",
+      "apellido": "Test DOC_contratos_1793485117348_1793485120430_1c94",
+      "documento": "TESTDOC_contratos_1793485117348_1793485120430_1c94",
       "email": null,
-      "created_at": "2026-10-31T16:22:44.983Z"
+      "created_at": "2026-10-31T22:18:40.432Z"
      },
      "plantilla": {
-      "id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
-      "nombre": "__test__Plantilla DOC_contratos_1793463763900",
+      "id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+      "nombre": "__test__Plantilla DOC_contratos_1793485117348",
       "version": 1,
       "activa": true,
-      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef"
+      "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2"
      },
      "institucion": {
-      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-      "nombre": "__test__Institucion DOC_contratos_1793463763900",
+      "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "__test__Institucion DOC_contratos_1793485117348",
       "dominio": null,
       "logo_url": null,
       "activa": true,
-      "created_at": "2026-10-31T16:22:44.035Z"
+      "created_at": "2026-10-31T22:18:37.787Z"
+     },
+     "revocaciones": [
+      {
+       "motivo_codigo": "ERROR_DATOS",
+       "fecha_revocacion": "2026-10-31T22:18:40.840Z"
+      }
+     ]
+    },
+    {
+     "id": "99dc1baa-fe62-4229-a9e9-2c4d9342bdbf",
+     "estudiante_id": "a30454d8-98c3-4d66-84b3-39b90eb9f3f6",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+     "plantilla_id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+     "codigo_unico": "C304BE0C10275FC5",
+     "estado": "valido",
+     "fecha_emision": "2026-10-31T22:18:39.824Z",
+     "fecha_expiracion": null,
+     "pdf_url": "/api/certificados/descargar/99dc1baa-fe62-4229-a9e9-2c4d9342bdbf",
+     "hash_sha256": "46fa938b9ae625eadbe169ec4dacf54575cde34421698ebc9ad4ab8f42736f4f",
+     "created_at": "2026-10-31T22:18:39.864Z",
+     "deleted_at": null,
+     "snapshot_nombre": "Estudiante",
+     "snapshot_apellido": "Test DOC_contratos_1793485117348_1793485119750_ab04",
+     "snapshot_email": null,
+     "snapshot_documento": "TESTDOC_contratos_1793485117348_1793485119750_ab04",
+     "snapshot_institucion_nombre": "__test__Institucion DOC_contratos_1793485117348",
+     "snapshot_plantilla_nombre": "__test__Plantilla DOC_contratos_1793485117348",
+     "estudiante": {
+      "id": "a30454d8-98c3-4d66-84b3-39b90eb9f3f6",
+      "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "Estudiante",
+      "apellido": "Test DOC_contratos_1793485117348_1793485119750_ab04",
+      "documento": "TESTDOC_contratos_1793485117348_1793485119750_ab04",
+      "email": "__test__titular@certivalidate.test",
+      "created_at": "2026-10-31T22:18:39.751Z"
+     },
+     "plantilla": {
+      "id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+      "nombre": "__test__Plantilla DOC_contratos_1793485117348",
+      "version": 1,
+      "activa": true,
+      "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2"
+     },
+     "institucion": {
+      "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "__test__Institucion DOC_contratos_1793485117348",
+      "dominio": null,
+      "logo_url": null,
+      "activa": true,
+      "created_at": "2026-10-31T22:18:37.787Z"
      },
      "revocaciones": []
     }
    ],
    "meta": {
-    "total": 3,
+    "total": 4,
     "page": 1,
     "limit": 10,
     "totalPages": 1
    }
   },
-  "timestamp": "2026-10-31T16:22:45.225Z"
+  "timestamp": "2026-10-31T22:18:41.048Z"
  },
  "certificados_revocados": {
   "success": true,
@@ -950,58 +1010,114 @@
   "data": {
    "data": [
     {
-     "id": "210abf65-4db9-4222-a328-8b9d141440d4",
-     "estudiante_id": "f320d80f-e682-47f1-87ec-04ddc04ef4e4",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-     "plantilla_id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
-     "codigo_unico": "25B4A3D7DEF355A3",
+     "id": "928620a2-c434-425b-8368-c34aa529fffc",
+     "estudiante_id": "2e4208b4-ceb1-4a89-adf3-829eaa352fbb",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+     "plantilla_id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+     "codigo_unico": "47BA67E76A7BB26A",
      "estado": "revocado",
-     "fecha_emision": "2026-10-31T16:22:45.061Z",
+     "fecha_emision": "2026-10-31T22:18:40.664Z",
      "fecha_expiracion": null,
-     "pdf_url": null,
-     "hash_sha256": "a70e840557cd335e888a9371cd38a3ed33fd411157e4c53a56b3f671984891ad",
-     "created_at": "2026-10-31T16:22:45.065Z",
+     "pdf_url": "/api/certificados/descargar/928620a2-c434-425b-8368-c34aa529fffc",
+     "hash_sha256": "319400fc16f365e704bcc4e8c9d56214b86e018ef415703a4e5f2b5dde3b7ae4",
+     "created_at": "2026-10-31T22:18:40.669Z",
      "deleted_at": null,
+     "snapshot_nombre": "Estudiante",
+     "snapshot_apellido": "Test DOC_contratos_1793485117348_1793485120641_552f",
+     "snapshot_email": null,
+     "snapshot_documento": "TESTDOC_contratos_1793485117348_1793485120641_552f",
+     "snapshot_institucion_nombre": "__test__Institucion DOC_contratos_1793485117348",
+     "snapshot_plantilla_nombre": "__test__Plantilla DOC_contratos_1793485117348",
      "estudiante": {
-      "id": "f320d80f-e682-47f1-87ec-04ddc04ef4e4",
-      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+      "id": "2e4208b4-ceb1-4a89-adf3-829eaa352fbb",
+      "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
       "nombre": "Estudiante",
-      "apellido": "Test DOC_contratos_1793463763900_1793463765045_d323",
-      "documento": "TESTDOC_contratos_1793463763900_1793463765045_d323",
+      "apellido": "Test DOC_contratos_1793485117348_1793485120641_552f",
+      "documento": "TESTDOC_contratos_1793485117348_1793485120641_552f",
       "email": null,
-      "created_at": "2026-10-31T16:22:45.045Z"
+      "created_at": "2026-10-31T22:18:40.642Z"
      },
      "plantilla": {
-      "id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
-      "nombre": "__test__Plantilla DOC_contratos_1793463763900",
+      "id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+      "nombre": "__test__Plantilla DOC_contratos_1793485117348",
       "version": 1,
       "activa": true,
-      "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef"
+      "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2"
      },
      "institucion": {
-      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-      "nombre": "__test__Institucion DOC_contratos_1793463763900",
+      "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "__test__Institucion DOC_contratos_1793485117348",
       "dominio": null,
       "logo_url": null,
       "activa": true,
-      "created_at": "2026-10-31T16:22:44.035Z"
+      "created_at": "2026-10-31T22:18:37.787Z"
+     },
+     "revocaciones": [
+      {
+       "motivo_codigo": "FRAUDE",
+       "fecha_revocacion": "2026-10-31T22:18:40.881Z"
+      }
+     ]
+    },
+    {
+     "id": "7c50d127-121c-4d2d-93fe-8585d1681425",
+     "estudiante_id": "355d1bf2-550e-4739-92aa-7b8699544451",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+     "plantilla_id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+     "codigo_unico": "DDBC79ADBB963157",
+     "estado": "revocado",
+     "fecha_emision": "2026-10-31T22:18:40.560Z",
+     "fecha_expiracion": null,
+     "pdf_url": "/api/certificados/descargar/7c50d127-121c-4d2d-93fe-8585d1681425",
+     "hash_sha256": "d93cf824cf4186ef0ba8015b83329af2b937e141edf438fe548798ce892fa190",
+     "created_at": "2026-10-31T22:18:40.574Z",
+     "deleted_at": null,
+     "snapshot_nombre": "Estudiante",
+     "snapshot_apellido": "Test DOC_contratos_1793485117348_1793485120430_1c94",
+     "snapshot_email": null,
+     "snapshot_documento": "TESTDOC_contratos_1793485117348_1793485120430_1c94",
+     "snapshot_institucion_nombre": "__test__Institucion DOC_contratos_1793485117348",
+     "snapshot_plantilla_nombre": "__test__Plantilla DOC_contratos_1793485117348",
+     "estudiante": {
+      "id": "355d1bf2-550e-4739-92aa-7b8699544451",
+      "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "Estudiante",
+      "apellido": "Test DOC_contratos_1793485117348_1793485120430_1c94",
+      "documento": "TESTDOC_contratos_1793485117348_1793485120430_1c94",
+      "email": null,
+      "created_at": "2026-10-31T22:18:40.432Z"
+     },
+     "plantilla": {
+      "id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+      "nombre": "__test__Plantilla DOC_contratos_1793485117348",
+      "version": 1,
+      "activa": true,
+      "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2"
+     },
+     "institucion": {
+      "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "__test__Institucion DOC_contratos_1793485117348",
+      "dominio": null,
+      "logo_url": null,
+      "activa": true,
+      "created_at": "2026-10-31T22:18:37.787Z"
      },
      "revocaciones": [
       {
        "motivo_codigo": "ERROR_DATOS",
-       "fecha_revocacion": "2026-10-31T16:22:45.112Z"
+       "fecha_revocacion": "2026-10-31T22:18:40.840Z"
       }
      ]
     }
    ],
    "meta": {
-    "total": 1,
+    "total": 2,
     "page": 1,
     "limit": 10,
     "totalPages": 1
    }
   },
-  "timestamp": "2026-10-31T16:22:45.243Z"
+  "timestamp": "2026-10-31T22:18:41.081Z"
  },
  "estudiantes": {
   "success": true,
@@ -1010,50 +1126,59 @@
   "data": {
    "data": [
     {
-     "id": "bf17f00a-cee5-421b-a3d8-3b0375f4eb1e",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "id": "61b520c1-bcab-4227-ae0e-9848cfd9c5a8",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
      "nombre": "Estudiante",
-     "apellido": "Test DOC_contratos_1793463763900_1793463765072_a323",
-     "documento": "TESTDOC_contratos_1793463763900_1793463765072_a323",
+     "apellido": "Test DOC_contratos_1793485117348_1793485120734_abc8",
+     "documento": "TESTDOC_contratos_1793485117348_1793485120734_abc8",
      "email": null,
-     "created_at": "2026-10-31T16:22:45.072Z"
+     "created_at": "2026-10-31T22:18:40.734Z"
     },
     {
-     "id": "f320d80f-e682-47f1-87ec-04ddc04ef4e4",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "id": "2e4208b4-ceb1-4a89-adf3-829eaa352fbb",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
      "nombre": "Estudiante",
-     "apellido": "Test DOC_contratos_1793463763900_1793463765045_d323",
-     "documento": "TESTDOC_contratos_1793463763900_1793463765045_d323",
+     "apellido": "Test DOC_contratos_1793485117348_1793485120641_552f",
+     "documento": "TESTDOC_contratos_1793485117348_1793485120641_552f",
      "email": null,
-     "created_at": "2026-10-31T16:22:45.045Z"
+     "created_at": "2026-10-31T22:18:40.642Z"
     },
     {
-     "id": "be80b6eb-511d-4acb-b88d-20bd5013eace",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "id": "355d1bf2-550e-4739-92aa-7b8699544451",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
      "nombre": "Estudiante",
-     "apellido": "Test DOC_contratos_1793463763900_1793463764983_09a6",
-     "documento": "TESTDOC_contratos_1793463763900_1793463764983_09a6",
+     "apellido": "Test DOC_contratos_1793485117348_1793485120430_1c94",
+     "documento": "TESTDOC_contratos_1793485117348_1793485120430_1c94",
      "email": null,
-     "created_at": "2026-10-31T16:22:44.983Z"
+     "created_at": "2026-10-31T22:18:40.432Z"
     },
     {
-     "id": "6f353d9f-4f74-40dc-a794-536b7e459af8",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "id": "a30454d8-98c3-4d66-84b3-39b90eb9f3f6",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
      "nombre": "Estudiante",
-     "apellido": "Test DOC_contratos_1793463763900",
-     "documento": "TESTDOC_contratos_1793463763900",
-     "email": "__test__est_contratos_1793463763900@certivalidate.test",
-     "created_at": "2026-10-31T16:22:44.969Z"
+     "apellido": "Test DOC_contratos_1793485117348_1793485119750_ab04",
+     "documento": "TESTDOC_contratos_1793485117348_1793485119750_ab04",
+     "email": "__test__titular@certivalidate.test",
+     "created_at": "2026-10-31T22:18:39.751Z"
+    },
+    {
+     "id": "95a5a498-0abf-4ff7-b083-609d00393a50",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+     "nombre": "Estudiante",
+     "apellido": "Test DOC_contratos_1793485117348",
+     "documento": "TESTDOC_contratos_1793485117348",
+     "email": "__test__est_contratos_1793485117348@certivalidate.test",
+     "created_at": "2026-10-31T22:18:39.723Z"
     }
    ],
    "meta": {
-    "total": 4,
+    "total": 5,
     "page": 1,
     "limit": 100,
     "totalPages": 1
    }
   },
-  "timestamp": "2026-10-31T16:22:45.262Z"
+  "timestamp": "2026-10-31T22:18:41.103Z"
  },
  "plantillas": {
   "success": true,
@@ -1062,13 +1187,13 @@
   "data": {
    "data": [
     {
-     "id": "fd9ebd8e-43af-4851-b73d-8886a9003cda",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-     "nombre": "__test__Plantilla DOC_contratos_1793463763900",
+     "id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+     "nombre": "__test__Plantilla DOC_contratos_1793485117348",
      "template_html": "<p>Test template</p>",
      "version": 1,
      "activa": true,
-     "created_at": "2026-10-31T16:22:44.977Z"
+     "created_at": "2026-10-31T22:18:39.741Z"
     }
    ],
    "meta": {
@@ -1078,7 +1203,7 @@
     "totalPages": 1
    }
   },
-  "timestamp": "2026-10-31T16:22:45.279Z"
+  "timestamp": "2026-10-31T22:18:41.123Z"
  },
  "auditoria": {
   "success": true,
@@ -1087,120 +1212,168 @@
   "data": {
    "data": [
     {
-     "id": "514",
-     "usuario_id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+     "id": "2457",
+     "usuario_id": "059143eb-a2cf-4a09-823e-0310057503d6",
      "accion": "REVOCAR_CERTIFICADO",
      "entidad": "Certificado",
-     "entidad_id": "210abf65-4db9-4222-a328-8b9d141440d4",
+     "entidad_id": "928620a2-c434-425b-8368-c34aa529fffc",
      "valores_antes": "{\"estado\":\"valido\"}",
      "valores_despues": "{\"estado\":\"revocado\",\"nivel_acceso\":\"admin\"}",
      "ip": "::ffff:127.0.0.1",
-     "fecha": "2026-10-31T16:22:45.121Z",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "fecha": "2026-10-31T22:18:40.885Z",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
      "hash_anterior": null,
      "hash_actual": null,
      "usuario": {
-      "id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+      "id": "059143eb-a2cf-4a09-823e-0310057503d6",
       "nombre": "Test",
       "apellido": "User",
-      "email": "__test__doc_admin_contratos_1793463763900@certivalidate.test"
+      "email": "__test__doc_admin_contratos_1793485117348@certivalidate.test"
      },
      "institucion": {
-      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-      "nombre": "__test__Institucion DOC_contratos_1793463763900"
+      "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "__test__Institucion DOC_contratos_1793485117348"
      }
     },
     {
-     "id": "513",
-     "usuario_id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
-     "accion": "EMITIR_CERTIFICADO",
+     "id": "2456",
+     "usuario_id": "059143eb-a2cf-4a09-823e-0310057503d6",
+     "accion": "REVOCAR_CERTIFICADO",
      "entidad": "Certificado",
-     "entidad_id": "d067c899-20a4-4278-803a-409f2c6f371a",
-     "valores_antes": null,
-     "valores_despues": "{\"estudiante_id\":\"bf17f00a-cee5-421b-a3d8-3b0375f4eb1e\",\"documento_estudiante\":\"TESTDOC_contratos_1793463763900_1793463765072_a323\",\"provider\":\"local-db\",\"fallback\":false,\"institucion_id\":\"240fc316-906e-411e-a48f-d1c49a5af7ef\",\"plantilla_id\":\"fd9ebd8e-43af-4851-b73d-8886a9003cda\",\"codigo_unico\":\"56EFC797700FAAAB\"}",
+     "entidad_id": "7c50d127-121c-4d2d-93fe-8585d1681425",
+     "valores_antes": "{\"estado\":\"valido\"}",
+     "valores_despues": "{\"estado\":\"revocado\",\"nivel_acceso\":\"admin\"}",
      "ip": "::ffff:127.0.0.1",
-     "fecha": "2026-10-31T16:22:45.093Z",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "fecha": "2026-10-31T22:18:40.853Z",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
      "hash_anterior": null,
      "hash_actual": null,
      "usuario": {
-      "id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+      "id": "059143eb-a2cf-4a09-823e-0310057503d6",
       "nombre": "Test",
       "apellido": "User",
-      "email": "__test__doc_admin_contratos_1793463763900@certivalidate.test"
+      "email": "__test__doc_admin_contratos_1793485117348@certivalidate.test"
      },
      "institucion": {
-      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-      "nombre": "__test__Institucion DOC_contratos_1793463763900"
+      "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "__test__Institucion DOC_contratos_1793485117348"
      }
     },
     {
-     "id": "512",
-     "usuario_id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+     "id": "2455",
+     "usuario_id": "059143eb-a2cf-4a09-823e-0310057503d6",
      "accion": "EMITIR_CERTIFICADO",
      "entidad": "Certificado",
-     "entidad_id": "210abf65-4db9-4222-a328-8b9d141440d4",
+     "entidad_id": "545d42af-f4b6-4f40-9223-31b960cb69a5",
      "valores_antes": null,
-     "valores_despues": "{\"estudiante_id\":\"f320d80f-e682-47f1-87ec-04ddc04ef4e4\",\"documento_estudiante\":\"TESTDOC_contratos_1793463763900_1793463765045_d323\",\"provider\":\"local-db\",\"fallback\":false,\"institucion_id\":\"240fc316-906e-411e-a48f-d1c49a5af7ef\",\"plantilla_id\":\"fd9ebd8e-43af-4851-b73d-8886a9003cda\",\"codigo_unico\":\"25B4A3D7DEF355A3\"}",
+     "valores_despues": "{\"estudiante_id\":\"61b520c1-bcab-4227-ae0e-9848cfd9c5a8\",\"documento_estudiante\":\"TESTDOC_contratos_1793485117348_1793485120734_abc8\",\"provider\":\"local-db\",\"fallback\":false,\"institucion_id\":\"4c46be8c-8021-4960-836c-3367268b8fd2\",\"plantilla_id\":\"eafd4431-9404-497e-bf89-cb1ccc107c76\",\"codigo_unico\":\"D5440DC3D880B86F\"}",
      "ip": "::ffff:127.0.0.1",
-     "fecha": "2026-10-31T16:22:45.068Z",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "fecha": "2026-10-31T22:18:40.765Z",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
      "hash_anterior": null,
      "hash_actual": null,
      "usuario": {
-      "id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+      "id": "059143eb-a2cf-4a09-823e-0310057503d6",
       "nombre": "Test",
       "apellido": "User",
-      "email": "__test__doc_admin_contratos_1793463763900@certivalidate.test"
+      "email": "__test__doc_admin_contratos_1793485117348@certivalidate.test"
      },
      "institucion": {
-      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-      "nombre": "__test__Institucion DOC_contratos_1793463763900"
+      "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "__test__Institucion DOC_contratos_1793485117348"
      }
     },
     {
-     "id": "511",
-     "usuario_id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+     "id": "2454",
+     "usuario_id": "059143eb-a2cf-4a09-823e-0310057503d6",
      "accion": "EMITIR_CERTIFICADO",
      "entidad": "Certificado",
-     "entidad_id": "b548b481-2b99-4572-aa37-a7ff10e6c247",
+     "entidad_id": "928620a2-c434-425b-8368-c34aa529fffc",
      "valores_antes": null,
-     "valores_despues": "{\"estudiante_id\":\"be80b6eb-511d-4acb-b88d-20bd5013eace\",\"documento_estudiante\":\"TESTDOC_contratos_1793463763900_1793463764983_09a6\",\"provider\":\"local-db\",\"fallback\":false,\"institucion_id\":\"240fc316-906e-411e-a48f-d1c49a5af7ef\",\"plantilla_id\":\"fd9ebd8e-43af-4851-b73d-8886a9003cda\",\"codigo_unico\":\"BB70518DA796A75F\"}",
+     "valores_despues": "{\"estudiante_id\":\"2e4208b4-ceb1-4a89-adf3-829eaa352fbb\",\"documento_estudiante\":\"TESTDOC_contratos_1793485117348_1793485120641_552f\",\"provider\":\"local-db\",\"fallback\":false,\"institucion_id\":\"4c46be8c-8021-4960-836c-3367268b8fd2\",\"plantilla_id\":\"eafd4431-9404-497e-bf89-cb1ccc107c76\",\"codigo_unico\":\"47BA67E76A7BB26A\"}",
      "ip": "::ffff:127.0.0.1",
-     "fecha": "2026-10-31T16:22:45.038Z",
-     "institucion_id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
+     "fecha": "2026-10-31T22:18:40.677Z",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
      "hash_anterior": null,
      "hash_actual": null,
      "usuario": {
-      "id": "dd2ced6a-e17f-4160-9b3a-ad3758886fc3",
+      "id": "059143eb-a2cf-4a09-823e-0310057503d6",
       "nombre": "Test",
       "apellido": "User",
-      "email": "__test__doc_admin_contratos_1793463763900@certivalidate.test"
+      "email": "__test__doc_admin_contratos_1793485117348@certivalidate.test"
      },
      "institucion": {
-      "id": "240fc316-906e-411e-a48f-d1c49a5af7ef",
-      "nombre": "__test__Institucion DOC_contratos_1793463763900"
+      "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "__test__Institucion DOC_contratos_1793485117348"
+     }
+    },
+    {
+     "id": "2453",
+     "usuario_id": "059143eb-a2cf-4a09-823e-0310057503d6",
+     "accion": "EMITIR_CERTIFICADO",
+     "entidad": "Certificado",
+     "entidad_id": "7c50d127-121c-4d2d-93fe-8585d1681425",
+     "valores_antes": null,
+     "valores_despues": "{\"estudiante_id\":\"355d1bf2-550e-4739-92aa-7b8699544451\",\"documento_estudiante\":\"TESTDOC_contratos_1793485117348_1793485120430_1c94\",\"provider\":\"local-db\",\"fallback\":false,\"institucion_id\":\"4c46be8c-8021-4960-836c-3367268b8fd2\",\"plantilla_id\":\"eafd4431-9404-497e-bf89-cb1ccc107c76\",\"codigo_unico\":\"DDBC79ADBB963157\"}",
+     "ip": "::ffff:127.0.0.1",
+     "fecha": "2026-10-31T22:18:40.583Z",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+     "hash_anterior": null,
+     "hash_actual": null,
+     "usuario": {
+      "id": "059143eb-a2cf-4a09-823e-0310057503d6",
+      "nombre": "Test",
+      "apellido": "User",
+      "email": "__test__doc_admin_contratos_1793485117348@certivalidate.test"
+     },
+     "institucion": {
+      "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "__test__Institucion DOC_contratos_1793485117348"
+     }
+    },
+    {
+     "id": "2452",
+     "usuario_id": "059143eb-a2cf-4a09-823e-0310057503d6",
+     "accion": "EMITIR_CERTIFICADO",
+     "entidad": "Certificado",
+     "entidad_id": "99dc1baa-fe62-4229-a9e9-2c4d9342bdbf",
+     "valores_antes": null,
+     "valores_despues": "{\"estudiante_id\":\"a30454d8-98c3-4d66-84b3-39b90eb9f3f6\",\"documento_estudiante\":\"TESTDOC_contratos_1793485117348_1793485119750_ab04\",\"provider\":\"local-db\",\"fallback\":false,\"institucion_id\":\"4c46be8c-8021-4960-836c-3367268b8fd2\",\"plantilla_id\":\"eafd4431-9404-497e-bf89-cb1ccc107c76\",\"codigo_unico\":\"C304BE0C10275FC5\"}",
+     "ip": "::ffff:127.0.0.1",
+     "fecha": "2026-10-31T22:18:39.884Z",
+     "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+     "hash_anterior": null,
+     "hash_actual": null,
+     "usuario": {
+      "id": "059143eb-a2cf-4a09-823e-0310057503d6",
+      "nombre": "Test",
+      "apellido": "User",
+      "email": "__test__doc_admin_contratos_1793485117348@certivalidate.test"
+     },
+     "institucion": {
+      "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+      "nombre": "__test__Institucion DOC_contratos_1793485117348"
      }
     }
    ],
    "meta": {
-    "total": 4,
+    "total": 6,
     "page": 1,
     "limit": 20,
     "totalPages": 1
    }
   },
-  "timestamp": "2026-10-31T16:22:45.303Z"
+  "timestamp": "2026-10-31T22:18:41.151Z"
  },
  "stats": {
   "success": true,
   "statusCode": 200,
   "message": "Operación exitosa",
   "data": {
-   "totalEmitidos": 3,
+   "totalEmitidos": 4,
    "totalValidos": 2,
-   "totalRevocados": 1,
-   "tasaValidez": 66.7,
+   "totalRevocados": 2,
+   "tasaValidez": 50,
    "verificacionesHoy": 0,
    "verificacionesSemana": 0,
    "verificacionesMes": 0,
@@ -1217,73 +1390,145 @@
     },
     {
      "mes": "2026-10",
-     "emisiones": 3,
+     "emisiones": 4,
      "verificaciones": 0
     },
     {
      "mes": "2026-10",
-     "emisiones": 3,
+     "emisiones": 4,
      "verificaciones": 0
     }
    ],
    "topEmisores": [
     {
      "nombre": "Test User",
-     "total": 3
+     "total": 4
     }
    ],
    "ultimasRevocaciones": [
     {
-     "id": "3e0a484f-3b44-4dad-8f30-8f1d1f4f8eca",
+     "id": "47fabb6d-c96e-4c9a-bfec-f48613a0e49b",
+     "motivo_codigo": "FRAUDE",
+     "fecha_revocacion": "2026-10-31T22:18:40.881Z",
+     "codigo_unico": "47BA67E76A7BB26A",
+     "titular": "Estudiante Test DOC_contratos_1793485117348_1793485120641_552f"
+    },
+    {
+     "id": "1ba5f781-1d56-4837-b0ac-fc457584c2dc",
      "motivo_codigo": "ERROR_DATOS",
-     "fecha_revocacion": "2026-10-31T16:22:45.112Z",
-     "codigo_unico": "25B4A3D7DEF355A3",
-     "titular": "Estudiante Test DOC_contratos_1793463763900_1793463765045_d323"
+     "fecha_revocacion": "2026-10-31T22:18:40.840Z",
+     "codigo_unico": "DDBC79ADBB963157",
+     "titular": "Estudiante Test DOC_contratos_1793485117348_1793485120430_1c94"
     }
    ],
    "emisionesDiarias": [
     {
      "dia": "2026-10-31T00:00:00.000Z",
-     "total_emitidos": 3,
-     "total_revocados": 1
+     "total_emitidos": 4,
+     "total_revocados": 2
     }
    ],
    "verificacionesDiarias": []
   },
-  "timestamp": "2026-10-31T16:22:45.509Z"
+  "timestamp": "2026-10-31T22:18:41.384Z"
  },
  "verificar_no_encontrado": {
   "success": true,
-  "statusCode": 200,
+  "statusCode": 404,
   "message": "Certificado no encontrado",
   "data": {
    "estado": "no_encontrado",
    "mensaje": "El certificado no fue encontrado"
   },
-  "timestamp": "2026-10-31T16:22:45.531Z"
+  "timestamp": "2026-10-31T22:18:41.401Z"
  },
  "verificar_valido": {
   "success": true,
   "statusCode": 200,
   "message": "Certificado verificado correctamente",
   "data": {
-   "codigo_unico": "BB70518DA796A75F",
+   "codigo_unico": "C304BE0C10275FC5",
    "estado": "valido",
    "mensaje": "Certificado verificado correctamente",
    "hash_verificado": true,
-   "fecha_emision": "2026-10-31T16:22:45.017Z",
+   "fecha_emision": "2026-10-31T22:18:39.824Z",
    "fecha_expiracion": null,
    "estudiante": {
     "nombre": "Estudiante",
-    "apellido": "Test DOC_contratos_1793463763900_1793463764983_09a6"
+    "apellido": "Test DOC_contratos_1793485117348_1793485119750_ab04"
    },
-   "titular": "Estudiante T***6",
-   "tipo_certificado": "__test__Plantilla DOC_contratos_1793463763900",
-   "institucion": "__test__Institucion DOC_contratos_1793463763900",
+   "titular": "Estudiante T***4",
+   "tipo_certificado": "__test__Plantilla DOC_contratos_1793485117348",
+   "institucion": "__test__Institucion DOC_contratos_1793485117348",
    "revocacion": null,
    "blockchain": null
   },
-  "timestamp": "2026-10-31T16:22:45.567Z"
+  "timestamp": "2026-10-31T22:18:41.427Z"
+ },
+ "certificado_detalle": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Certificado obtenido correctamente",
+  "data": {
+   "id": "99dc1baa-fe62-4229-a9e9-2c4d9342bdbf",
+   "estudiante_id": "a30454d8-98c3-4d66-84b3-39b90eb9f3f6",
+   "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+   "plantilla_id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+   "codigo_unico": "C304BE0C10275FC5",
+   "estado": "valido",
+   "fecha_emision": "2026-10-31T22:18:39.824Z",
+   "fecha_expiracion": null,
+   "pdf_url": "/api/certificados/descargar/99dc1baa-fe62-4229-a9e9-2c4d9342bdbf",
+   "hash_sha256": "46fa938b9ae625eadbe169ec4dacf54575cde34421698ebc9ad4ab8f42736f4f",
+   "created_at": "2026-10-31T22:18:39.864Z",
+   "deleted_at": null,
+   "snapshot_nombre": "Estudiante",
+   "snapshot_apellido": "Test DOC_contratos_1793485117348_1793485119750_ab04",
+   "snapshot_email": null,
+   "snapshot_documento": "TESTDOC_contratos_1793485117348_1793485119750_ab04",
+   "snapshot_institucion_nombre": "__test__Institucion DOC_contratos_1793485117348",
+   "snapshot_plantilla_nombre": "__test__Plantilla DOC_contratos_1793485117348",
+   "estudiante": {
+    "id": "a30454d8-98c3-4d66-84b3-39b90eb9f3f6",
+    "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+    "nombre": "Estudiante",
+    "apellido": "Test DOC_contratos_1793485117348_1793485119750_ab04",
+    "documento": "TESTDOC_contratos_1793485117348_1793485119750_ab04",
+    "email": "__test__titular@certivalidate.test",
+    "created_at": "2026-10-31T22:18:39.751Z"
+   },
+   "institucion": {
+    "id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+    "nombre": "__test__Institucion DOC_contratos_1793485117348",
+    "dominio": null,
+    "logo_url": null,
+    "activa": true,
+    "created_at": "2026-10-31T22:18:37.787Z"
+   },
+   "plantilla": {
+    "id": "eafd4431-9404-497e-bf89-cb1ccc107c76",
+    "institucion_id": "4c46be8c-8021-4960-836c-3367268b8fd2",
+    "nombre": "__test__Plantilla DOC_contratos_1793485117348",
+    "template_html": "<p>Test template</p>",
+    "version": 1,
+    "activa": true,
+    "created_at": "2026-10-31T22:18:39.741Z"
+   },
+   "blockchain": [],
+   "tx_hash": null,
+   "red_blockchain": null,
+   "fecha_blockchain": null
+  },
+  "timestamp": "2026-10-31T22:18:41.474Z"
+ },
+ "email_enviado": {
+  "success": true,
+  "statusCode": 200,
+  "message": "Email enviado correctamente",
+  "data": {
+   "email_id": "email_contrato"
+  },
+  "timestamp": "2026-10-31T22:18:41.532Z"
  },
  "login_2fa": {
   "success": true,

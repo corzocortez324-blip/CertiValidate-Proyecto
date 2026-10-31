@@ -97,6 +97,7 @@ router.post(
   cargarInstitucionesUsuario,
   validateUUIDParam('id'),
   handleValidationErrors,
+  requirePermission('institucion', 'actualizar', { institucionIdResolver: (req) => req.params.id }),
   probarConexion,
 )
 

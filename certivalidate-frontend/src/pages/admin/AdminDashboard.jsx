@@ -8,6 +8,8 @@ import {
   TrendingUp, RefreshCw, Users, Ban, BarChart2, Activity, Download, X,
 } from 'lucide-react';
 import { formatDateTime } from '../../utils/helpers';
+import { descargarArchivo, XLSX_MIME } from '../../utils/exportExcel';
+import { generarReportePdf } from '../../utils/reportePdf';
 import {
   Chart as ChartJS,
   CategoryScale, LinearScale, BarElement,
@@ -234,8 +236,18 @@ async function buildXlsx(tipo, period, stats) {
     if (color) ws1.getRow(5 + i).getCell(2).font = { ...nFont, color: { argb: color } };
   });
 
-  // ── Hoja 2: Tendencia ───────────────────────────────────────
-  if (tipo !== 'operativo') {
+  // ── Hoja 2: Top Emisores (en todos los tipos de reporte) ────
+  const ws3 = wb.addWorksheet('Top Emisores');
+  setTitle(ws3, 3, 'Top Emisores por Certificados Emitidos', `Período: ${periodoLabel}`);
+  addHeader(ws3, 4, ['#', 'Emisor', 'Certificados'], [6, 38, 16]);
+  const medals = ['FFD700', 'A8A8A8', 'CD7F32'];
+  (stats?.topEmisores ?? []).forEach((e, i) => {
+    addRow(ws3, 5 + i, [i + 1, e.nombre, e.total], i % 2 === 1, [0, 2]);
+    if (i < 3) ws3.getRow(5 + i).getCell(1).font = { ...nFont, color: { argb: medals[i] } };
+  });
+
+  // ── Hoja 3: Tendencia (Completo) ────────────────────────────
+  if (tipo === 'completo') {
     const ws2 = wb.addWorksheet('Tendencia Mensual');
     setTitle(ws2, 3, 'Tendencia de Emisiones y Verificaciones', `Período: ${periodoLabel}`);
     addHeader(ws2, 4, ['Mes', 'Emisiones', 'Verificaciones'], [20, 16, 18]);
@@ -244,20 +256,8 @@ async function buildXlsx(tipo, period, stats) {
     );
   }
 
-  // ── Hoja 3: Top Emisores ────────────────────────────────────
+  // ── Hoja 4: Revocaciones (Completo y Operativo) ─────────────
   if (tipo !== 'ejecutivo') {
-    const ws3 = wb.addWorksheet('Top Emisores');
-    setTitle(ws3, 3, 'Top Emisores por Certificados Emitidos', `Período: ${periodoLabel}`);
-    addHeader(ws3, 4, ['#', 'Emisor', 'Certificados'], [6, 38, 16]);
-    const medals = ['FFD700', 'A8A8A8', 'CD7F32'];
-    (stats?.topEmisores ?? []).forEach((e, i) => {
-      addRow(ws3, 5 + i, [i + 1, e.nombre, e.total], i % 2 === 1, [0, 2]);
-      if (i < 3) ws3.getRow(5 + i).getCell(1).font = { ...nFont, color: { argb: medals[i] } };
-    });
-  }
-
-  // ── Hoja 4: Revocaciones ────────────────────────────────────
-  if (tipo === 'completo') {
     const ws4 = wb.addWorksheet('Revocaciones');
     setTitle(ws4, 4, 'Últimas Revocaciones', `Período: ${periodoLabel}`);
     addHeader(ws4, 4, ['Código', 'Titular', 'Motivo', 'Fecha'], [24, 26, 24, 16]);
@@ -274,140 +274,17 @@ async function buildXlsx(tipo, period, stats) {
 
   // ── Descarga ────────────────────────────────────────────────
   const buffer = await wb.xlsx.writeBuffer();
-  const blob   = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  const url    = URL.createObjectURL(blob);
-  const a      = document.createElement('a');
-  a.href = url; a.download = `reporte-${tipo}-${period}-${fecha}.xlsx`; a.click();
-  URL.revokeObjectURL(url);
+  descargarArchivo(buffer, 'reporte.xlsx', XLSX_MIME);
+  return wb;
 }
 
-function buildPDF(tipo, period, stats, showToast) {
-  const fecha        = new Date().toLocaleDateString('es-CO', { dateStyle: 'long' });
-  const periodoLabel = PERIODO_LABEL[period] ?? period;
-  const tipoLabel    = TIPO_LABEL[tipo] ?? tipo;
-  const fmt          = (n) => n == null ? '—' : Number(n).toLocaleString('es-CO');
-
-  const kpiCards = [
-    { label: 'Total emitidos',       value: fmt(stats?.totalEmitidos) },
-    { label: 'Válidos',              value: fmt(stats?.totalValidos) },
-    { label: 'Revocados',            value: fmt(stats?.totalRevocados) },
-    { label: 'Tasa de validez',      value: `${stats?.tasaValidez ?? '—'}%` },
-    { label: 'Verificaciones hoy',   value: fmt(stats?.verificacionesHoy) },
-    { label: 'Verificaciones (mes)', value: fmt(stats?.verificacionesMes) },
-  ];
-
-  const kpiHtml = `
-    <section>
-      <h2>Indicadores clave</h2>
-      <div class="kpi-grid">
-        ${kpiCards.map(k => `
-          <div class="kpi-card">
-            <div class="kpi-value">${k.value}</div>
-            <div class="kpi-label">${k.label}</div>
-          </div>`).join('')}
-      </div>
-    </section>`;
-
-  const tendenciaHtml = tipo !== 'operativo' ? `
-    <section>
-      <h2>Tendencia mensual</h2>
-      <table>
-        <thead><tr><th>Mes</th><th>Emisiones</th><th>Verificaciones</th></tr></thead>
-        <tbody>
-          ${(stats?.tendencia ?? []).map(d => `
-            <tr><td>${formatMesLabel(d.mes)}</td><td>${fmt(d.emisiones)}</td><td>${fmt(d.verificaciones)}</td></tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </section>` : '';
-
-  const emisoresHtml = tipo !== 'ejecutivo' ? `
-    <section>
-      <h2>Top emisores</h2>
-      <table>
-        <thead><tr><th>#</th><th>Emisor</th><th>Certificados</th></tr></thead>
-        <tbody>
-          ${(stats?.topEmisores ?? []).map((e, i) => `
-            <tr><td>${i + 1}</td><td>${e.nombre}</td><td>${fmt(e.total)}</td></tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </section>` : '';
-
-  const revocacionesHtml = tipo === 'completo' ? `
-    <section>
-      <h2>Últimas revocaciones</h2>
-      <table>
-        <thead><tr><th>Código</th><th>Titular</th><th>Motivo</th><th>Fecha</th></tr></thead>
-        <tbody>
-          ${(stats?.ultimasRevocaciones ?? []).map(r => `
-            <tr>
-              <td class="mono">${r.codigo_unico}</td>
-              <td>${r.titular ?? '—'}</td>
-              <td>${r.motivo_codigo?.replace(/_/g, ' ') ?? '—'}</td>
-              <td>${r.fecha_revocacion ? new Date(r.fecha_revocacion).toLocaleDateString('es-CO') : '—'}</td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
-    </section>` : '';
-
-  const html = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Reporte ${tipoLabel} · CertiValidate</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1a1a2e; background: #fff; padding: 2rem; }
-    .report-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0d7a7a; padding-bottom: 1rem; margin-bottom: 1.5rem; }
-    .report-brand { font-size: 1.4rem; font-weight: 800; color: #0d7a7a; letter-spacing: -0.5px; }
-    .report-meta { text-align: right; color: #555; font-size: 0.82rem; line-height: 1.7; }
-    .report-meta strong { color: #1a1a2e; }
-    section { margin-bottom: 1.75rem; }
-    h2 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #0d7a7a; border-left: 3px solid #0d7a7a; padding-left: 0.6rem; margin-bottom: 0.85rem; }
-    .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
-    .kpi-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem 1rem; background: #f8fafc; }
-    .kpi-value { font-size: 1.4rem; font-weight: 800; color: #0d7a7a; }
-    .kpi-label { font-size: 0.75rem; color: #64748b; margin-top: 0.2rem; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-    thead tr { background: #0d7a7a; color: #fff; }
-    th { padding: 0.55rem 0.75rem; text-align: left; font-weight: 600; font-size: 0.78rem; }
-    td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #e2e8f0; }
-    tbody tr:nth-child(even) { background: #f8fafc; }
-    .mono { font-family: monospace; font-size: 0.8rem; }
-    .report-footer { margin-top: 2rem; padding-top: 0.75rem; border-top: 1px solid #e2e8f0; font-size: 0.72rem; color: #94a3b8; text-align: center; }
-    @media print { body { padding: 0; } }
-  </style>
-</head>
-<body>
-  <div class="report-header">
-    <div>
-      <div class="report-brand">CertiValidate</div>
-      <div style="color:#555;font-size:0.8rem;margin-top:0.2rem;">Sistema de Certificados Digitales</div>
-    </div>
-    <div class="report-meta">
-      <strong>Reporte ${tipoLabel}</strong><br>
-      Período: ${periodoLabel}<br>
-      Generado: ${fecha}
-    </div>
-  </div>
-  ${kpiHtml}
-  ${tendenciaHtml}
-  ${emisoresHtml}
-  ${revocacionesHtml}
-  <div class="report-footer">Generado por CertiValidate · Documento confidencial</div>
-</body>
-</html>`;
-
-  const win = window.open('', '_blank', 'width=960,height=720');
-  if (!win) {
-    showToast('Permite ventanas emergentes para exportar el PDF.', 'warning');
-    return;
-  }
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => { win.print(); }, 450);
+function buildPDF(tipo, period, stats) {
+  return generarReportePdf({
+    tipo,
+    tipoLabel: TIPO_LABEL[tipo] ?? tipo,
+    periodoLabel: PERIODO_LABEL[period] ?? period,
+    stats,
+  });
 }
 
 function ExportModal({ stats, period, onClose, showToast }) {
@@ -435,8 +312,7 @@ function ExportModal({ stats, period, onClose, showToast }) {
       // otro, se consultan los de ese período para que el reporte sea coherente.
       const datos = exportPeriod === period ? stats : await adminApi.getStats(exportPeriod);
       if (exportFormato === 'pdf') {
-        await new Promise(r => setTimeout(r, 600));
-        buildPDF(exportTipo, exportPeriod, datos, showToast);
+        await buildPDF(exportTipo, exportPeriod, datos);
       } else {
         await buildXlsx(exportTipo, exportPeriod, datos);
       }
@@ -452,7 +328,7 @@ function ExportModal({ stats, period, onClose, showToast }) {
   useEffect(() => () => clearInterval(intervalRef.current), []);
 
   const TIPO_OPTIONS = [
-    { key: 'ejecutivo', label: 'Ejecutivo',  desc: 'KPIs + tendencia' },
+    { key: 'ejecutivo', label: 'Ejecutivo',  desc: 'KPIs + top emisores' },
     { key: 'completo',  label: 'Completo',   desc: 'Todo incluido'    },
     { key: 'operativo', label: 'Operativo',  desc: 'KPIs + emisores + revocaciones' },
   ];

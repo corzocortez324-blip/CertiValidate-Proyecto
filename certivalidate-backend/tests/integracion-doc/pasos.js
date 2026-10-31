@@ -11,6 +11,7 @@ const jwt = require('jsonwebtoken')
 const { app, prisma, request, auth, emailDe } = require('./escenario')
 const logger = require('../../src/utils/logger')
 const { encrypt, decrypt } = require('../../src/utils/crypto')
+const { obtenerBlockchainLocal } = require('./blockchain-local')
 const blockchainService = require('../../src/services/blockchain.service')
 const academicApi = require('../../src/services/academic-api.service')
 const academicProvider = require('../../src/services/academic-provider.service')
@@ -66,9 +67,13 @@ const emitirValido = async (ctx) => {
   return res.body.data
 }
 
+// Hash de transacción Ethereum (0x + 64 hex)
+const TX_HASH = /^0x[0-9a-f]{64}$/
+
 const verificarCodigo = async (codigo) => {
   const res = await request(app).post('/api/certificados/verificar').send({ codigo })
-  expect(res.status).toBe(200)
+  // Un código inexistente responde 404 con estado no_encontrado; el resto, 200
+  expect(res.status).toBe(res.body.data?.estado === 'no_encontrado' ? 404 : 200)
   return res.body.data
 }
 
@@ -159,10 +164,13 @@ const PASOS = {
     expect(h1).toBe(c.hash_sha256)
   },
   T2: async () => {
-    expect(blockchainService.getBlockchainMode()).toBe('mock')
-    const r = await blockchainService.registerHashOnBlockchain(crypto.randomBytes(32).toString('hex'))
-    expect(r.txHash).toMatch(/^mock_tx_/)
-    expect(r.status).toBe('confirmado')
+    expect(blockchainService.getBlockchainMode()).toBe('real')
+    const hash = crypto.randomBytes(32).toString('hex')
+    const r = await blockchainService.registerHashOnBlockchain(hash)
+    expect(r.txHash).toMatch(TX_HASH)
+    expect(r).toMatchObject({ status: 'confirmado', mode: 'real', contractAddress: process.env.BLOCKCHAIN_CONTRACT_ADDRESS })
+    expect(r.blockNumber).toBeGreaterThan(0)
+    expect(await obtenerBlockchainLocal().contrato.certificateExists(`0x${hash}`)).toBe(true) // quedó en el contrato
   },
   T3: async () => {
     // En producción el logger escribe JSON (en desarrollo usa pino-pretty)
@@ -212,7 +220,14 @@ const PASOS = {
   'SN-N2': crearUsuarioEditor,
   'SN-N3': async (ctx) => {
     const c = await emitirValido(ctx)
-    expect(c.pdf_url ?? null).toBeNull() // el PDF se genera bajo demanda (GET /descargar/:id)
+    // El PDF se genera al emitir y la respuesta trae su enlace de descarga
+    expect(c).toMatchObject({ pdf_url: `/api/certificados/descargar/${c.id}`, pdf_generado: true })
+    expect(c.pdf_bytes).toBeGreaterThan(1000)
+    const pdf = await request(app).get(c.pdf_url).set(auth(ctx.usuarios.admin.token))
+      .buffer(true).parse((r, cb) => { const d = []; r.on('data', (x) => d.push(x)); r.on('end', () => cb(null, Buffer.concat(d))) })
+    expect(pdf.status).toBe(200)
+    expect(pdf.headers['content-type']).toMatch(/application\/pdf/)
+    expect(pdf.body.subarray(0, 4).toString()).toBe('%PDF')
   },
   'SN-N4': async (ctx) => expect((await verificarCodigo((await emitirValido(ctx)).codigo_unico)).estado).toBe('valido'),
   'SN-N5': async (ctx) => {
@@ -241,7 +256,8 @@ const PASOS = {
     const c = await emitirValido(ctx)
     const res = await request(app).post(`/api/certificados/${c.id}/blockchain/register`).set(auth(ctx.usuarios.admin.token))
     expect(res.status).toBe(201)
-    expect(res.body.data.tx_hash).toMatch(/^mock_tx_/)
+    expect(res.body.data.tx_hash).toMatch(TX_HASH)
+    expect(await obtenerBlockchainLocal().contrato.certificateExists(`0x${res.body.data.hash}`)).toBe(true)
   },
   'ST-T3': espiarLogEmision,
   'ST-T4': async (ctx) => {
@@ -301,7 +317,10 @@ const PASOS = {
     await configurarIntegracion(ctx, api, 'clave-sis')
     const res = await request(app).post(`/api/instituciones/${ctx.inst.id}/probar-conexion`).set(auth(ctx.usuarios.admin.token))
     expect(res.body.data).toMatchObject({ estado: 'conectado', disponible: true })
-    expect(blockchainService.getBlockchainMode()).toBe('mock')
+    // E2: el RPC de la red de pruebas responde y el contrato está desplegado
+    expect(blockchainService.getBlockchainMode()).toBe('real')
+    const red = obtenerBlockchainLocal()
+    expect(await red.contrato.runner.provider.getCode(red.contractAddress)).not.toBe('0x')
   },
 }
 

@@ -41,6 +41,7 @@ const formatUsuario = (usuario) => {
     token_verificacion,
     token_verificacion_expira,
     totp_secret,
+    password_changed_at,
     ...datos
   } = usuario
   return datos

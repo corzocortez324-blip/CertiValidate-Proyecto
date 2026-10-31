@@ -15,6 +15,7 @@ try {
 }
 
 const prisma = require('./utils/prisma')
+const { iniciarWorkerBlockchain } = require('./services/blockchain-worker.service')
 
 async function main() {
   const connectionString = process.env.DATABASE_URL || process.env.DIRECT_URL
@@ -25,6 +26,9 @@ async function main() {
       'No se encontró DATABASE_URL ni DIRECT_URL — arrancando sin conexión a la base de datos',
     )
   }
+  // CI-H15-01/02: reintenta en segundo plano los anclajes que quedaron pendientes
+  if (connectionString) iniciarWorkerBlockchain()
+
   server = app.listen(PORT, () => {
     logger.info(
       { port: PORT, env: process.env.NODE_ENV || 'development' },

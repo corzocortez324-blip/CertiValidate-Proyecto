@@ -1,6 +1,7 @@
 const crypto = require('crypto')
+const { customAlphabet } = require('nanoid')
 const { sendSuccess, sendError } = require('../utils/response.utils')
-const { generarPDF } = require('../utils/pdf.generator')
+const { generarPDF, generarPDFBuffer } = require('../utils/pdf.generator')
 const { enviarEmailCertificado, enviarEmailCertificadoConPdf } = require('../utils/mailer')
 const prisma = require('../utils/prisma')
 const { registrarAuditoria } = require('../utils/auditoria')
@@ -10,6 +11,9 @@ const academicProvider = require('../services/academic-provider.service')
 const integrationConfig = require('../services/integration-config.service')
 const { generateCertificateHash } = require('../services/blockchain.service')
 const { computeCertificateHash } = require('../services/certificate-hash.service')
+
+// CI-H04-01: código único de 16 caracteres (nanoid con alfabeto hexadecimal en mayúsculas)
+const generarCodigoUnico = customAlphabet('0123456789ABCDEF', 16)
 
 const ofuscarNombre = (nombre, apellido) => {
   const n = (nombre ?? '').trim()
@@ -117,8 +121,8 @@ const emitirCertificado = async (req, res) => {
         }
 
         if (!estudiante && estudiante_id) {
-          estudiante = await prisma.estudiante.findUnique({
-            where: { id: estudiante_id },
+          estudiante = await prisma.estudiante.findFirst({
+            where: { id: estudiante_id, institucion_id },
           })
         }
       }
@@ -142,7 +146,7 @@ const emitirCertificado = async (req, res) => {
       if (providerFinal === 'external-api' && (estudiante_id || documento_estudiante)) {
         try {
           estudiante = estudiante_id
-            ? await prisma.estudiante.findUnique({ where: { id: estudiante_id } })
+            ? await prisma.estudiante.findFirst({ where: { id: estudiante_id, institucion_id } })
             : await academicProvider.buscarEstudiante({
                 provider: 'local-db',
                 documento: documento_estudiante,
@@ -215,7 +219,7 @@ const emitirCertificado = async (req, res) => {
     }
 
     const fechaEmision = new Date()
-    const codigo_unico = crypto.randomBytes(8).toString('hex').toUpperCase()
+    const codigo_unico = generarCodigoUnico()
 
     const certificado = await prisma.$transaction(async (tx) => {
 
@@ -330,7 +334,7 @@ const emitirCertificado = async (req, res) => {
 
       const certFinal = await tx.certificado.update({
         where: { id: cert.id },
-        data: { hash_sha256 },
+        data: { hash_sha256, pdf_url: `/api/certificados/descargar/${cert.id}` },
       })
 
       // Guardar metadata de origen
@@ -389,12 +393,24 @@ const emitirCertificado = async (req, res) => {
       '[CertificadoController] Certificado emitido exitosamente',
     )
 
-    // El email con el PDF del template lo envía el frontend vía POST /certificados/:id/email
-    // para garantizar que use el diseño real de la plantilla.
+    // El PDF se genera al emitir para confirmar que el certificado es descargable;
+    // la descarga (pdf_url) lo vuelve a producir desde los datos congelados.
+    // El email con el PDF del template lo envía el frontend vía POST /certificados/:id/email.
+    let pdf_bytes = null
+    try {
+      const completo = await prisma.certificado.findUnique({
+        where: { id: certificado.id },
+        include: { estudiante: true, institucion: true, plantilla: true },
+      })
+      const pdf = await generarPDFBuffer(completo)
+      pdf_bytes = pdf.length
+    } catch (err) {
+      logger.error({ err, certificado_id: certificado.id }, '[CertificadoController] Error generando PDF al emitir')
+    }
 
     return sendSuccess(
       res,
-      certificado,
+      { ...certificado, pdf_generado: pdf_bytes !== null, pdf_bytes },
       'Certificado generado correctamente',
       201,
     )
@@ -450,7 +466,7 @@ const verificarCertificado = async (req, res) => {
           mensaje: 'El certificado no fue encontrado',
         },
         'Certificado no encontrado',
-        200,
+        404,
       )
     }
 
@@ -490,7 +506,7 @@ const verificarCertificado = async (req, res) => {
     let mensaje = 'Certificado verificado correctamente'
 
     if (!hashVerificado) {
-      resultado = 'invalido'
+      resultado = 'alterado'
       mensaje = 'Integridad del certificado comprometida'
     } else if (cert.estado === 'revocado') {
       resultado = 'revocado'
@@ -1104,9 +1120,10 @@ const enviarEmailConPdfTemplate = async (req, res) => {
       return sendError(res, 'El estudiante no tiene email registrado', 400)
 
     const pdfBuffer = Buffer.from(pdf_base64, 'base64')
-    await enviarEmailCertificadoConPdf(cert, pdfBuffer)
+    // El id de Resend permite consultar después el estado de entrega del correo
+    const email_id = await enviarEmailCertificadoConPdf(cert, pdfBuffer)
 
-    return sendSuccess(res, null, 'Email enviado correctamente', 200)
+    return sendSuccess(res, { email_id }, 'Email enviado correctamente', 200)
   } catch (error) {
     logger.error({ err: error, requestId: req.requestId }, 'Error en enviarEmailConPdfTemplate')
     if (error.code === 'EMAIL_PROVIDER_ERROR')

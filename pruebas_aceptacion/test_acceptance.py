@@ -26,7 +26,7 @@ import config
 from conftest import need
 from helpers import (api, api_login, banner, button, clickable, db_verification_token, emitir,
                      extract_verify_link, field_by_label, list_certs, login, mail_body,
-                     mailhog_find, password_login_ok, public_verify, row_for, select_contains,
+                     mailhog_find, password_login_ok, public_verify, resend_entrega, row_for, select_contains,
                      set_input_value, visible, visible_errors, wait, wait_modal_closed)
 
 S = config.STUDENT
@@ -207,8 +207,8 @@ def test_ca005_registrar_estudiante(admin, ev):
     time.sleep(1.5)
     if driver.find_elements(By.XPATH, f"//td[normalize-space()='{S['documento']}']"):
         raise AssertionError(
-            f"El documento {S['documento']} ya existe. El backend responde HTTP 500 (Prisma P2002) "
-            "al duplicar documento por institución: cambie STUDENT_DOC o borre el estudiante.")
+            f"El documento {S['documento']} ya existe (el backend respondería 409 al duplicarlo): "
+            "ejecute npm run prepare:e2e en certivalidate-backend o cambie STUDENT_DOC.")
     set_input_value(driver, buscador, "")
     ev.step(driver, "Módulo Estudiantes (listado inicial)")
     button(driver, "Nuevo Estudiante").click()
@@ -417,23 +417,29 @@ def test_ca013_enviar_por_correo(admin, state, ev):
     row_for(driver, codigo).find_element(By.CSS_SELECTOR, "button[title='Ver detalle']").click()
     envio = button(driver, "Enviar por correo", timeout=40)
     ev.step(driver, "Detalle del certificado con la opción «Enviar por correo»")
+    # margen de 1 min por diferencias de reloj con Resend
+    desde = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=1)).strftime("%Y-%m-%dT%H:%M:%S")
     envio.click()
-    alerta = wait(driver, 60).until(EC.alert_is_present())
-    texto = alerta.text
-    alerta.accept()
-    banner(driver, f"Mensaje del sistema (alert): {texto}")
-    ev.step(driver, "El sistema confirma el envío del certificado")
-    if "enviado por correo correctamente" not in texto.lower():
+    toast = wait(driver, 60).until(lambda d: next(
+        (t for t in d.find_elements(By.CSS_SELECTOR, ".toast") if "correo" in t.text.lower()), None))
+    texto = toast.text
+    ev.step(driver, "El sistema confirma el envío del certificado (notificación)")
+    if "toast-success" not in toast.get_attribute("class") or "enviado por correo correctamente" not in texto.lower():
         raise AssertionError(
-            f"Alerta inesperada: {texto!r}. Revise en el backend RESEND_API_KEY, EMAIL_FROM y "
+            f"Notificación inesperada: {texto!r}. Revise en el backend RESEND_API_KEY, EMAIL_FROM y "
             "EMAIL_DEV_TO (con onboarding@resend.dev Resend solo entrega al correo dueño de la cuenta).")
 
+    # Recepción: Resend confirma que el correo quedó entregado en el buzón de destino
     if config.MAILHOG_URL:
         mensajes = mailhog_find(S["email"])
         assert mensajes, f"El correo no llegó a {S['email']}"
     else:
-        ev.note("La recepción del correo no se automatiza (el backend envía con Resend). Agregue "
-                "una captura de la bandeja como evidencias/CA013/manual_bandeja.png.")
+        assert config.RESEND_API_KEY, "Sin RESEND_API_KEY no se puede confirmar la entrega del correo"
+        destinatario = config.EMAIL_DEV_TO or S["email"]
+        correo = resend_entrega(destinatario, desde)
+        banner(driver, f"Resend: correo {correo['id'][:8]}… a {destinatario} -> {correo['last_event']}\n"
+                       f"Asunto: {correo.get('subject')}")
+        ev.step(driver, "Resend confirma la entrega del correo (estado «delivered»)")
 
 
 def test_ca011_revocar_certificado(admin, state, ev):
@@ -586,11 +592,16 @@ def test_ca016_control_de_acceso_lector(driver, ev):
     visible(driver, By.XPATH, "//h2[normalize-space()='No autorizado']")
     ev.step(driver, "Ruta /admin/usuarios: «No autorizado»")
 
-    for ruta in ("plantillas", "auditoria"):
-        driver.get(f"{config.BASE_URL}/admin/{ruta}")
-        time.sleep(2)
-        bloqueada = bool(driver.find_elements(By.XPATH, "//h2[normalize-space()='No autorizado']"))
-        ev.step(driver, f"Ruta /admin/{ruta}: " + ("«No autorizado»" if bloqueada else "accesible para el lector"))
-        if not bloqueada:
-            ev.note(f"El lector puede abrir /admin/{ruta}: el seed del backend le concede permisos de "
-                    "lectura (plantilla:ver/listar, auditoria:ver). Confirme que es lo deseado.")
+    # El lector consulta plantillas (plantilla:ver/listar) pero no la auditoría
+    driver.get(f"{config.BASE_URL}/admin/plantillas")
+    visible(driver, By.XPATH, "//h1[normalize-space()='Plantillas de Certificado']")
+    ev.step(driver, "Ruta /admin/plantillas: el lector consulta las plantillas (solo lectura)")
+
+    driver.get(f"{config.BASE_URL}/admin/auditoria")
+    visible(driver, By.XPATH, "//h2[normalize-space()='No autorizado']")
+    ev.step(driver, "Ruta /admin/auditoria: «No autorizado»")
+    if st is not None:
+        st_aud, _ = api("GET", "/auditoria", token=token)
+        banner(driver, f"GET /api/auditoria como lector -> HTTP {st_aud}")
+        ev.step(driver, "Consulta directa de auditoría al servidor: 403")
+        assert st_aud == 403, f"El servidor respondió HTTP {st_aud} a la auditoría y se esperaba 403"

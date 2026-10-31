@@ -37,6 +37,8 @@ const responder = (metodo, ruta, query, cuerpo, { rol, login }) => {
     const data = base.data.data.filter((a) => a.accion === accion);
     return { ...base, data: { data, meta: { ...base.data.meta, total: data.length, totalPages: 1 } } };
   }
+  if (r('POST', /^\/certificados\/[^/]+\/email$/)) return cuerpo?.pdf_base64 ? contratos.email_enviado : null;
+  if (r('GET', /^\/certificados\/[0-9a-f-]{36}$/)) return contratos.certificado_detalle;
   if (r('POST', /^\/certificados\/verificar$/)) {
     return cuerpo?.codigo === contratos.verificar_valido.data.codigo_unico ? contratos.verificar_valido : contratos.verificar_no_encontrado;
   }

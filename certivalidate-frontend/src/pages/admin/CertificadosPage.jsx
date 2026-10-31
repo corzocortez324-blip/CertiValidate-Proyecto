@@ -312,9 +312,9 @@ export const CertificadosPage = () => {
       const html  = buildCertificateHtml(detailCert.plantilla.template_html, detailCert, qrUrl);
       const base64 = await certificatePdfToBase64(html);
       await certificadosApi.enviarEmailPdf(detailCert.id, base64);
-      alert('Certificado enviado por correo correctamente.');
+      showToast('Certificado enviado por correo correctamente.', 'success');
     } catch (err) {
-      alert(`Error al enviar: ${err.message}`);
+      showToast(`Error al enviar: ${err.message}`, 'error');
     } finally {
       setSendingEmail(false);
     }
@@ -342,7 +342,7 @@ export const CertificadosPage = () => {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert(`Error al descargar: ${err.message}`);
+      showToast(`Error al descargar: ${err.message}`, 'error');
     }
   };
 
