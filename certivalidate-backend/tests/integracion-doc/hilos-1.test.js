@@ -249,6 +249,7 @@ describe('H06 Verificación pública', () => {
     const v = await verificarCodigo(c.codigo_unico)
     expect(v).toMatchObject({ estado: 'valido', hash_verificado: true, institucion: ctx.inst.nombre })
     expect(v.titular).toMatch(/\*/)
+    expect(v.estudiante).toBeUndefined() // el nombre completo no sale en la respuesta pública
     const reg = await prisma.verificacionPublica.findFirst({ where: { certificado_id: c.id } })
     expect(reg).toMatchObject({ resultado: 'valido', metodo: 'codigo' })
   })

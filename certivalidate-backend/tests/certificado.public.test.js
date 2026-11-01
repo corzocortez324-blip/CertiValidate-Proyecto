@@ -58,7 +58,7 @@ describe('POST /api/certificados/verificar (público)', () => {
     expect(res.status).toBe(200)
     expect(res.body.data.estado).toBe('valido')
     expect(res.body.data.codigo_unico).toBe(codigoUnico)
-    expect(res.body.data.estudiante).toBeDefined()
+    expect(res.body.data.titular).toBeDefined()
     expect(res.body.data.institucion).toBeDefined()
   })
 
@@ -83,13 +83,12 @@ describe('POST /api/certificados/verificar (público)', () => {
     expect(res.status).toBe(400)
   })
 
-  it('no expone datos sensibles del estudiante (solo nombre y apellido)', async () => {
+  it('no expone datos personales del estudiante (solo el titular ofuscado)', async () => {
     const res = await request(app)
       .post('/api/certificados/verificar')
       .send({ codigo: codigoUnico })
-    const est = res.body.data.estudiante
-    expect(est.documento).toBeUndefined()
-    expect(est.email).toBeUndefined()
-    expect(est.nombre).toBeDefined()
+    expect(res.body.data.estudiante).toBeUndefined()
+    expect(JSON.stringify(res.body.data)).not.toMatch(/documento|email/)
+    expect(res.body.data.titular).toMatch(/\*/)
   })
 })
