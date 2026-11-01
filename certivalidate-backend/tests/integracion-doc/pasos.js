@@ -50,6 +50,12 @@ const configurarIntegracion = async (ctx, api, apiKey = 'clave-sandbox') => {
   return res.body.data
 }
 
+/** Configura la integración solo si la institución aún no tiene una (casos ejecutables por separado). */
+const asegurarIntegracion = async (ctx, api, apiKey) => {
+  if (await prisma.integracion.findUnique({ where: { institucion_id: ctx.inst.id } })) return
+  await configurarIntegracion(ctx, api, apiKey)
+}
+
 const crearUsuarioEditor = async (ctx) => {
   const res = await request(app).post('/api/usuarios').set(auth(ctx.usuarios.admin.token))
     .send({ nombre: 'Emisor', apellido: 'Driver', email: emailDe(`n2_${ctx.tag}_${unico()}`), password: CLAVE_USUARIO_NUEVO, rol: 'editor' })
@@ -324,4 +330,4 @@ const PASOS = {
   },
 }
 
-module.exports = { PASOS, emitirValido, verificarCodigo, revocarComo, configurarIntegracion, certCompleto, hashCanonico }
+module.exports = { PASOS, emitirValido, verificarCodigo, revocarComo, configurarIntegracion, asegurarIntegracion, certCompleto, hashCanonico }
