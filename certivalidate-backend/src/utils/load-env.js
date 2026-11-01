@@ -31,7 +31,7 @@ const loadEnv = () => {
 
   if (env === 'test') {
     const envFile = path.resolve(__dirname, '../../.env.test')
-    const result = config({ path: envFile, override: true })
+    const result = config({ path: envFile, override: true, quiet: true })
     if (result.error) {
       throw new Error(`Fallo cargando ${envFile}: ${result.error.message}`)
     }

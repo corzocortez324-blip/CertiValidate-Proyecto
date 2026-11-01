@@ -14,7 +14,7 @@ const jwt = require('jsonwebtoken')
 const { generateSync } = require('otplib')
 const { iniciarBlockchainLocal } = require('./blockchain-local')
 const { app, prisma, request, auth, login, emailDe, PASSWORD, crearEscenario, crearApiAcademica } = require('./escenario')
-const { emitirValido, verificarCodigo, revocarComo, configurarIntegracion } = require('./pasos')
+const { emitirValido, verificarCodigo, revocarComo, configurarIntegracion, asegurarIntegracion } = require('./pasos')
 const blockchainService = require('../../src/services/blockchain.service')
 const { procesarTransaccionesPendientes } = require('../../src/services/blockchain-worker.service')
 const { decrypt } = require('../../src/utils/crypto')
@@ -61,6 +61,7 @@ describe('H12 Configuración de integración', () => {
   })
 
   it('CI-H12-02 Probar conexión exitosa', async () => {
+    await asegurarIntegracion(esc, api, 'clave-secreta-h12')
     const antes = (await prisma.integracion.findUnique({ where: { institucion_id: esc.inst.id } })).ultima_verificacion
     const res = await probarConexion(esc)
     expect(res.status).toBe(200)
@@ -75,6 +76,7 @@ describe('H12 Configuración de integración', () => {
   })
 
   it('CI-H12-03 Probar conexión sin respuesta (timeout de 5 s)', async () => {
+    await asegurarIntegracion(esc, api, 'clave-secreta-h12')
     api.modo = 'lento'
     const inicio = Date.now()
     const res = await probarConexion(esc)
@@ -109,6 +111,7 @@ describe('H13 Sincronización', () => {
   })
 
   it('CI-H13-02 Sincronización parcial (una entidad no disponible)', async () => {
+    await asegurarIntegracion(esc, api, 'clave-h13')
     api.modo = 'certificadosCaidos'
     api.estudiantes = [{ documento: `S3${esc.tag}`, nombre: 'Sol', apellido: 'Tres' }]
     api.certificados = []
@@ -433,6 +436,7 @@ describe('H21 Prueba de conexión', () => {
   })
 
   it('CI-H21-02 Timeout o error HTTP de la API externa', async () => {
+    await asegurarIntegracion(esc, api, 'clave-h21')
     api.modo = 'lento'
     expect((await probarConexion(esc)).body.data).toMatchObject({ estado: 'sin_conexion', disponible: false, error: 'Timeout' })
     api.modo = 'error500'

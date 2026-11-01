@@ -122,6 +122,15 @@ describe('CI-H10-01: auditoría al actualizar permisos de un rol', () => {
 
 describe('Integración académica', () => {
   let integracionId
+  // Cada caso puede ejecutarse por separado: crea la integración si aún no existe
+  const asegurarIntegracion = async () => {
+    if (await prisma.integracion.findUnique({ where: { institucion_id: inst.id } })) return
+    const res = await request(app)
+      .post('/api/integraciones')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ institucion_id: inst.id, tipo: 'REST', url_base: 'http://academic.test/api', api_key: 'clave-secreta' })
+    expect(res.status).toBe(201)
+  }
 
   it('CI-H12-01: crear integración registra auditoría sin exponer la api_key', async () => {
     const res = await request(app)
@@ -138,6 +147,7 @@ describe('Integración académica', () => {
   })
 
   it('CI-H12-03: API sin respuesta devuelve estado sin_conexion', async () => {
+    await asegurarIntegracion()
     academicApiService.verificarDisponibilidad.mockResolvedValue(false)
 
     const res = await request(app)
@@ -149,6 +159,7 @@ describe('Integración académica', () => {
   })
 
   it('CI-H13-01: sincronizar registra auditoría SINCRONIZAR_DATOS', async () => {
+    await asegurarIntegracion()
     academicApiService.listarEstudiantes.mockResolvedValue([])
 
     const res = await request(app)
@@ -161,6 +172,7 @@ describe('Integración académica', () => {
   })
 
   it('CI-H13-02: una entidad caída no aborta la sincronización', async () => {
+    await asegurarIntegracion()
     academicApiService.listarEstudiantes.mockResolvedValue([
       { documento: `REG${UNIQUE}`, nombre: 'Sync', apellido: 'Parcial' },
     ])

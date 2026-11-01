@@ -1,0 +1,13 @@
+{
+  "name": "certivalidate-metricas",
+  "private": true,
+  "description": "Medición del software (parte 3 del documento): tamaño con Node.js y cloc, y métricas CK.",
+  "scripts": {
+    "loc": "node loc-node.cjs .. --list=lista-archivos.txt",
+    "cloc": "cloc --list-file=lista-archivos.txt",
+    "ck": "node ck-metrics.cjs .."
+  },
+  "dependencies": {
+    "cloc": "^2.11.0"
+  }
+}
