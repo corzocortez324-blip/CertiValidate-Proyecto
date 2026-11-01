@@ -584,10 +584,7 @@ const verificarCertificado = async (req, res) => {
         hash_verificado: hashVerificado,
         fecha_emision: cert.fecha_emision,
         fecha_expiracion: cert.fecha_expiracion,
-        estudiante: {
-          nombre: nombreDisplay,
-          apellido: apellidoDisplay,
-        },
+        // Portal público: solo el nombre ofuscado del titular (Ley 1581 de 2012)
         titular: ofuscarNombre(nombreDisplay, apellidoDisplay),
         tipo_certificado: cert.snapshot_plantilla_nombre ?? cert.plantilla?.nombre ?? null,
         institucion: cert.snapshot_institucion_nombre ?? cert.institucion?.nombre ?? null,

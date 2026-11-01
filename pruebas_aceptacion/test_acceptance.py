@@ -499,8 +499,19 @@ def test_ca014_configurar_integracion(admin, ev):
     msg = visible(driver, By.CSS_SELECTOR, ".integ-test-msg", timeout=40)
     assert msg.text.strip(), "La prueba de conexión no informó su estado"
     ev.step(driver, f"Prueba de conexión: «{msg.text.strip()}»")
-    ev.note("Tras esta prueba la institución queda con una integración REST hacia una URL de ejemplo "
-            "no accesible; desactívela o elimínela antes de repetir la emisión (CA007/CA008).")
+
+    # Limpieza: la integración de ejemplo se elimina para no afectar otras emisiones (CA007/CA008)
+    st, token = api_login(config.ADMIN_EMAIL, config.ADMIN_PASSWORD)
+    if token:
+        _, lista = api("GET", "/instituciones?page=1&limit=100", token=token)
+        instituciones = (((lista or {}).get("data") or {}).get("data")) or []
+        inst = next((i["id"] for i in instituciones if i.get("nombre") == config.INSTITUCION), None)
+        if inst:
+            _, integ = api("GET", f"/integraciones/{inst}", token=token)
+            integ_id = ((integ or {}).get("data") or {}).get("id")
+            if integ_id:
+                st_del, _ = api("DELETE", f"/integraciones/{integ_id}", token=token)
+                assert st_del == 200, f"No se pudo eliminar la integración de ejemplo (HTTP {st_del})"
 
 
 def test_ca015_log_de_auditoria(admin, state, ev):
