@@ -16,6 +16,10 @@ BASE_URL = env("BASE_URL", "http://localhost:5173").rstrip("/")
 BACKEND_URL = env("BACKEND_URL", "http://localhost:3000/api").rstrip("/")
 TIMEOUT = int(env("TIMEOUT", "15"))
 HEADLESS = env("HEADLESS", "0") == "1"
+# Contexto de uso: BROWSER=chrome|edge, MOBILE=1 (celular simulado), SLOW_NET=1 (red 3G)
+BROWSER = env("BROWSER", "chrome").lower()
+MOBILE = env("MOBILE", "0") == "1"
+SLOW_NET = env("SLOW_NET", "0") == "1"
 EVIDENCE_DIR = env("EVIDENCE_DIR", "evidencias")
 
 INSTITUCION = env("INSTITUCION", "Universidad Popular del Cesar")
