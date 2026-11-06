@@ -54,7 +54,8 @@ def test_ca001_login_exitoso(driver, ev):
     wait(driver).until(lambda d: d.current_url.rstrip("/").endswith("/admin"))
     visible(driver, By.CSS_SELECTOR, "aside.sidebar")
     ev.step(driver, "Acceso correcto: redirigido a /admin y menú lateral visible")
-    assert "Certificados" in driver.find_element(By.CSS_SELECTOR, "aside.sidebar").text
+    # En pantallas pequeñas el menú muestra solo íconos; el nombre de cada opción va en su title
+    assert driver.find_element(By.CSS_SELECTOR, "aside.sidebar a[title='Certificados']").is_displayed()
 
 
 def test_ca002_bloqueo_por_intentos_fallidos(driver, ev):

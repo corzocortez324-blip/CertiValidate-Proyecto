@@ -189,6 +189,41 @@
   .audit-date-col { font-size: 0.78rem; }
 }
 
+/* En pantallas pequeñas cada registro es una tarjeta: se ven todos los campos sin desplazamiento horizontal */
+@media (max-width: 640px) {
+  .audit-table thead { display: none; }
+  .audit-table,
+  .audit-table tbody,
+  .audit-table tr,
+  .audit-table td { display: block; width: 100%; }
+  .audit-table tr {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.85rem;
+    margin-bottom: 0.75rem;
+  }
+  .audit-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.35rem 0;
+    border: none;
+    text-align: right;
+  }
+  .audit-table td::before {
+    content: attr(data-label);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-align: left;
+  }
+  .audit-table td.audit-actions-col { justify-content: flex-end; }
+  .audit-table td.audit-actions-col::before,
+  .audit-table td.empty-state::before { content: none; }
+  .audit-table td.empty-state { justify-content: center; text-align: center; }
+}
+
 /* Result column & badge */
 .audit-result-col { white-space: nowrap; }
 

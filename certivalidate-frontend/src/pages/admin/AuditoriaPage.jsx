@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { auditoriaApi } from '../../api/auditoria.api';
 import { Pagination } from '../../components/ui/Pagination';
 import { Card } from '../../components/ui/Card';
@@ -98,19 +98,27 @@ export const AuditoriaPage = () => {
     fecha_hasta: fechaHasta ? fechaHasta + 'T23:59:59' : '',
   }), [page, filterEntidad, filterAccion, filterUsuario, fechaDesde, fechaHasta]);
 
+  // Cada cambio de filtro lanza una consulta; con red lenta pueden responder en
+  // desorden. Solo se aplica la respuesta de la última consulta lanzada.
+  const ultimaConsulta = useRef(0);
+
   const load = useCallback(async () => {
+    const consulta = ++ultimaConsulta.current;
+    const vigente = () => consulta === ultimaConsulta.current;
     setLoading(true);
     setListError('');
     try {
       const data = await auditoriaApi.listar(buildParams());
+      if (!vigente()) return;
       setAuditorias(data.auditorias);
       setTotalPages(data.totalPages);
     } catch (err) {
+      if (!vigente()) return;
       const message = err?.message || 'Error al cargar la auditoría';
       setListError(message);
       showToast(message, 'error');
     } finally {
-      setLoading(false);
+      if (vigente()) setLoading(false);
     }
   }, [buildParams, showToast]);
 
@@ -211,7 +219,7 @@ export const AuditoriaPage = () => {
 
       <Card>
         <div className="table-overflow-wrap">
-          <table className="data-table">
+          <table className="data-table audit-table">
             <thead>
               <tr>
                 <th>Fecha y hora</th>
@@ -230,25 +238,25 @@ export const AuditoriaPage = () => {
                 <tr><td colSpan={7} className="empty-state">No hay registros con los filtros aplicados.</td></tr>
               ) : auditorias.map(a => (
                 <tr key={a.id?.toString()}>
-                  <td className="audit-date-col">{formatDateTime(a.fecha)}</td>
-                  <td>
+                  <td className="audit-date-col" data-label="Fecha y hora">{formatDateTime(a.fecha)}</td>
+                  <td data-label="Usuario">
                     <div className="audit-user-name">{a.usuario?.nombre} {a.usuario?.apellido}</div>
                     <div className="audit-user-email">{a.usuario?.email}</div>
                   </td>
-                  <td><Badge variant={getActionColor(a.accion)}>{formatAccion(a.accion)}</Badge></td>
-                  <td>
+                  <td data-label="Acción"><Badge variant={getActionColor(a.accion)}>{formatAccion(a.accion)}</Badge></td>
+                  <td data-label="Entidad">
                     <span className="audit-entity-label">{a.entidad}</span>
                     {a.entidad_id && <div className="audit-entity-id">{a.entidad_id}</div>}
                   </td>
-                  <td className="audit-ip-col">{a.ip || '—'}</td>
-                  <td className="audit-result-col">
+                  <td className="audit-ip-col" data-label="IP">{a.ip || '—'}</td>
+                  <td className="audit-result-col" data-label="Resultado">
                     {a.resultado
                       ? <span className={`audit-result-badge ${a.resultado === 'exito' || a.resultado === 'exitoso' ? 'success' : 'fail'}`}>
                           {a.resultado}
                         </span>
                       : '—'}
                   </td>
-                  <td>
+                  <td className="audit-actions-col">
                     <button className="icon-btn" title="Ver detalle" onClick={() => setDetailEntry(a)}><Eye size={15} /></button>
                   </td>
                 </tr>
