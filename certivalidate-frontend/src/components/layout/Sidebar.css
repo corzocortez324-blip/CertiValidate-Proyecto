@@ -211,8 +211,9 @@
 }
 
 @media (max-width: 900px) {
-  .sidebar { width: 72px; }
-  .sidebar-brand span, .sidebar-user-info { display: none; }
+  .sidebar { width: 72px; overflow-x: hidden; }
+  /* Solo íconos: los nombres de las opciones se desbordaban sobre el contenido */
+  .sidebar-brand span, .sidebar-user-info, .sidebar-link span { display: none; }
   .collapse-btn { display: none; }
   .sidebar-link { justify-content: center; padding: 0.7rem; gap: 0; }
   .sidebar-nav { padding: 1rem 0.5rem; }
