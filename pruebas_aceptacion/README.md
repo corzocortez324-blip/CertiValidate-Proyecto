@@ -24,6 +24,9 @@ pytest
 | `TOTP_EMAIL`, `TOTP_PASSWORD`, `TOTP_SECRET` | CA003 (se omite si faltan) |
 | `LOCKOUT_EMAIL`, `LOCKOUT_PASSWORD` | CA002 (se omite si falta; **bloquea esa cuenta ~15 min**) |
 | `MAILHOG_URL` | Lee correos: verificación (CA004) y recepción (CA013) |
+| `BROWSER` | `chrome` (por defecto) o `edge` |
+| `MOBILE` | `1` simula un celular de 390 × 844 px con toque |
+| `SLOW_NET` | `1` limita la red a 3G: 400 ms de latencia y 400 kbit/s (solo Chrome y Edge) |
 | `STUDENT_DOC`, `PLANTILLA_NOMBRE`, `INSTITUCION`... | Datos de prueba (ver `config.py`) |
 
 ## Orden y dependencias

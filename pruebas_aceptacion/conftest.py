@@ -7,6 +7,7 @@ import re
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.edge.options import Options as EdgeOptions
 
 import config
 from helpers import NOTES, STEPS, Evidence, login
@@ -16,18 +17,36 @@ DOWNLOADS = pathlib.Path(config.EVIDENCE_DIR).resolve() / "descargas"
 
 
 def make_driver():
+    """Navegador según el contexto de uso (config.BROWSER, MOBILE, SLOW_NET)."""
     DOWNLOADS.mkdir(parents=True, exist_ok=True)
-    opts = Options()
+    opts = EdgeOptions() if config.BROWSER == "edge" else Options()
     if config.HEADLESS:
         opts.add_argument("--headless=new")
-    opts.add_argument("--window-size=1440,900")
+    if config.MOBILE:
+        # Celular simulado: pantalla de 390x844 con toque y agente de usuario móvil
+        opts.add_experimental_option("mobileEmulation", {
+            "deviceMetrics": {"width": 390, "height": 844, "pixelRatio": 3, "touch": True},
+            "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 "
+                         "(KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36",
+        })
+    else:
+        opts.add_argument("--window-size=1440,900")
     opts.add_argument("--lang=es-CO")
     opts.add_experimental_option("prefs", {
         "download.default_directory": str(DOWNLOADS),
         "download.prompt_for_download": False,
         "profile.default_content_setting_values.automatic_downloads": 1,
     })
-    return webdriver.Chrome(options=opts)  # Selenium Manager descarga el driver
+    # Selenium Manager descarga el driver
+    drv = webdriver.Edge(options=opts) if config.BROWSER == "edge" else webdriver.Chrome(options=opts)
+    if config.SLOW_NET:
+        # Red lenta tipo 3G: 400 ms de latencia y 400 kbit/s de bajada y subida
+        drv.execute_cdp_cmd("Network.enable", {})
+        drv.execute_cdp_cmd("Network.emulateNetworkConditions", {
+            "offline": False, "latency": 400,
+            "downloadThroughput": 400 * 1024 / 8, "uploadThroughput": 400 * 1024 / 8,
+        })
+    return drv
 
 
 @pytest.fixture
