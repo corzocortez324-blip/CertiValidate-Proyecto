@@ -126,10 +126,13 @@ CA002 bloquea su cuenta durante 15 minutos, así que conviene dejarlo para el fi
 
 ```powershell
 cd metricas
-npm run loc     # tamaño con Node.js: 27.561 LOC
-npm run cloc    # tamaño con cloc: 27.543 LOC
+npm run loc     # tamaño con Node.js: 27.781 LOC fuente
+npm run cloc    # tamaño con cloc: 27.763 LOC fuente (usa el Perl de Git for Windows)
 npm run ck      # métricas CK por módulo
 ```
+
+Las dos herramientas reciben `lista-archivos.txt`: los mismos 170 archivos que analiza SonarQube Cloud
+(28.058 LOC fuente en el análisis del commit 1a0f9af). El contrato Solidity se informa aparte.
 
 ## 3. Sugerencia de demostración (unos 10 minutos)
 

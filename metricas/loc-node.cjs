@@ -3,6 +3,8 @@
  * físicas, en blanco, de comentario (// y bloques /* *\/ que empiezan al inicio de la línea)
  * y de código, por componente y por extensión. Alcance: código del producto, sin
  * node_modules, pruebas, migraciones SQL, configuración (JSON/YAML/MD) ni artefactos.
+ * lista-archivos.txt contiene los mismos 170 archivos que analiza SonarQube Cloud
+ * (.sonarcloud.properties), para que Node.js, cloc y SonarQube midan exactamente lo mismo.
  *
  *   node loc-node.cjs <raíz del repositorio> [--list=lista-archivos.txt] [--json]
  */
@@ -75,6 +77,7 @@ for (const [comp, rutas] of Object.entries(COMPONENTES)) {
     for (const k of ['fisicas', 'blanco', 'comentario', 'codigo']) { porComp[comp][k] += c[k]; total[k] += c[k] }
   }
   total.archivos += lista.length
+  if (!lista.length) delete porComp[comp] // componente fuera de la lista recibida
 }
 const salida = { total, porComp, porLeng }
 if (process.argv.includes('--json')) console.log(JSON.stringify(salida))
