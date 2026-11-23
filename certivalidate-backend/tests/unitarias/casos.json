@@ -1,0 +1,3902 @@
+{
+ "1": {
+  "nombre": "Inicio de Sesión (Login)",
+  "endpoint": "/api/auth/login",
+  "metodo": "post",
+  "ctrl": [
+   "auth.controller",
+   "login"
+  ],
+  "casos": [
+   {
+    "id": "CP-001",
+    "desc": "Verificar que un usuario activo con credenciales correctas inicia sesión y recibe sus tokens.",
+    "body": {
+     "email": "${email}",
+     "password": "TestPass123"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {}
+    },
+    "status": 200,
+    "msg": "Login exitoso",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-002",
+    "desc": "Verificar que el sistema rechaza el inicio de sesión sin correo.",
+    "body": {
+     "email": "",
+     "password": "TestPass123"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-003",
+    "desc": "Verificar que el sistema rechaza un correo sin formato válido.",
+    "body": {
+     "email": "usuario.sin.arroba",
+     "password": "TestPass123"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 400,
+    "msg": "Errores de validación",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-004",
+    "desc": "Verificar que el sistema rechaza el inicio de sesión sin contraseña.",
+    "body": {
+     "email": "${email}",
+     "password": ""
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {}
+    },
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-005",
+    "desc": "Verificar que un correo no registrado recibe un mensaje genérico, sin revelar si existe.",
+    "body": {
+     "email": "__test__m1_noexiste_${U}@certivalidate.test",
+     "password": "TestPass123"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 401,
+    "msg": "Credenciales inválidas",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-006",
+    "desc": "Verificar que un usuario eliminado no puede iniciar sesión.",
+    "body": {
+     "email": "${email}",
+     "password": "TestPass123"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {
+      "eliminado": true
+     }
+    },
+    "status": 401,
+    "msg": "Credenciales inválidas",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-007",
+    "desc": "Verificar que un usuario desactivado no puede iniciar sesión.",
+    "body": {
+     "email": "${email}",
+     "password": "TestPass123"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {
+      "activo": false
+     }
+    },
+    "status": 403,
+    "msg": "Usuario desactivado",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-008",
+    "desc": "Verificar que una contraseña incorrecta se rechaza y se registra como intento fallido.",
+    "body": {
+     "email": "${email}",
+     "password": "Incorrecta1"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {}
+    },
+    "status": 401,
+    "msg": "Credenciales inválidas",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-009",
+    "desc": "Verificar que una cuenta con 5 intentos fallidos queda bloqueada aunque la contraseña sea correcta.",
+    "body": {
+     "email": "${email}",
+     "password": "TestPass123"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {},
+     "fallidos": 5
+    },
+    "status": 423,
+    "msg": "bloqueada",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-010",
+    "desc": "Verificar que una dirección IP con 20 intentos fallidos queda bloqueada.",
+    "body": {
+     "email": "${email}",
+     "password": "TestPass123"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {},
+     "fallidosIp": 20
+    },
+    "status": 429,
+    "msg": "dirección IP",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-011",
+    "desc": "Verificar que un usuario con 2FA recibe un token parcial y no los tokens de sesión.",
+    "body": {
+     "email": "${email}",
+     "password": "TestPass123"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {
+      "totp": true
+     }
+    },
+    "status": 200,
+    "msg": null,
+    "campo": {
+     "data.requires2FA": true
+    },
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-012",
+    "desc": "Verificar que el cuarto intento fallido todavía no bloquea la cuenta.",
+    "body": {
+     "email": "${email}",
+     "password": "Incorrecta1"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {},
+     "fallidos": 3
+    },
+    "status": 401,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-013",
+    "desc": "Verificar que el quinto intento fallido bloquea la cuenta.",
+    "body": {
+     "email": "${email}",
+     "password": "Incorrecta1"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {},
+     "fallidos": 4
+    },
+    "status": 423,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-014",
+    "desc": "Verificar que después del bloqueo ni la contraseña correcta permite entrar.",
+    "body": {
+     "email": "${email}",
+     "password": "TestPass123"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {},
+     "fallidos": 5
+    },
+    "status": 423,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-015",
+    "desc": "Verificar que el intento 19 desde una IP todavía no la bloquea.",
+    "body": {
+     "email": "${email}",
+     "password": "Incorrecta1"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {},
+     "fallidosIp": 18
+    },
+    "status": 401,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-016",
+    "desc": "Verificar que el intento fallido 20 desde una IP la bloquea.",
+    "body": {
+     "email": "${email}",
+     "password": "Incorrecta1"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {},
+     "fallidosIp": 19
+    },
+    "status": 429,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-017",
+    "desc": "Verificar que la IP bloqueada no puede iniciar sesión aunque la contraseña sea correcta.",
+    "body": {
+     "email": "${email}",
+     "password": "TestPass123"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {},
+     "fallidosIp": 20
+    },
+    "status": 429,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-018",
+    "desc": "Verificar que una contraseña de 1 carácter pasa la validación y se evalúa contra el hash.",
+    "body": {
+     "email": "${email}",
+     "password": "a"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {}
+    },
+    "status": 401,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-019",
+    "desc": "Verificar que una contraseña de 2 caracteres pasa la validación y se evalúa contra el hash.",
+    "body": {
+     "email": "${email}",
+     "password": "ab"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {}
+    },
+    "status": 401,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   }
+  ],
+  "caminos": [
+   {
+    "camino": "C1",
+    "ref": "CP-020",
+    "nodos": [
+     1,
+     2,
+     3,
+     14
+    ],
+    "escenario": "400 Email y password son obligatorios",
+    "body": {},
+    "previo": {},
+    "usuario": null,
+    "institucionIds": [],
+    "status": 400
+   },
+   {
+    "camino": "C2",
+    "ref": "CP-009",
+    "nodos": [
+     1,
+     2,
+     4,
+     5,
+     14
+    ],
+    "escenario": "423 Cuenta bloqueada",
+    "body": {
+     "email": "${email}",
+     "password": "TestPass123"
+    },
+    "previo": {
+     "usuario": {},
+     "fallidos": 5
+    },
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 423
+   },
+   {
+    "camino": "C3",
+    "ref": "CP-005",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     7,
+     14
+    ],
+    "escenario": "401 Credenciales inválidas",
+    "body": {
+     "email": "__test__m1c3_noexiste_${U}@certivalidate.test",
+     "password": "TestPass123"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 401
+   },
+   {
+    "camino": "C4",
+    "ref": "CP-007",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     9,
+     14
+    ],
+    "escenario": "403 Usuario desactivado",
+    "body": {
+     "email": "${email}",
+     "password": "TestPass123"
+    },
+    "previo": {
+     "usuario": {
+      "activo": false
+     }
+    },
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 403
+   },
+   {
+    "camino": "C5",
+    "ref": "CP-008",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     7,
+     14
+    ],
+    "escenario": "401 Credenciales inválidas",
+    "body": {
+     "email": "${email}",
+     "password": "Incorrecta1"
+    },
+    "previo": {
+     "usuario": {}
+    },
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 401
+   },
+   {
+    "camino": "C6",
+    "ref": "CP-011",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     11,
+     12,
+     14
+    ],
+    "escenario": "200 requires2FA",
+    "body": {
+     "email": "${email}",
+     "password": "TestPass123"
+    },
+    "previo": {
+     "usuario": {
+      "totp": true
+     }
+    },
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 200
+   },
+   {
+    "camino": "C7",
+    "ref": "CP-001",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     11,
+     13,
+     14
+    ],
+    "escenario": "200 Login exitoso",
+    "body": {
+     "email": "${email}",
+     "password": "TestPass123"
+    },
+    "previo": {
+     "usuario": {}
+    },
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 200
+   }
+  ]
+ },
+ "2": {
+  "nombre": "Registro de Institución (Crear Cuenta)",
+  "endpoint": "/api/auth/register",
+  "metodo": "post",
+  "ctrl": [
+   "auth.controller",
+   "register"
+  ],
+  "casos": [
+   {
+    "id": "CP-001",
+    "desc": "Verificar el registro con todos los datos válidos.",
+    "body": {
+     "nombre": "Juan",
+     "email": "__test__m2_cp1_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-002",
+    "desc": "Verificar el registro sin apellido, que es opcional.",
+    "body": {
+     "nombre": "Juan",
+     "email": "__test__m2_cp2_${U}@certivalidate.test",
+     "password": "Clave1234"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-003",
+    "desc": "Verificar que se rechaza un nombre de 2 caracteres.",
+    "body": {
+     "nombre": "Ju",
+     "email": "__test__m2_cp3_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-004",
+    "desc": "Verificar que se rechaza el registro sin nombre.",
+    "body": {
+     "nombre": "",
+     "email": "__test__m2_cp4_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-005",
+    "desc": "Verificar que un apellido enviado como cadena vacía se rechaza.",
+    "body": {
+     "nombre": "Juan",
+     "email": "__test__m2_cp5_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "apellido": ""
+    },
+    "auth": null,
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-006",
+    "desc": "Verificar que se rechaza el registro sin correo.",
+    "body": {
+     "nombre": "Juan",
+     "email": "",
+     "password": "Clave1234",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-007",
+    "desc": "Verificar que se rechaza un correo sin formato válido.",
+    "body": {
+     "nombre": "Juan",
+     "email": "juan.correo",
+     "password": "Clave1234",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-008",
+    "desc": "Verificar que no se puede registrar un correo existente.",
+    "body": {
+     "nombre": "Juan",
+     "email": "${email}",
+     "password": "Clave1234",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {
+     "usuario": {}
+    },
+    "status": 409,
+    "msg": "ya está registrado",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-009",
+    "desc": "Verificar que se rechaza el registro sin contraseña.",
+    "body": {
+     "nombre": "Juan",
+     "email": "__test__m2_cp9_${U}@certivalidate.test",
+     "password": "",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-010",
+    "desc": "Verificar que se rechaza una contraseña de 7 caracteres.",
+    "body": {
+     "nombre": "Juan",
+     "email": "__test__m2_cp10_${U}@certivalidate.test",
+     "password": "Clave12",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-011",
+    "desc": "Verificar que se rechaza una contraseña sin mayúscula.",
+    "body": {
+     "nombre": "Juan",
+     "email": "__test__m2_cp11_${U}@certivalidate.test",
+     "password": "clave1234",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-012",
+    "desc": "Verificar que se rechaza una contraseña sin minúscula.",
+    "body": {
+     "nombre": "Juan",
+     "email": "__test__m2_cp12_${U}@certivalidate.test",
+     "password": "CLAVE1234",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-013",
+    "desc": "Verificar que se rechaza una contraseña sin dígito.",
+    "body": {
+     "nombre": "Juan",
+     "email": "__test__m2_cp13_${U}@certivalidate.test",
+     "password": "ClaveSegura",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-014",
+    "desc": "Verificar que un nombre de exactamente 3 caracteres se acepta.",
+    "body": {
+     "nombre": "Ana",
+     "email": "__test__m2_cp14_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-015",
+    "desc": "Verificar que un apellido de 1 carácter se acepta.",
+    "body": {
+     "nombre": "Juan",
+     "email": "__test__m2_cp15_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "apellido": "P"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-016",
+    "desc": "Verificar que un apellido de 2 caracteres se acepta.",
+    "body": {
+     "nombre": "Juan",
+     "email": "__test__m2_cp16_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "apellido": "Po"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-017",
+    "desc": "Verificar que una contraseña de exactamente 8 caracteres que cumple la política se acepta.",
+    "body": {
+     "nombre": "Juan",
+     "email": "__test__m2_cp17_${U}@certivalidate.test",
+     "password": "Clave123",
+     "apellido": "Pérez"
+    },
+    "auth": null,
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   }
+  ],
+  "caminos": [
+   {
+    "camino": "C1",
+    "ref": "CP-018",
+    "nodos": [
+     1,
+     2,
+     3,
+     7
+    ],
+    "escenario": "400 Campos obligatorios",
+    "body": {},
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C2",
+    "ref": "CP-008",
+    "nodos": [
+     1,
+     2,
+     4,
+     5,
+     7
+    ],
+    "escenario": "409 Email ya registrado",
+    "body": {
+     "nombre": "Juan",
+     "email": "${email}",
+     "password": "Clave1234",
+     "apellido": "Pérez"
+    },
+    "previo": {
+     "usuario": {}
+    },
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 409
+   },
+   {
+    "camino": "C3",
+    "ref": "CP-001",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     7
+    ],
+    "escenario": "201 Usuario registrado",
+    "body": {
+     "nombre": "Juan",
+     "email": "__test__m2_c3_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "apellido": "Pérez"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 201
+   }
+  ]
+ },
+ "3": {
+  "nombre": "Emitir Nuevo Certificado",
+  "endpoint": "/api/certificados/emitir",
+  "metodo": "post",
+  "ctrl": [
+   "certificado.controller",
+   "emitirCertificado"
+  ],
+  "casos": [
+   {
+    "id": "CP-001",
+    "desc": "Verificar la emisión de un certificado con datos completos y consistentes.",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-002",
+    "desc": "Verificar que no se emite un certificado sin estudiante.",
+    "body": {
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-003",
+    "desc": "Verificar que se rechaza un identificador de estudiante sin formato UUID.",
+    "body": {
+     "estudiante_id": "abc",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-004",
+    "desc": "Verificar que no se emite un certificado para un estudiante inexistente.",
+    "body": {
+     "estudiante_id": "${noexiste}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 404,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-005",
+    "desc": "Verificar que no se emite un certificado sin institución.",
+    "body": {
+     "estudiante_id": "${est}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-006",
+    "desc": "Verificar que un usuario no emite certificados en una institución ajena.",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${instOtra}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 403,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-007",
+    "desc": "Verificar que no se emite un certificado sin plantilla.",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-008",
+    "desc": "Verificar que se rechaza una plantilla sin formato UUID.",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "xyz",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-009",
+    "desc": "Verificar que no se emite un certificado con una plantilla inexistente.",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${noexiste}",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 404,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-010",
+    "desc": "Verificar que no se emite un certificado con una plantilla inactiva.",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${plaInactiva}",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": "inactiva",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-011",
+    "desc": "Verificar que no se usa la plantilla de otra institución.",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${plaOtra}",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": "no pertenece",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-012",
+    "desc": "Verificar que no se emite un certificado para un estudiante de otra institución.",
+    "body": {
+     "estudiante_id": "${estOtra}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 404,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-013",
+    "desc": "Verificar que no se emiten dos certificados vigentes iguales.",
+    "body": {
+     "estudiante_id": "${estB}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "auth": "admin",
+    "previo": {
+     "emitirAntes": true
+    },
+    "status": 409,
+    "msg": "vigente",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-014",
+    "desc": "Verificar que se rechaza un proveedor académico no implementado.",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "sap"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 501,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-015",
+    "desc": "Verificar que se rechaza un documento de 2 caracteres.",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db",
+     "documento_estudiante": "AB"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-016",
+    "desc": "Verificar que se rechaza un documento de 51 caracteres.",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db",
+     "documento_estudiante": "D00000000000000000000000000000000000000000000000000"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-017",
+    "desc": "Verificar que un documento de 3 caracteres se acepta.",
+    "body": {
+     "estudiante_id": "${estDoc3}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db",
+     "documento_estudiante": "${doc3}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-018",
+    "desc": "Verificar que un documento de 4 caracteres se acepta.",
+    "body": {
+     "estudiante_id": "${estDoc4}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db",
+     "documento_estudiante": "${doc4}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-019",
+    "desc": "Verificar que un documento de 49 caracteres se acepta.",
+    "body": {
+     "estudiante_id": "${estDoc49}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db",
+     "documento_estudiante": "${doc49}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-020",
+    "desc": "Verificar que un documento de 50 caracteres se acepta.",
+    "body": {
+     "estudiante_id": "${estDoc50}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db",
+     "documento_estudiante": "${doc50}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   }
+  ],
+  "caminos": [
+   {
+    "camino": "C1",
+    "ref": "CP-021",
+    "nodos": [
+     1,
+     2,
+     3,
+     21
+    ],
+    "escenario": "400 Datos obligatorios",
+    "body": {
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C2",
+    "ref": "CP-022",
+    "nodos": [
+     1,
+     2,
+     4,
+     5,
+     21
+    ],
+    "escenario": "403 No autorizado",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${instOtra}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 403
+   },
+   {
+    "camino": "C3",
+    "ref": "CP-014",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     7,
+     21
+    ],
+    "escenario": "501 Proveedor no implementado",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "sap"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 501
+   },
+   {
+    "camino": "C4",
+    "ref": "CP-023",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     9,
+     21
+    ],
+    "escenario": "400 estudiante_id obligatorio",
+    "body": {
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db",
+     "documento_estudiante": "D004"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C5",
+    "ref": "CP-004",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     11,
+     21
+    ],
+    "escenario": "404 Estudiante no encontrado",
+    "body": {
+     "estudiante_id": "${noexiste}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 404
+   },
+   {
+    "camino": "C6",
+    "ref": "CP-009",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     12,
+     13,
+     21
+    ],
+    "escenario": "404 Plantilla no encontrada",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${noexiste}",
+     "provider": "local-db"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 404
+   },
+   {
+    "camino": "C7",
+    "ref": "CP-010",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     12,
+     14,
+     15,
+     21
+    ],
+    "escenario": "400 Plantilla inactiva",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${plaInactiva}",
+     "provider": "local-db"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C8",
+    "ref": "CP-011",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     12,
+     14,
+     16,
+     17,
+     21
+    ],
+    "escenario": "400 Plantilla no pertenece",
+    "body": {
+     "estudiante_id": "${est}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${plaOtra}",
+     "provider": "local-db"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C9",
+    "ref": "CP-013",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     12,
+     14,
+     16,
+     18,
+     19,
+     21
+    ],
+    "escenario": "409 Certificado vigente",
+    "body": {
+     "estudiante_id": "${estC}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "previo": {
+     "emitirAntesC": true
+    },
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 409
+   },
+   {
+    "camino": "C10",
+    "ref": "CP-001",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     12,
+     14,
+     16,
+     18,
+     20,
+     21
+    ],
+    "escenario": "201 Certificado emitido",
+    "body": {
+     "estudiante_id": "${estD}",
+     "institucion_id": "${inst}",
+     "plantilla_id": "${pla}",
+     "provider": "local-db"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 201
+   }
+  ]
+ },
+ "4": {
+  "nombre": "Nuevo Estudiante",
+  "endpoint": "/api/estudiantes",
+  "metodo": "post",
+  "ctrl": [
+   "estudiante.controller",
+   "crearEstudiante"
+  ],
+  "casos": [
+   {
+    "id": "CP-001",
+    "desc": "Verificar el registro de un estudiante con todos los datos válidos.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "DOC1-${U}",
+     "email": "ana@correo.com"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-002",
+    "desc": "Verificar el registro sin correo, que es opcional.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "DOC2-${U}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-003",
+    "desc": "Verificar que no se registra un estudiante sin institución.",
+    "body": {
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "DOC-${U}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-004",
+    "desc": "Verificar que no se registran estudiantes en una institución ajena.",
+    "body": {
+     "institucion_id": "${instOtra}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "DOC4-${U}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 403,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-005",
+    "desc": "Verificar que se rechaza un nombre de 1 carácter.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "A",
+     "apellido": "García",
+     "documento": "DOC5-${U}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-006",
+    "desc": "Verificar que se rechaza el registro sin nombre.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "",
+     "apellido": "García",
+     "documento": "DOC6-${U}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-007",
+    "desc": "Verificar que se rechaza un apellido de 1 carácter.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "G",
+     "documento": "DOC7-${U}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-008",
+    "desc": "Verificar que se rechaza el registro sin apellido.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "",
+     "documento": "DOC8-${U}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-009",
+    "desc": "Verificar que se rechaza un documento de 3 caracteres.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "123"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-010",
+    "desc": "Verificar que se rechaza el registro sin documento.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": ""
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-011",
+    "desc": "Verificar que no se duplica un documento dentro de la institución.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "${docExistente}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 409,
+    "msg": "Ya existe",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-012",
+    "desc": "Verificar que se rechaza un correo sin formato válido.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "DOC12-${U}",
+     "email": "ana.correo"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-013",
+    "desc": "Verificar que un nombre de 2 caracteres se acepta.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Al",
+     "apellido": "García",
+     "documento": "DOC13-${U}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-014",
+    "desc": "Verificar que un apellido de 2 caracteres se acepta.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "Gu",
+     "documento": "DOC14-${U}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-015",
+    "desc": "Verificar que un apellido de 3 caracteres se acepta.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "Gil",
+     "documento": "DOC15-${U}"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-016",
+    "desc": "Verificar que un documento de 4 caracteres se acepta.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "1234"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-017",
+    "desc": "Verificar que un documento de 5 caracteres se acepta.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "12345"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   }
+  ],
+  "caminos": [
+   {
+    "camino": "C1",
+    "ref": "CP-018",
+    "nodos": [
+     1,
+     2,
+     3,
+     11
+    ],
+    "escenario": "400 Campos obligatorios",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "",
+     "apellido": "García",
+     "documento": "DOC-${U}"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C2",
+    "ref": "CP-019",
+    "nodos": [
+     1,
+     2,
+     4,
+     5,
+     11
+    ],
+    "escenario": "404 Institución no encontrada",
+    "body": {
+     "institucion_id": "${noexiste}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "DOC-${U}"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": [
+     "${noexiste}"
+    ],
+    "status": 404
+   },
+   {
+    "camino": "C3",
+    "ref": "CP-020",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     7,
+     11
+    ],
+    "escenario": "403 No autorizado",
+    "body": {
+     "institucion_id": "${instOtra}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "DOC-${U}"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 403
+   },
+   {
+    "camino": "C4",
+    "ref": "CP-011",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     9,
+     11
+    ],
+    "escenario": "409 Documento duplicado",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "${docExistente}"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 409
+   },
+   {
+    "camino": "C5",
+    "ref": "CP-001",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     11
+    ],
+    "escenario": "201 Estudiante creado",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Ana",
+     "apellido": "García",
+     "documento": "DOCC5-${U}"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 201
+   }
+  ]
+ },
+ "5": {
+  "nombre": "Nuevo Usuario (Institucional)",
+  "endpoint": "/api/usuarios",
+  "metodo": "post",
+  "ctrl": [
+   "usuario.controller",
+   "crearUsuario"
+  ],
+  "casos": [
+   {
+    "id": "CP-001",
+    "desc": "Verificar la creación de un usuario institucional con datos válidos.",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp1_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-002",
+    "desc": "Verificar la creación sin rol, que toma lector por defecto.",
+    "body": {
+     "nombre": "Pedro",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp2_${U}@certivalidate.test",
+     "password": "Clave1234"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-003",
+    "desc": "Verificar que no se puede escalar privilegios con un campo protegido.",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp3_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "rol": "editor",
+     "es_platform_admin": true
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": "es_platform_admin",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-004",
+    "desc": "Verificar que se rechaza un nombre de 2 caracteres.",
+    "body": {
+     "nombre": "Lu",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp4_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-005",
+    "desc": "Verificar que se rechaza la creación sin nombre.",
+    "body": {
+     "nombre": "",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp5_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-006",
+    "desc": "Verificar que se rechaza la creación sin correo.",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-007",
+    "desc": "Verificar que se rechaza un correo sin formato válido.",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "laura.correo",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-008",
+    "desc": "Verificar que no se duplica un correo.",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "${emailAdmin}",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 409,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-009",
+    "desc": "Verificar que solo se aceptan correos del dominio institucional.",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__laura_${U}@otrodominio.com",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": "dominio",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-010",
+    "desc": "Verificar que se rechaza la creación sin contraseña.",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp10_${U}@certivalidate.test",
+     "password": "",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-011",
+    "desc": "Verificar que se rechaza una contraseña de 7 caracteres.",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp11_${U}@certivalidate.test",
+     "password": "Clave12",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-012",
+    "desc": "Verificar que se rechaza una contraseña sin mayúscula.",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp12_${U}@certivalidate.test",
+     "password": "clave1234",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-013",
+    "desc": "Verificar que se rechaza un rol fuera de admin, editor y lector.",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp13_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "rol": "docente"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-014",
+    "desc": "Verificar que un usuario sin el permiso usuario:crear no crea usuarios.",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp14_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "auth": "lector",
+    "previo": {},
+    "status": 403,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-015",
+    "desc": "Verificar que un nombre de 3 caracteres se acepta.",
+    "body": {
+     "nombre": "Lía",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp15_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-016",
+    "desc": "Verificar que un nombre de 4 caracteres se acepta.",
+    "body": {
+     "nombre": "Luis",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp16_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-017",
+    "desc": "Verificar que una contraseña de 8 caracteres que cumple la política se acepta.",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5_cp17_${U}@certivalidate.test",
+     "password": "Clave123",
+     "rol": "editor"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   }
+  ],
+  "caminos": [
+   {
+    "camino": "C1",
+    "ref": "CP-003",
+    "nodos": [
+     1,
+     2,
+     3,
+     15
+    ],
+    "escenario": "400 Campo protegido",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5c1_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "rol": "editor",
+     "es_platform_admin": true
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C2",
+    "ref": "CP-018",
+    "nodos": [
+     1,
+     2,
+     4,
+     5,
+     15
+    ],
+    "escenario": "400 Campos obligatorios",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C3",
+    "ref": "CP-008",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     7,
+     15
+    ],
+    "escenario": "409 Email registrado",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "${emailAdmin}",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 409
+   },
+   {
+    "camino": "C4",
+    "ref": "CP-019",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     9,
+     15
+    ],
+    "escenario": "400 Rol inválido",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5c4_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "rol": "docente"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C5",
+    "ref": "CP-020",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     11,
+     15
+    ],
+    "escenario": "403 Sin institución",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5c5_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": [],
+    "status": 403
+   },
+   {
+    "camino": "C6",
+    "ref": "CP-009",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     12,
+     13,
+     15
+    ],
+    "escenario": "400 Dominio no institucional",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5c6_${U}@otrodominio.com",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C7",
+    "ref": "CP-001",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     12,
+     14,
+     15
+    ],
+    "escenario": "201 Usuario creado",
+    "body": {
+     "nombre": "Laura",
+     "apellido": "Ríos",
+     "email": "__test__m5c7_${U}@certivalidate.test",
+     "password": "Clave1234",
+     "rol": "editor"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 201
+   }
+  ]
+ },
+ "6": {
+  "nombre": "Nueva Plantilla de Certificado",
+  "endpoint": "/api/plantillas",
+  "metodo": "post",
+  "ctrl": [
+   "plantilla.controller",
+   "crearPlantilla"
+  ],
+  "casos": [
+   {
+    "id": "CP-001",
+    "desc": "Verificar la creación de una plantilla con todos los datos.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Diploma",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 2
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-002",
+    "desc": "Verificar la creación desde el modal, que no envía template_html ni versión.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Constancia"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-003",
+    "desc": "Verificar que no se crea una plantilla sin institución.",
+    "body": {
+     "nombre": "Diploma",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 2
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-004",
+    "desc": "Verificar que se rechaza una institución sin formato UUID.",
+    "body": {
+     "institucion_id": "abc",
+     "nombre": "Diploma",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 2
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 403,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-005",
+    "desc": "Verificar que no se crean plantillas en una institución ajena.",
+    "body": {
+     "institucion_id": "${instOtra}",
+     "nombre": "Diploma",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 2
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 403,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-006",
+    "desc": "Verificar que se rechaza un nombre de 2 caracteres.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Di",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 2
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-007",
+    "desc": "Verificar que se rechaza una plantilla sin nombre.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 2
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-008",
+    "desc": "Verificar que se rechaza un HTML de 8 caracteres.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Diploma",
+     "template_html": "<p>x</p>",
+     "version": 2
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-009",
+    "desc": "Verificar que se rechaza la versión 0.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Diploma",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 0
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-010",
+    "desc": "Verificar que se rechaza una versión no numérica.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Diploma",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": "dos"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-011",
+    "desc": "Verificar que se rechaza un valor no booleano en activa.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Diploma",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 2,
+     "activa": "si"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-012",
+    "desc": "Verificar que un nombre de 3 caracteres se acepta.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Dip",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 2
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-013",
+    "desc": "Verificar que un nombre de 4 caracteres se acepta.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Dipl",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 2
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-014",
+    "desc": "Verificar que un HTML de 9 caracteres se rechaza.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Diploma",
+     "template_html": "<p>ab</p>",
+     "version": 2
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-015",
+    "desc": "Verificar que un HTML de 10 caracteres se acepta.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Diploma",
+     "template_html": "<p>abc</p>",
+     "version": 2
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-016",
+    "desc": "Verificar que un HTML de 11 caracteres se acepta.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Diploma",
+     "template_html": "<p>abcd</p>",
+     "version": 2
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-017",
+    "desc": "Verificar que la versión 1 se acepta.",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Diploma",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 1
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   }
+  ],
+  "caminos": [
+   {
+    "camino": "C1",
+    "ref": "CP-007",
+    "nodos": [
+     1,
+     2,
+     3,
+     9
+    ],
+    "escenario": "400 Campos obligatorios",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 2
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C2",
+    "ref": "CP-018",
+    "nodos": [
+     1,
+     2,
+     4,
+     5,
+     9
+    ],
+    "escenario": "404 Institución no encontrada",
+    "body": {
+     "institucion_id": "${noexiste}",
+     "nombre": "Diploma",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 2
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": [
+     "${noexiste}"
+    ],
+    "status": 404
+   },
+   {
+    "camino": "C3",
+    "ref": "CP-019",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     7,
+     9
+    ],
+    "escenario": "403 No autorizado",
+    "body": {
+     "institucion_id": "${instOtra}",
+     "nombre": "Diploma",
+     "template_html": "<html><body>{{nombre}}</body></html>",
+     "version": 2
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 403
+   },
+   {
+    "camino": "C4",
+    "ref": "CP-002",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     9
+    ],
+    "escenario": "201 Plantilla creada",
+    "body": {
+     "institucion_id": "${inst}",
+     "nombre": "Constancia"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 201
+   }
+  ]
+ },
+ "7": {
+  "nombre": "Nueva Institución",
+  "endpoint": "/api/instituciones",
+  "metodo": "post",
+  "ctrl": [
+   "institucion.controller",
+   "crearInstitucion"
+  ],
+  "casos": [
+   {
+    "id": "CP-001",
+    "desc": "Verificar la creación de una institución con todos los datos.",
+    "body": {
+     "nombre": "Universidad Popular del Cesar",
+     "dominio": "unicesar.edu.co",
+     "logo_url": "https://unicesar.edu.co/logo.png"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-002",
+    "desc": "Verificar la creación solo con el nombre.",
+    "body": {
+     "nombre": "Instituto Técnico"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-003",
+    "desc": "Verificar que no se aceptan campos protegidos.",
+    "body": {
+     "nombre": "Universidad Popular del Cesar",
+     "dominio": "unicesar.edu.co",
+     "logo_url": "https://unicesar.edu.co/logo.png",
+     "created_at": "2020-01-01"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 403,
+    "msg": "created_at",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-004",
+    "desc": "Verificar que se rechaza un nombre de 2 caracteres.",
+    "body": {
+     "nombre": "UP",
+     "dominio": "unicesar.edu.co",
+     "logo_url": "https://unicesar.edu.co/logo.png"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-005",
+    "desc": "Verificar que se rechaza una institución sin nombre.",
+    "body": {
+     "nombre": "",
+     "dominio": "unicesar.edu.co",
+     "logo_url": "https://unicesar.edu.co/logo.png"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-006",
+    "desc": "Verificar que se rechaza un dominio de 2 caracteres.",
+    "body": {
+     "nombre": "Universidad Popular del Cesar",
+     "dominio": "uc",
+     "logo_url": "https://unicesar.edu.co/logo.png"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-007",
+    "desc": "Verificar que se rechaza un logo sin formato de URL.",
+    "body": {
+     "nombre": "Universidad Popular del Cesar",
+     "dominio": "unicesar.edu.co",
+     "logo_url": "logo-sin-url"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-008",
+    "desc": "Verificar que un usuario sin correo verificado no crea instituciones.",
+    "body": {
+     "nombre": "Universidad Popular del Cesar",
+     "dominio": "unicesar.edu.co",
+     "logo_url": "https://unicesar.edu.co/logo.png"
+    },
+    "auth": "noVerif",
+    "previo": {},
+    "status": 403,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-009",
+    "desc": "Verificar que un nombre de 3 caracteres se acepta.",
+    "body": {
+     "nombre": "UPC",
+     "dominio": "unicesar.edu.co",
+     "logo_url": "https://unicesar.edu.co/logo.png"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-010",
+    "desc": "Verificar que un nombre de 4 caracteres se acepta.",
+    "body": {
+     "nombre": "UdeA",
+     "dominio": "unicesar.edu.co",
+     "logo_url": "https://unicesar.edu.co/logo.png"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-011",
+    "desc": "Verificar que un dominio de 3 caracteres se acepta.",
+    "body": {
+     "nombre": "Universidad Popular del Cesar",
+     "dominio": "uco",
+     "logo_url": "https://unicesar.edu.co/logo.png"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-012",
+    "desc": "Verificar que un dominio de 4 caracteres se acepta.",
+    "body": {
+     "nombre": "Universidad Popular del Cesar",
+     "dominio": "u.co",
+     "logo_url": "https://unicesar.edu.co/logo.png"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   }
+  ],
+  "caminos": [
+   {
+    "camino": "C1",
+    "ref": "CP-003",
+    "nodos": [
+     1,
+     2,
+     3,
+     7
+    ],
+    "escenario": "403 Campo protegido",
+    "body": {
+     "nombre": "Universidad Popular del Cesar",
+     "dominio": "unicesar.edu.co",
+     "logo_url": "https://unicesar.edu.co/logo.png",
+     "created_at": "2020-01-01"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 403
+   },
+   {
+    "camino": "C2",
+    "ref": "CP-013",
+    "nodos": [
+     1,
+     2,
+     4,
+     5,
+     7
+    ],
+    "escenario": "400 Nombre obligatorio",
+    "body": {
+     "nombre": "",
+     "dominio": "unicesar.edu.co",
+     "logo_url": "https://unicesar.edu.co/logo.png"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C3",
+    "ref": "CP-002",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     7
+    ],
+    "escenario": "201 Institución creada",
+    "body": {
+     "nombre": "Instituto Técnico"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 201
+   }
+  ]
+ },
+ "8": {
+  "nombre": "Configurar Integración (Sistema Académico Externo)",
+  "endpoint": "/api/integraciones",
+  "metodo": "post",
+  "ctrl": [
+   "integracion.controller",
+   "crearIntegracion"
+  ],
+  "casos": [
+   {
+    "id": "CP-001",
+    "desc": "Verificar la creación de la integración con datos válidos.",
+    "body": {
+     "institucion_id": "${inst}",
+     "tipo": "REST",
+     "url_base": "https://api.academica.edu.co",
+     "api_key": "clave-123"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": {
+     "data.actualizada": false
+    },
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-002",
+    "desc": "Verificar que una segunda configuración actualiza la existente.",
+    "body": {
+     "institucion_id": "${inst}",
+     "tipo": "REST",
+     "url_base": "http://api.academica.edu.co"
+    },
+    "auth": "admin",
+    "previo": {
+     "integracionPrevia": true
+    },
+    "status": 201,
+    "msg": null,
+    "campo": {
+     "data.actualizada": true
+    },
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-003",
+    "desc": "Verificar que no se configura una integración sin institución.",
+    "body": {
+     "tipo": "REST",
+     "url_base": "https://api.academica.edu.co",
+     "api_key": "clave-123"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-004",
+    "desc": "Verificar que no se configura la integración de una institución ajena.",
+    "body": {
+     "institucion_id": "${instOtra}",
+     "tipo": "REST",
+     "url_base": "https://api.academica.edu.co",
+     "api_key": "clave-123"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 403,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-005",
+    "desc": "Verificar que se rechaza una integración sin tipo.",
+    "body": {
+     "institucion_id": "${inst}",
+     "tipo": "",
+     "url_base": "https://api.academica.edu.co",
+     "api_key": "clave-123"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-006",
+    "desc": "Verificar que se rechaza una integración sin URL.",
+    "body": {
+     "institucion_id": "${inst}",
+     "tipo": "REST",
+     "url_base": "",
+     "api_key": "clave-123"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-007",
+    "desc": "Verificar que se rechaza una URL sin protocolo.",
+    "body": {
+     "institucion_id": "${inst}",
+     "tipo": "REST",
+     "url_base": "api.academica.edu.co",
+     "api_key": "clave-123"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-008",
+    "desc": "Verificar que se rechaza un protocolo distinto de http/https.",
+    "body": {
+     "institucion_id": "${inst}",
+     "tipo": "REST",
+     "url_base": "ftp://api.academica.edu.co",
+     "api_key": "clave-123"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-009",
+    "desc": "Verificar que un tipo de 1 carácter se acepta.",
+    "body": {
+     "institucion_id": "${instB}",
+     "tipo": "R",
+     "url_base": "https://api.academica.edu.co",
+     "api_key": "clave-123"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-010",
+    "desc": "Verificar que un tipo de 2 caracteres se acepta.",
+    "body": {
+     "institucion_id": "${instB}",
+     "tipo": "RS",
+     "url_base": "https://api.academica.edu.co",
+     "api_key": "clave-123"
+    },
+    "auth": "admin",
+    "previo": {},
+    "status": 201,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   }
+  ],
+  "caminos": [
+   {
+    "camino": "C1",
+    "ref": "CP-011",
+    "nodos": [
+     1,
+     2,
+     3,
+     8
+    ],
+    "escenario": "403 No autorizado",
+    "body": {
+     "institucion_id": "${instOtra}",
+     "tipo": "REST",
+     "url_base": "https://api.academica.edu.co",
+     "api_key": "clave-123"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 403
+   },
+   {
+    "camino": "C2",
+    "ref": "CP-002",
+    "nodos": [
+     1,
+     2,
+     4,
+     5,
+     7,
+     8
+    ],
+    "escenario": "201 Integración actualizada",
+    "body": {
+     "institucion_id": "${instC}",
+     "tipo": "REST",
+     "url_base": "http://api.academica.edu.co"
+    },
+    "previo": {
+     "integracionPreviaC": true
+    },
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 201
+   },
+   {
+    "camino": "C3",
+    "ref": "CP-001",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     7,
+     8
+    ],
+    "escenario": "201 Integración creada",
+    "body": {
+     "institucion_id": "${instD}",
+     "tipo": "REST",
+     "url_base": "https://api.academica.edu.co",
+     "api_key": "clave-123"
+    },
+    "previo": {},
+    "usuario": "admin",
+    "institucionIds": null,
+    "status": 201
+   }
+  ]
+ },
+ "9": {
+  "nombre": "Actualizar Información Personal (Mi Perfil)",
+  "endpoint": "/api/auth/perfil",
+  "metodo": "put",
+  "ctrl": [
+   "auth.controller",
+   "actualizarPerfil"
+  ],
+  "casos": [
+   {
+    "id": "CP-001",
+    "desc": "Verificar que se actualiza solo el nombre.",
+    "body": {
+     "nombre": "Carlos"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 200,
+    "msg": "Perfil actualizado",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-002",
+    "desc": "Verificar que se actualiza solo el apellido.",
+    "body": {
+     "apellido": "Gómez"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 200,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-003",
+    "desc": "Verificar que se rechaza una actualización vacía.",
+    "body": {},
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-004",
+    "desc": "Verificar que se rechaza un nombre de 2 caracteres.",
+    "body": {
+     "nombre": "Ca"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-005",
+    "desc": "Verificar que se rechaza un apellido vacío.",
+    "body": {
+     "apellido": ""
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-006",
+    "desc": "Verificar que se rechaza un correo sin formato válido.",
+    "body": {
+     "email": "carlos.correo"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-007",
+    "desc": "Verificar que no se adopta el correo de otro usuario.",
+    "body": {
+     "email": "${emailAdmin}"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 409,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-008",
+    "desc": "Verificar que el cambio de correo cierra las sesiones y pide verificarlo.",
+    "body": {
+     "email": "__test__m9_cp8_${U}@certivalidate.test"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 200,
+    "msg": "sesiones",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-009",
+    "desc": "Verificar que un nombre de 3 caracteres se acepta.",
+    "body": {
+     "nombre": "Ana"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 200,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-010",
+    "desc": "Verificar que un nombre de 4 caracteres se acepta.",
+    "body": {
+     "nombre": "Luis"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 200,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-011",
+    "desc": "Verificar que un apellido de 1 carácter se acepta.",
+    "body": {
+     "apellido": "G"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 200,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-012",
+    "desc": "Verificar que un apellido de 2 caracteres se acepta.",
+    "body": {
+     "apellido": "Go"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 200,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   }
+  ],
+  "caminos": [
+   {
+    "camino": "C1",
+    "ref": "CP-003",
+    "nodos": [
+     1,
+     2,
+     3,
+     12
+    ],
+    "escenario": "400 Ningún campo",
+    "body": {},
+    "previo": {
+     "usuario": {}
+    },
+    "usuario": "nuevo",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C2",
+    "ref": "CP-013",
+    "nodos": [
+     1,
+     2,
+     4,
+     5,
+     12
+    ],
+    "escenario": "404 Usuario no encontrado",
+    "body": {
+     "nombre": "Carlos"
+    },
+    "previo": {},
+    "usuario": "inexistente",
+    "institucionIds": null,
+    "status": 404
+   },
+   {
+    "camino": "C3",
+    "ref": "CP-007",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     7,
+     8,
+     12
+    ],
+    "escenario": "409 Email en uso",
+    "body": {
+     "email": "${emailAdmin}"
+    },
+    "previo": {
+     "usuario": {}
+    },
+    "usuario": "nuevo",
+    "institucionIds": null,
+    "status": 409
+   },
+   {
+    "camino": "C4",
+    "ref": "CP-008",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     7,
+     9,
+     10,
+     11,
+     12
+    ],
+    "escenario": "200 Email actualizado; sesiones cerradas",
+    "body": {
+     "email": "__test__m9c4_${U}@certivalidate.test"
+    },
+    "previo": {
+     "usuario": {}
+    },
+    "usuario": "nuevo",
+    "institucionIds": null,
+    "status": 200
+   },
+   {
+    "camino": "C5",
+    "ref": "CP-001",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     9,
+     11,
+     12
+    ],
+    "escenario": "200 Perfil actualizado",
+    "body": {
+     "nombre": "Carlos"
+    },
+    "previo": {
+     "usuario": {}
+    },
+    "usuario": "nuevo",
+    "institucionIds": null,
+    "status": 200
+   }
+  ]
+ },
+ "10": {
+  "nombre": "Cambiar Contraseña (desde Mi Perfil)",
+  "endpoint": "/api/auth/perfil/password",
+  "metodo": "put",
+  "ctrl": [
+   "auth.controller",
+   "cambiarPassword"
+  ],
+  "casos": [
+   {
+    "id": "CP-001",
+    "desc": "Verificar el cambio de contraseña con datos válidos.",
+    "body": {
+     "currentPassword": "TestPass123",
+     "newPassword": "NuevaClave1"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 200,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-002",
+    "desc": "Verificar que se exige la contraseña actual.",
+    "body": {
+     "currentPassword": "",
+     "newPassword": "NuevaClave1"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-003",
+    "desc": "Verificar que se rechaza una contraseña actual incorrecta.",
+    "body": {
+     "currentPassword": "Incorrecta1",
+     "newPassword": "NuevaClave1"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 400,
+    "msg": "incorrecta",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-004",
+    "desc": "Verificar que se exige la nueva contraseña.",
+    "body": {
+     "currentPassword": "TestPass123",
+     "newPassword": ""
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-005",
+    "desc": "Verificar que se rechaza una nueva contraseña de 7 caracteres.",
+    "body": {
+     "currentPassword": "TestPass123",
+     "newPassword": "Clave12"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-006",
+    "desc": "Verificar que se rechaza una nueva contraseña sin mayúscula.",
+    "body": {
+     "currentPassword": "TestPass123",
+     "newPassword": "nuevaclave1"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 400,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-007",
+    "desc": "Verificar que no se reutiliza la contraseña actual.",
+    "body": {
+     "currentPassword": "TestPass123",
+     "newPassword": "TestPass123"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 400,
+    "msg": "distinta",
+    "campo": null,
+    "headers": {},
+    "tec": "CE"
+   },
+   {
+    "id": "CP-008",
+    "desc": "Verificar que una nueva contraseña de 8 caracteres se acepta.",
+    "body": {
+     "currentPassword": "TestPass123",
+     "newPassword": "Clave123"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 200,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   },
+   {
+    "id": "CP-009",
+    "desc": "Verificar que una nueva contraseña de 9 caracteres se acepta.",
+    "body": {
+     "currentPassword": "TestPass123",
+     "newPassword": "Clave1234"
+    },
+    "auth": "nuevo",
+    "previo": {
+     "usuario": {}
+    },
+    "status": 200,
+    "msg": null,
+    "campo": null,
+    "headers": {},
+    "tec": "VL"
+   }
+  ],
+  "caminos": [
+   {
+    "camino": "C1",
+    "ref": "CP-010",
+    "nodos": [
+     1,
+     2,
+     3,
+     11
+    ],
+    "escenario": "400 Campos obligatorios",
+    "body": {
+     "currentPassword": "",
+     "newPassword": "NuevaClave1"
+    },
+    "previo": {
+     "usuario": {}
+    },
+    "usuario": "nuevo",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C2",
+    "ref": "CP-011",
+    "nodos": [
+     1,
+     2,
+     4,
+     5,
+     11
+    ],
+    "escenario": "404 Usuario no encontrado",
+    "body": {
+     "currentPassword": "TestPass123",
+     "newPassword": "NuevaClave1"
+    },
+    "previo": {},
+    "usuario": "inexistente",
+    "institucionIds": null,
+    "status": 404
+   },
+   {
+    "camino": "C3",
+    "ref": "CP-003",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     7,
+     11
+    ],
+    "escenario": "400 Contraseña actual incorrecta",
+    "body": {
+     "currentPassword": "Incorrecta1",
+     "newPassword": "NuevaClave1"
+    },
+    "previo": {
+     "usuario": {}
+    },
+    "usuario": "nuevo",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C4",
+    "ref": "CP-007",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     9,
+     11
+    ],
+    "escenario": "400 Nueva igual a la actual",
+    "body": {
+     "currentPassword": "TestPass123",
+     "newPassword": "TestPass123"
+    },
+    "previo": {
+     "usuario": {}
+    },
+    "usuario": "nuevo",
+    "institucionIds": null,
+    "status": 400
+   },
+   {
+    "camino": "C5",
+    "ref": "CP-001",
+    "nodos": [
+     1,
+     2,
+     4,
+     6,
+     8,
+     10,
+     11
+    ],
+    "escenario": "200 Contraseña actualizada",
+    "body": {
+     "currentPassword": "TestPass123",
+     "newPassword": "NuevaClave1"
+    },
+    "previo": {
+     "usuario": {}
+    },
+    "usuario": "nuevo",
+    "institucionIds": null,
+    "status": 200
+   }
+  ]
+ }
+}
